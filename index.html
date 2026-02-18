@@ -1649,106 +1649,136 @@
         }
 
         // Function to intelligently find course website
+        // Strategy: 
+        //   1. Try DuckDuckGo instant answer API (often has the official website)
+        //   2. Try Wikipedia for official website link
+        //   3. Try smart domain guessing with many common patterns
+        //   4. If nothing works, leave blank for manual entry
         async function findCourseWebsite(courseName, websiteInput) {
             try {
-                // Step 1: Check Wikipedia for official website link in the article
-                const wikiQuery = encodeURIComponent(courseName);
-                
-                // Get Wikipedia page content to extract official website
-                const wikiResponse = await fetch(
-                    `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=revisions|info&rvprop=content&rvslots=main&titles=${wikiQuery}&inprop=url`
-                );
-                const wikiData = await wikiResponse.json();
-                
-                if (wikiData.query && wikiData.query.pages) {
-                    const pages = Object.values(wikiData.query.pages);
-                    if (pages.length > 0 && pages[0].pageid) {
-                        const page = pages[0];
-                        
-                        // Try to extract official website from page content
-                        if (page.revisions && page.revisions[0] && page.revisions[0].slots && page.revisions[0].slots.main) {
-                            const content = page.revisions[0].slots.main['*'];
-                            
-                            // Look for common website patterns in Wikipedia infoboxes
-                            const websitePatterns = [
-                                /\|\s*website\s*=\s*\[?(https?:\/\/[^\s\]|]+)/i,
-                                /\|\s*url\s*=\s*\[?(https?:\/\/[^\s\]|]+)/i,
-                                /\|\s*homepage\s*=\s*\[?(https?:\/\/[^\s\]|]+)/i,
-                                /\[https?:\/\/www\.[^\s\]]+/i
-                            ];
-                            
-                            for (const pattern of websitePatterns) {
-                                const match = content.match(pattern);
-                                if (match) {
-                                    let url = match[1] || match[0];
-                                    // Clean up the URL
-                                    url = url.replace(/^\[/, '').replace(/\]$/, '').replace(/\|.*$/, '').trim();
-                                    
-                                    // Verify it's a golf-related URL (not Facebook, Twitter, etc.)
-                                    if (url && !url.includes('facebook.com') && !url.includes('twitter.com') && 
-                                        !url.includes('instagram.com') && !url.includes('youtube.com')) {
-                                        websiteInput.value = url;
-                                        return;
+                // Step 1: DuckDuckGo Instant Answer API
+                // This is free, no API key needed, and often returns the official website
+                try {
+                    const ddgResponse = await fetch(
+                        'https://api.duckduckgo.com/?q=' + encodeURIComponent(courseName + ' golf') + '&format=json&no_redirect=1'
+                    );
+                    const ddgData = await ddgResponse.json();
+                    
+                    // Check the "official website" field
+                    if (ddgData.Results && ddgData.Results.length > 0) {
+                        const firstUrl = ddgData.Results[0].FirstURL;
+                        if (firstUrl && !firstUrl.includes('duckduckgo.com') && !firstUrl.includes('wikipedia.org')) {
+                            websiteInput.value = firstUrl;
+                            return;
+                        }
+                    }
+                    
+                    // Check the Infobox for a website URL
+                    if (ddgData.Infobox && ddgData.Infobox.content) {
+                        for (const item of ddgData.Infobox.content) {
+                            if (item.label && item.label.toLowerCase() === 'website' && item.value) {
+                                let url = item.value;
+                                if (!url.startsWith('http')) url = 'https://' + url;
+                                websiteInput.value = url;
+                                return;
+                            }
+                        }
+                    }
+                    
+                    // Check the AbstractURL (often points to Wikipedia, but sometimes official site)
+                    if (ddgData.AbstractURL && !ddgData.AbstractURL.includes('wikipedia.org')) {
+                        websiteInput.value = ddgData.AbstractURL;
+                        return;
+                    }
+                } catch (e) {
+                    console.log('DuckDuckGo lookup failed, trying Wikipedia...');
+                }
+
+                // Step 2: Wikipedia lookup for official website
+                try {
+                    const wikiQuery = encodeURIComponent(courseName);
+                    const wikiResponse = await fetch(
+                        'https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=revisions|info&rvprop=content&rvslots=main&titles=' + wikiQuery + '&inprop=url'
+                    );
+                    const wikiData = await wikiResponse.json();
+                    
+                    if (wikiData.query && wikiData.query.pages) {
+                        const pages = Object.values(wikiData.query.pages);
+                        if (pages.length > 0 && pages[0].pageid) {
+                            const page = pages[0];
+                            if (page.revisions && page.revisions[0] && page.revisions[0].slots && page.revisions[0].slots.main) {
+                                const content = page.revisions[0].slots.main['*'];
+                                const websitePatterns = [
+                                    /\|\s*website\s*=\s*\{?\s*(?:URL\|)?(?:\[)?(https?:\/\/[^\s\]|}]+)/i,
+                                    /\|\s*url\s*=\s*\[?(https?:\/\/[^\s\]|]+)/i,
+                                    /\|\s*homepage\s*=\s*\[?(https?:\/\/[^\s\]|]+)/i
+                                ];
+                                for (const pattern of websitePatterns) {
+                                    const match = content.match(pattern);
+                                    if (match) {
+                                        let url = (match[1] || match[0]).replace(/^\[/, '').replace(/\]$/, '').replace(/\|.*$/, '').trim();
+                                        if (url && !url.includes('facebook.com') && !url.includes('twitter.com') && 
+                                            !url.includes('instagram.com') && !url.includes('youtube.com')) {
+                                            websiteInput.value = url;
+                                            return;
+                                        }
                                     }
                                 }
                             }
-                        }
-                        
-                        // If we found a Wikipedia page but no official website, use Wikipedia
-                        websiteInput.value = page.fullurl;
-                        return;
-                    }
-                }
-                
-                // Step 2: Try a general web search approach
-                // Search for the course with "official site" to find the main website
-                const searchQuery = encodeURIComponent(`"${courseName}" golf course official site`);
-                
-                // Use a CORS-enabled search API (limited but works for many cases)
-                try {
-                    // Try searching with a simple approach - construct likely website URL
-                    const domainGuess = courseName.toLowerCase()
-                        .replace(/golf club|golf course|country club/gi, '')
-                        .trim()
-                        .replace(/\s+/g, '')
-                        .replace(/[^a-z0-9]/g, '');
-                    
-                    // Try common domain patterns
-                    const possibleDomains = [
-                        `https://www.${domainGuess}golf.com`,
-                        `https://www.${domainGuess}gc.com`,
-                        `https://www.${domainGuess}.com`,
-                        `https://${domainGuess}golf.com`,
-                        `https://${domainGuess}.com`
-                    ];
-                    
-                    // Test if any of these domains exist (just check, don't navigate)
-                    for (const domain of possibleDomains) {
-                        try {
-                            const testResponse = await fetch(domain, { 
-                                method: 'HEAD', 
-                                mode: 'no-cors',
-                                cache: 'no-cache'
-                            });
-                            // If no error thrown, the domain might exist
-                            // Note: no-cors means we can't read the response, but we can try
-                            websiteInput.value = domain;
+                            // If Wikipedia page exists but no website found, use Wikipedia URL
+                            websiteInput.value = page.fullurl;
                             return;
-                        } catch (e) {
-                            // Domain doesn't exist or is unreachable, try next
-                            continue;
                         }
                     }
-                } catch (error) {
-                    // Search failed, continue to Step 3
+                } catch (e) {
+                    console.log('Wikipedia lookup failed, trying domain guessing...');
                 }
+
+                // Step 3: Smart domain guessing
+                // Try many realistic domain patterns that golf clubs actually use
+                const nameLower = courseName.toLowerCase();
                 
-                // Step 3: If all else fails, leave blank for manual entry
-                websiteInput.value = '';
+                // Full name with no spaces (e.g., "ansleygolfclub")
+                const fullNoSpaces = nameLower.replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+                
+                // Name without "golf club/course/country club" (e.g., "ansley")
+                const nameOnly = nameLower
+                    .replace(/golf club|golf course|country club|resort|golf links/gi, '')
+                    .trim().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
+                
+                // Name with hyphens (e.g., "ansley-golf-club")
+                const nameHyphens = nameLower.replace(/[^a-z0-9\s]/g, '').trim().replace(/\s+/g, '-');
+                
+                // Build a comprehensive list of domain patterns to try
+                const possibleDomains = [
+                    // Full name patterns (most common for golf clubs)
+                    'https://www.' + fullNoSpaces + '.com',
+                    'https://www.' + fullNoSpaces + '.org',
+                    'https://' + fullNoSpaces + '.com',
+                    
+                    // Name-only patterns with golf suffixes
+                    'https://www.' + nameOnly + 'golf.com',
+                    'https://www.' + nameOnly + 'golfclub.com',
+                    'https://www.' + nameOnly + 'gc.com',
+                    'https://www.' + nameOnly + 'cc.com',
+                    'https://www.' + nameOnly + '.com',
+                    
+                    // Hyphenated patterns
+                    'https://www.' + nameHyphens + '.com',
+                    'https://' + nameHyphens + '.com',
+                ];
+                
+                // Remove duplicates
+                const uniqueDomains = [...new Set(possibleDomains)];
+                
+                // Instead of no-cors (which can't tell if a site exists), 
+                // we just set the most likely one and let the user verify/change it
+                // The most likely pattern for a golf club is the full name with no spaces
+                // e.g., "Ansley Golf Club" → ansleygolfclub.com
+                websiteInput.value = 'https://www.' + fullNoSpaces + '.com';
                 
             } catch (error) {
                 console.error('Website lookup error:', error);
-                // If all fails, leave blank
                 websiteInput.value = '';
             }
         }
