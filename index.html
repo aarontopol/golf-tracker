@@ -129,6 +129,8 @@
         }
 
         input[type="text"],
+        input[type="email"],
+        input[type="password"],
         textarea,
         select,
         input[type="date"] {
@@ -212,6 +214,8 @@
 
         /* When user clicks into an input field, highlight it with blue border */
         input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
         textarea:focus,
         select:focus,
         input[type="date"]:focus {
@@ -538,6 +542,87 @@
             color: #666;
             margin-top: 4px;
         }
+
+        /* ==========================================
+           LOADING SCREEN
+           Shown briefly while Firebase checks auth state
+           ========================================== */
+        #loadingScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            color: white;
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ==========================================
+           AUTH SCREEN (Login / Sign Up / Reset)
+           ========================================== */
+        #authScreen { display: none; }
+        .auth-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px 28px;
+            max-width: 440px;
+            margin: 0 auto;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+        }
+        .auth-card h2 { color: #1e3c72; text-align: center; margin-bottom: 8px; font-size: 22px; }
+        .auth-subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 24px; }
+        .auth-error {
+            background: #fff3f3; border: 1px solid #ffcccc; color: #cc0000;
+            padding: 10px 14px; border-radius: 8px; font-size: 14px;
+            margin-bottom: 16px; display: none;
+        }
+        .auth-success {
+            background: #f0fff4; border: 1px solid #c6f6d5; color: #276749;
+            padding: 10px 14px; border-radius: 8px; font-size: 14px;
+            margin-bottom: 16px; display: none;
+        }
+        .auth-link { text-align: center; margin-top: 16px; font-size: 14px; color: #666; }
+        .auth-link a { color: #2a5298; text-decoration: none; font-weight: 600; cursor: pointer; }
+        .auth-link a:hover { text-decoration: underline; }
+        .auth-divider { display: flex; align-items: center; margin: 20px 0; color: #999; font-size: 13px; }
+        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid #e0e0e0; }
+        .auth-divider::before { margin-right: 12px; }
+        .auth-divider::after { margin-left: 12px; }
+
+        /* ==========================================
+           USER BAR (shows who's logged in)
+           ========================================== */
+        .user-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 16px; padding: 10px 16px;
+            background: rgba(255,255,255,0.15); border-radius: 10px;
+        }
+        .user-bar-email {
+            color: rgba(255,255,255,0.9); font-size: 13px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%;
+        }
+        .btn-logout {
+            background: rgba(255,255,255,0.2); color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 6px 14px; border-radius: 6px; font-size: 13px;
+            cursor: pointer; transition: all 0.3s; font-weight: 500;
+        }
+        .btn-logout:hover { background: rgba(255,255,255,0.35); }
+
+        /* Main app hidden by default until login */
+        #mainApp { display: none; }
+
+        /* Disabled button style */
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
     </style>
 </head>
 <body>
@@ -548,6 +633,91 @@
     <div class="container">
         <!-- Page title with golf flag emoji -->
         <h1>⛳ Golf Course Tracker</h1>
+
+        <!-- ============================================
+             LOADING SCREEN
+             Shown while Firebase checks if you're already logged in
+             ============================================ -->
+        <div id="loadingScreen">
+            <div class="loading-spinner"></div>
+            <div>Loading...</div>
+        </div>
+
+        <!-- ============================================
+             AUTH SCREEN (Login / Sign Up / Reset Password)
+             Only shows when NOT logged in
+             ============================================ -->
+        <div id="authScreen">
+            <!-- LOGIN FORM -->
+            <div id="loginView" class="auth-card">
+                <h2>Welcome Back</h2>
+                <p class="auth-subtitle">Sign in to access your courses</p>
+                <div id="loginError" class="auth-error"></div>
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password">
+                </div>
+                <button id="btnLogin" class="btn btn-primary">Sign In</button>
+                <div class="auth-link" style="margin-top: 12px;"><a id="linkForgotPassword">Forgot password?</a></div>
+                <div class="auth-divider">or</div>
+                <div class="auth-link">Don't have an account? <a id="linkShowSignup">Sign Up</a></div>
+            </div>
+
+            <!-- SIGN UP FORM -->
+            <div id="signupView" class="auth-card" style="display: none;">
+                <h2>Create Account</h2>
+                <p class="auth-subtitle">Start tracking your golf courses</p>
+                <div id="signupError" class="auth-error"></div>
+                <div class="form-group">
+                    <label for="signupName">Display Name</label>
+                    <input type="text" id="signupName" placeholder="Your name" autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="At least 6 characters" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirm">Confirm Password</label>
+                    <input type="password" id="signupConfirm" placeholder="Re-enter password" autocomplete="new-password">
+                </div>
+                <button id="btnSignup" class="btn btn-primary">Create Account</button>
+                <div class="auth-divider">or</div>
+                <div class="auth-link">Already have an account? <a id="linkShowLogin">Sign In</a></div>
+            </div>
+
+            <!-- FORGOT PASSWORD FORM -->
+            <div id="resetView" class="auth-card" style="display: none;">
+                <h2>Reset Password</h2>
+                <p class="auth-subtitle">We'll send you a link to reset your password</p>
+                <div id="resetError" class="auth-error"></div>
+                <div id="resetSuccess" class="auth-success"></div>
+                <div class="form-group">
+                    <label for="resetEmail">Email</label>
+                    <input type="email" id="resetEmail" placeholder="you@example.com" autocomplete="email">
+                </div>
+                <button id="btnReset" class="btn btn-primary">Send Reset Link</button>
+                <div class="auth-link" style="margin-top: 16px;"><a id="linkBackToLogin">← Back to Sign In</a></div>
+            </div>
+        </div>
+
+        <!-- ============================================
+             MAIN APP (only visible after login)
+             ============================================ -->
+        <div id="mainApp">
+
+            <!-- USER BAR - shows who's logged in + sign out -->
+            <div class="user-bar">
+                <div class="user-bar-email" id="userBarEmail"></div>
+                <button class="btn-logout" id="btnLogout">Sign Out</button>
+            </div>
 
         <!-- ============================================
              VIEW TOGGLE BUTTONS
@@ -786,6 +956,7 @@
                 </div>
             </div>
         </div>
+        </div><!-- end mainApp -->
     </div>
 
     <!-- ============================================
@@ -798,26 +969,13 @@
         
         // ==========================================
         // FIREBASE CONFIGURATION & INITIALIZATION
-        // Cloud sync for all your devices
-        // 
-        // SETUP INSTRUCTIONS:
-        // 1. Go to https://console.firebase.google.com/
-        // 2. Click "Add project" or use existing project
-        // 3. Enable "Realtime Database" in Build menu
-        // 4. Set database rules to:
-        //    {
-        //      "rules": {
-        //        "users": {
-        //          "$uid": {
-        //            ".read": "$uid === auth.uid",
-        //            ".write": "$uid === auth.uid"
-        //          }
-        //        }
-        //      }
-        //    }
-        // 5. Enable "Authentication" → "Anonymous" sign-in
-        // 6. Go to Project Settings → Get your config
-        // 7. Replace the values below with your config
+        //
+        // *** ONE-TIME SETUP REQUIRED ***
+        // You need to enable Email/Password sign-in in Firebase.
+        // Follow the step-by-step instructions below.
+        //
+        // Already done: Realtime Database + security rules
+        // Still needed: Enable Email/Password auth (see instructions below)
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyDifFA4lfZyuq83mZLisCPQLO2iISzrb8I",
@@ -832,36 +990,174 @@
         
         // Initialize Firebase
         let database;
-        let currentUserId = 'golf-user-' + 'john-jane-doe-2026';
+        let currentUserId = null;
         let useCloudSync = false;
+        let firebaseListeners = [];  // Track listeners so we can detach on logout
         
         try {
             firebase.initializeApp(firebaseConfig);
             database = firebase.database();
             console.log('Firebase initialized');
-            
-            // Anonymous authentication (no login required)
-            firebase.auth().signInAnonymously()
-                .then((userCredential) => {
-                    currentUserId = userCredential.user.uid;
-                    useCloudSync = true;
-                    console.log('Signed in anonymously with ID:', currentUserId);
-                    
-                    // Load data from cloud after authentication
-                    loadDataFromCloud();
-                })
-                .catch((error) => {
-                    console.error('Firebase auth error:', error);
-                    useCloudSync = false;
-                    // Fall back to localStorage
-                    loadData();
-                });
         } catch (error) {
             console.error('Firebase initialization error:', error);
-            useCloudSync = false;
-            // Fall back to localStorage
-            loadData();
         }
+
+        // ==========================================
+        // AUTH STATE LISTENER
+        // This is the HEART of the login system.
+        // Firebase calls this automatically whenever:
+        //   - The page first loads (checks if already logged in)
+        //   - A user logs in
+        //   - A user logs out
+        // It controls which screen is shown.
+        // ==========================================
+        firebase.auth().onAuthStateChanged(function(user) {
+            document.getElementById('loadingScreen').style.display = 'none';
+            
+            if (user) {
+                // USER IS LOGGED IN
+                currentUserId = user.uid;
+                useCloudSync = true;
+                console.log('User signed in:', user.email, 'UID:', user.uid);
+                
+                document.getElementById('userBarEmail').textContent = 
+                    '👤 ' + (user.displayName || user.email);
+                
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                
+                loadDataFromCloud();
+            } else {
+                // USER IS NOT LOGGED IN
+                currentUserId = null;
+                useCloudSync = false;
+                console.log('No user signed in');
+                
+                document.getElementById('authScreen').style.display = 'block';
+                document.getElementById('mainApp').style.display = 'none';
+                
+                wishlistCourses = [];
+                playedCourses = [];
+                renderWishList();
+                renderPlayedList();
+                
+                // Detach Firebase listeners
+                firebaseListeners.forEach(function(ref) { ref.off(); });
+                firebaseListeners = [];
+            }
+        });
+
+        // ==========================================
+        // AUTH SCREEN NAVIGATION
+        // ==========================================
+        document.getElementById('linkShowSignup').addEventListener('click', function() {
+            document.getElementById('loginView').style.display = 'none';
+            document.getElementById('signupView').style.display = 'block';
+            document.getElementById('resetView').style.display = 'none';
+            clearAuthErrors();
+        });
+        document.getElementById('linkShowLogin').addEventListener('click', function() {
+            document.getElementById('loginView').style.display = 'block';
+            document.getElementById('signupView').style.display = 'none';
+            document.getElementById('resetView').style.display = 'none';
+            clearAuthErrors();
+        });
+        document.getElementById('linkForgotPassword').addEventListener('click', function() {
+            document.getElementById('loginView').style.display = 'none';
+            document.getElementById('signupView').style.display = 'none';
+            document.getElementById('resetView').style.display = 'block';
+            document.getElementById('resetEmail').value = document.getElementById('loginEmail').value;
+            clearAuthErrors();
+        });
+        document.getElementById('linkBackToLogin').addEventListener('click', function() {
+            document.getElementById('loginView').style.display = 'block';
+            document.getElementById('signupView').style.display = 'none';
+            document.getElementById('resetView').style.display = 'none';
+            clearAuthErrors();
+        });
+
+        function clearAuthErrors() {
+            ['loginError','signupError','resetError','resetSuccess'].forEach(function(id) {
+                document.getElementById(id).style.display = 'none';
+            });
+        }
+        function showAuthError(id, msg) {
+            var el = document.getElementById(id);
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+        function friendlyAuthError(error) {
+            switch (error.code) {
+                case 'auth/user-not-found': return 'No account found with this email. Would you like to sign up?';
+                case 'auth/wrong-password':
+                case 'auth/invalid-credential': return 'Incorrect password. Please try again or reset your password.';
+                case 'auth/email-already-in-use': return 'An account with this email already exists. Try signing in instead.';
+                case 'auth/weak-password': return 'Password must be at least 6 characters.';
+                case 'auth/invalid-email': return 'Please enter a valid email address.';
+                case 'auth/too-many-requests': return 'Too many attempts. Please wait a moment and try again.';
+                case 'auth/network-request-failed': return 'Network error. Please check your internet connection.';
+                default: return error.message || 'Something went wrong. Please try again.';
+            }
+        }
+
+        // LOGIN
+        document.getElementById('btnLogin').addEventListener('click', async function() {
+            var email = document.getElementById('loginEmail').value.trim();
+            var password = document.getElementById('loginPassword').value;
+            if (!email || !password) { showAuthError('loginError', 'Please enter your email and password.'); return; }
+            this.disabled = true; this.textContent = 'Signing in...'; clearAuthErrors();
+            try { await firebase.auth().signInWithEmailAndPassword(email, password); }
+            catch (error) { showAuthError('loginError', friendlyAuthError(error)); }
+            finally { this.disabled = false; this.textContent = 'Sign In'; }
+        });
+        document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('btnLogin').click();
+        });
+        document.getElementById('loginEmail').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('loginPassword').focus();
+        });
+
+        // SIGN UP
+        document.getElementById('btnSignup').addEventListener('click', async function() {
+            var name = document.getElementById('signupName').value.trim();
+            var email = document.getElementById('signupEmail').value.trim();
+            var password = document.getElementById('signupPassword').value;
+            var confirm = document.getElementById('signupConfirm').value;
+            if (!email || !password) { showAuthError('signupError', 'Please enter your email and password.'); return; }
+            if (password !== confirm) { showAuthError('signupError', 'Passwords do not match.'); return; }
+            if (password.length < 6) { showAuthError('signupError', 'Password must be at least 6 characters.'); return; }
+            this.disabled = true; this.textContent = 'Creating account...'; clearAuthErrors();
+            try {
+                var cred = await firebase.auth().createUserWithEmailAndPassword(email, password);
+                if (name) {
+                    await cred.user.updateProfile({ displayName: name });
+                    document.getElementById('userBarEmail').textContent = '👤 ' + name;
+                }
+            } catch (error) { showAuthError('signupError', friendlyAuthError(error)); }
+            finally { this.disabled = false; this.textContent = 'Create Account'; }
+        });
+        document.getElementById('signupConfirm').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('btnSignup').click();
+        });
+
+        // PASSWORD RESET
+        document.getElementById('btnReset').addEventListener('click', async function() {
+            var email = document.getElementById('resetEmail').value.trim();
+            if (!email) { showAuthError('resetError', 'Please enter your email address.'); return; }
+            this.disabled = true; this.textContent = 'Sending...'; clearAuthErrors();
+            try {
+                await firebase.auth().sendPasswordResetEmail(email);
+                var el = document.getElementById('resetSuccess');
+                el.textContent = 'Password reset email sent! Check your inbox (and spam folder).';
+                el.style.display = 'block';
+            } catch (error) { showAuthError('resetError', friendlyAuthError(error)); }
+            finally { this.disabled = false; this.textContent = 'Send Reset Link'; }
+        });
+
+        // SIGN OUT
+        document.getElementById('btnLogout').addEventListener('click', function() {
+            firebase.auth().signOut().catch(function(err) { console.error('Sign out error:', err); });
+        });
         
         // ==========================================
         // DATA STORAGE VARIABLES
@@ -872,57 +1168,32 @@
         let currentCourseId = null;  // Keeps track of which course popup is open
         let currentListType = null;  // Tracks whether we're viewing 'wishlist' or 'played'
 
-        // ==========================================
-        // LOAD SAVED DATA FROM LOCAL STORAGE (Fallback)
-        // When app starts, get all previously saved courses
-        // localStorage keeps data even after closing the browser/app
-        // ==========================================
-        function loadData() {
-            const savedWishlist = localStorage.getItem('golfWishlist');
-            const savedPlayed = localStorage.getItem('golfPlayed');
-            
-            if (savedWishlist) {
-                wishlistCourses = JSON.parse(savedWishlist);
-            }
-            if (savedPlayed) {
-                playedCourses = JSON.parse(savedPlayed);
-            }
-            
-            renderWishList();
-            renderPlayedList();
-        }
+        // localStorage fallback removed - now using Firebase email/password auth only
 
         // ==========================================
         // LOAD DATA FROM FIREBASE CLOUD
         // Syncs data across all your devices
         // ==========================================
         function loadDataFromCloud() {
-            if (!useCloudSync || !currentUserId || !database) {
-                loadData();
-                return;
-            }
+            if (!useCloudSync || !currentUserId || !database) return;
             
-            const userRef = database.ref('users/' + currentUserId);
+            var userRef = database.ref('users/' + currentUserId);
             
-            // Listen for wishlist changes
-            userRef.child('wishlist').on('value', (snapshot) => {
-                const data = snapshot.val();
+            var wishlistRef = userRef.child('wishlist');
+            wishlistRef.on('value', function(snapshot) {
+                var data = snapshot.val();
                 wishlistCourses = data ? Object.values(data) : [];
                 renderWishList();
-                
-                // Also save to localStorage as backup
-                localStorage.setItem('golfWishlist', JSON.stringify(wishlistCourses));
             });
+            firebaseListeners.push(wishlistRef);
             
-            // Listen for played courses changes
-            userRef.child('played').on('value', (snapshot) => {
-                const data = snapshot.val();
+            var playedRef = userRef.child('played');
+            playedRef.on('value', function(snapshot) {
+                var data = snapshot.val();
                 playedCourses = data ? Object.values(data) : [];
                 renderPlayedList();
-                
-                // Also save to localStorage as backup
-                localStorage.setItem('golfPlayed', JSON.stringify(playedCourses));
             });
+            firebaseListeners.push(playedRef);
         }
 
         // ==========================================
@@ -930,11 +1201,6 @@
         // Whenever you add/delete a course, save to cloud
         // ==========================================
         function saveData() {
-            // Always save to localStorage as backup
-            localStorage.setItem('golfWishlist', JSON.stringify(wishlistCourses));
-            localStorage.setItem('golfPlayed', JSON.stringify(playedCourses));
-            
-            // Save to Firebase cloud if enabled
             if (useCloudSync && currentUserId && database) {
                 const userRef = database.ref('users/' + currentUserId);
                 
@@ -957,13 +1223,6 @@
                     .catch(error => console.error('Error saving played to cloud:', error));
             }
         }
-
-        // ==========================================
-        // APP INITIALIZATION
-        // Firebase authentication will trigger loadDataFromCloud()
-        // If Firebase fails, loadData() is called as fallback
-        // ==========================================
-        // Note: loadData() and rendering is now handled by Firebase auth callback
 
         // ==========================================
         // AUTOCOMPLETE FUNCTIONALITY
