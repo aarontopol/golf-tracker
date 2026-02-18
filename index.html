@@ -1,0 +1,2491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- ============================================
+         META TAGS SECTION
+         These tell the browser and phone how to display the app
+         ============================================ -->
+    <meta charset="UTF-8">
+    <!-- Makes the app look good on phones by setting the viewport -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- These three tags make the app work like a native iPhone app when added to home screen -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Golf Tracker">
+    <!-- Title that appears in browser tab -->
+    <title>Golf Course Tracker</title>
+    
+    <!-- ============================================
+         FIREBASE - CLOUD SYNC
+         Enables syncing data across all your devices
+         ============================================ -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <!-- ============================================
+         CSS STYLES SECTION
+         This controls how everything looks (colors, sizes, spacing, etc.)
+         ============================================ -->
+    <style>
+        /* ==========================================
+           RESET STYLES
+           Removes default browser spacing so we start clean
+           ========================================== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* ==========================================
+           MAIN PAGE BACKGROUND & LAYOUT
+           Sets the blue gradient background and basic page structure
+           ========================================== */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+            padding-bottom: 80px;
+        }
+
+        /* ==========================================
+           CONTAINER
+           Centers content and sets max width for readability
+           ========================================== */
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* ==========================================
+           PAGE TITLE (⛳ Golf Course Tracker)
+           Styles the main heading at the top
+           ========================================== */
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* ==========================================
+           VIEW TOGGLE BUTTONS (My Courses / Add Course)
+           The two buttons that switch between list view and add form
+           ========================================== */
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .view-toggle button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        /* Active button style (the one currently selected) */
+        .view-toggle button.active {
+            background: white;
+            color: #1e3c72;
+            font-weight: 600;
+        }
+
+        /* ==========================================
+           CARD COMPONENT
+           White rounded boxes that contain forms and content
+           ========================================== */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        }
+
+        /* ==========================================
+           FORM INPUT STYLES
+           All text inputs, dropdowns, and text areas
+           ========================================== */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"],
+        textarea,
+        select,
+        input[type="date"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.3s;
+        }
+
+        /* ==========================================
+           AUTOCOMPLETE DROPDOWN STYLES
+           Dropdown that appears when typing course names
+           ========================================== */
+        .autocomplete-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .autocomplete-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 2px solid #2a5298;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: none;
+        }
+
+        .autocomplete-dropdown.active {
+            display: block;
+        }
+
+        .autocomplete-item {
+            padding: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+
+        .autocomplete-item:last-child {
+            border-bottom: none;
+        }
+
+        .autocomplete-item:hover {
+            background: #f5f9ff;
+        }
+
+        .autocomplete-item-name {
+            font-weight: 600;
+            color: #1e3c72;
+            margin-bottom: 4px;
+        }
+
+        .autocomplete-item-location {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .autocomplete-loading {
+            padding: 12px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .autocomplete-no-results {
+            padding: 12px;
+            text-align: center;
+            color: #999;
+            font-size: 14px;
+        }
+
+        /* When user clicks into an input field, highlight it with blue border */
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        textarea:focus,
+        select:focus,
+        input[type="date"]:focus {
+            outline: none;
+            border-color: #2a5298;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        /* ==========================================
+           RATING SYSTEM STYLES
+           The three clickable rating options (Must Play, Would Like, If Nearby)
+           ========================================== */
+        .rating-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .rating-option {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        /* Hover effect when mouse moves over a rating option */
+        .rating-option:hover {
+            border-color: #2a5298;
+            background: #f5f9ff;
+        }
+
+        .rating-option input[type="radio"] {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        /* When a rating is selected, highlight it */
+        .rating-option.selected {
+            border-color: #2a5298;
+            background: #f5f9ff;
+        }
+
+        .rating-label {
+            flex: 1;
+        }
+
+        .rating-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 2px;
+        }
+
+        .rating-desc {
+            font-size: 13px;
+            color: #666;
+        }
+
+        /* ==========================================
+           BUTTON STYLES
+           Primary buttons (blue) and secondary buttons (gray)
+           ========================================== */
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #2a5298;
+            color: white;
+        }
+
+        /* Hover effect - button lifts up slightly and changes color */
+        .btn-primary:hover {
+            background: #1e3c72;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(42, 82, 152, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        /* ==========================================
+           COURSE LIST STYLES
+           The list of all golf courses you've added
+           ========================================== */
+        .course-list {
+            display: none;
+        }
+
+        /* Only show when "active" class is added */
+        .course-list.active {
+            display: block;
+        }
+
+        /* Individual course item in the list */
+        .course-item {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        /* When hovering over a course, lift it up */
+        .course-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        .course-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .course-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1e3c72;
+            flex: 1;
+        }
+
+        /* ==========================================
+           RATING BADGES
+           Colored badges showing course rating (Must Play, Would Like, If Nearby)
+           ========================================== */
+        .course-rating {
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            white-space: nowrap;
+            margin-left: 10px;
+        }
+
+        /* Red badge for "Must Play" courses */
+        .rating-must {
+            background: #dc3545;
+            color: white;
+        }
+
+        /* Yellow badge for "Would Like" courses */
+        .rating-would {
+            background: #ffc107;
+            color: #333;
+        }
+
+        /* Green badge for "If Nearby" courses */
+        .rating-nearby {
+            background: #28a745;
+            color: white;
+        }
+
+        /* Badge showing how many times you've played a course */
+        .times-played-badge {
+            background: #6c757d;
+            color: white;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 6px;
+        }
+
+        /* ==========================================
+           COURSE DETAILS (location, source info)
+           Text shown under course name in the list
+           ========================================== */
+        .course-location {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .course-source {
+            color: #999;
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        /* ==========================================
+           EMPTY STATE
+           What shows when you haven't added any courses yet
+           ========================================== */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        /* ==========================================
+           COURSE DETAIL MODAL (Popup)
+           The popup window that shows when you click a course
+           ========================================== */
+        .course-detail-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        /* Show modal when "active" class is added */
+        .course-detail-modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        /* X button to close the modal */
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .detail-section {
+            margin-bottom: 20px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 13px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .detail-value {
+            color: #333;
+            font-size: 16px;
+        }
+
+        /* Red delete button */
+        .btn-delete {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #c82333;
+        }
+
+        /* ==========================================
+           UTILITY STYLES
+           Small helper styles used in various places
+           ========================================== */
+        .loading {
+            display: inline-block;
+            margin-left: 8px;
+            opacity: 0.6;
+        }
+
+        #addForm {
+            display: none;
+        }
+
+        #addForm.active {
+            display: block;
+        }
+
+        .address-lookup {
+            font-size: 13px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* ==========================================
+           LOADING SCREEN
+           Shown briefly while Firebase checks auth state
+           ========================================== */
+        #loadingScreen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            color: white;
+        }
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ==========================================
+           AUTH SCREEN (Login / Sign Up / Reset)
+           ========================================== */
+        #authScreen { display: none; }
+        .auth-card {
+            background: white;
+            border-radius: 16px;
+            padding: 32px 28px;
+            max-width: 440px;
+            margin: 0 auto;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
+        }
+        .auth-card h2 { color: #1e3c72; text-align: center; margin-bottom: 8px; font-size: 22px; }
+        .auth-subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 24px; }
+        .auth-error {
+            background: #fff3f3; border: 1px solid #ffcccc; color: #cc0000;
+            padding: 10px 14px; border-radius: 8px; font-size: 14px;
+            margin-bottom: 16px; display: none;
+        }
+        .auth-success {
+            background: #f0fff4; border: 1px solid #c6f6d5; color: #276749;
+            padding: 10px 14px; border-radius: 8px; font-size: 14px;
+            margin-bottom: 16px; display: none;
+        }
+        .auth-link { text-align: center; margin-top: 16px; font-size: 14px; color: #666; }
+        .auth-link a { color: #2a5298; text-decoration: none; font-weight: 600; cursor: pointer; }
+        .auth-link a:hover { text-decoration: underline; }
+        .auth-divider { display: flex; align-items: center; margin: 20px 0; color: #999; font-size: 13px; }
+        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid #e0e0e0; }
+        .auth-divider::before { margin-right: 12px; }
+        .auth-divider::after { margin-left: 12px; }
+
+        /* ==========================================
+           USER BAR (shows who's logged in)
+           ========================================== */
+        .user-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 16px; padding: 10px 16px;
+            background: rgba(255,255,255,0.15); border-radius: 10px;
+        }
+        .user-bar-email {
+            color: rgba(255,255,255,0.9); font-size: 13px;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%;
+        }
+        .btn-logout {
+            background: rgba(255,255,255,0.2); color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 6px 14px; border-radius: 6px; font-size: 13px;
+            cursor: pointer; transition: all 0.3s; font-weight: 500;
+        }
+        .btn-logout:hover { background: rgba(255,255,255,0.35); }
+
+        /* Main app hidden by default until login */
+        #mainApp { display: none; }
+
+        /* Disabled button style */
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+    </style>
+</head>
+<body>
+    <!-- ============================================
+         MAIN CONTAINER
+         Everything inside here is centered on the page
+         ============================================ -->
+    <div class="container">
+        <!-- Page title with golf flag emoji -->
+        <h1>⛳ Golf Course Tracker</h1>
+
+        <!-- ============================================
+             LOADING SCREEN
+             Shown while Firebase checks if you're already logged in
+             ============================================ -->
+        <div id="loadingScreen">
+            <div class="loading-spinner"></div>
+            <div>Loading...</div>
+        </div>
+
+        <!-- ============================================
+             AUTH SCREEN (Login / Sign Up / Reset Password)
+             Only shows when NOT logged in
+             ============================================ -->
+        <div id="authScreen">
+            <!-- LOGIN FORM -->
+            <div id="loginView" class="auth-card">
+                <h2>Welcome Back</h2>
+                <p class="auth-subtitle">Sign in to access your courses</p>
+                <div id="loginError" class="auth-error"></div>
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="you@example.com" autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Your password" autocomplete="current-password">
+                </div>
+                <button id="btnLogin" class="btn btn-primary">Sign In</button>
+                <div class="auth-link" style="margin-top: 12px;"><a id="linkForgotPassword">Forgot password?</a></div>
+                <div class="auth-divider">or</div>
+                <div class="auth-link">Don't have an account? <a id="linkShowSignup">Sign Up</a></div>
+            </div>
+
+            <!-- SIGN UP FORM -->
+            <div id="signupView" class="auth-card" style="display: none;">
+                <h2>Create Account</h2>
+                <p class="auth-subtitle">Start tracking your golf courses</p>
+                <div id="signupError" class="auth-error"></div>
+                <div class="form-group">
+                    <label for="signupName">Display Name</label>
+                    <input type="text" id="signupName" placeholder="Your name" autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label for="signupEmail">Email</label>
+                    <input type="email" id="signupEmail" placeholder="you@example.com" autocomplete="email">
+                </div>
+                <div class="form-group">
+                    <label for="signupPassword">Password</label>
+                    <input type="password" id="signupPassword" placeholder="At least 6 characters" autocomplete="new-password">
+                </div>
+                <div class="form-group">
+                    <label for="signupConfirm">Confirm Password</label>
+                    <input type="password" id="signupConfirm" placeholder="Re-enter password" autocomplete="new-password">
+                </div>
+                <button id="btnSignup" class="btn btn-primary">Create Account</button>
+                <div class="auth-divider">or</div>
+                <div class="auth-link">Already have an account? <a id="linkShowLogin">Sign In</a></div>
+            </div>
+
+            <!-- FORGOT PASSWORD FORM -->
+            <div id="resetView" class="auth-card" style="display: none;">
+                <h2>Reset Password</h2>
+                <p class="auth-subtitle">We'll send you a link to reset your password</p>
+                <div id="resetError" class="auth-error"></div>
+                <div id="resetSuccess" class="auth-success"></div>
+                <div class="form-group">
+                    <label for="resetEmail">Email</label>
+                    <input type="email" id="resetEmail" placeholder="you@example.com" autocomplete="email">
+                </div>
+                <button id="btnReset" class="btn btn-primary">Send Reset Link</button>
+                <div class="auth-link" style="margin-top: 16px;"><a id="linkBackToLogin">← Back to Sign In</a></div>
+            </div>
+        </div>
+
+        <!-- ============================================
+             MAIN APP (only visible after login)
+             ============================================ -->
+        <div id="mainApp">
+
+            <!-- USER BAR - shows who's logged in + sign out -->
+            <div class="user-bar">
+                <div class="user-bar-email" id="userBarEmail"></div>
+                <button class="btn-logout" id="btnLogout">Sign Out</button>
+            </div>
+
+        <!-- ============================================
+             VIEW TOGGLE BUTTONS
+             Three buttons to switch between Wish List, Played List, and Add Course
+             ============================================ -->
+        <div class="view-toggle">
+            <button id="btnShowWishList" class="active">Wish List</button>
+            <button id="btnShowPlayedList">Played</button>
+            <button id="btnShowAdd">Add</button>
+        </div>
+
+        <!-- ============================================
+             ADD COURSE FORM
+             This form is hidden by default. Shows when you click "Add"
+             Has different fields depending on Wish List vs Played
+             ============================================ -->
+        <div id="addForm" class="card">
+            <h2 style="margin-bottom: 20px; color: #1e3c72;">Add Course</h2>
+            
+            <form id="courseForm">
+                <!-- Choose between Wish List or Played -->
+                <div class="form-group">
+                    <label>Add to:</label>
+                    <div class="rating-options">
+                        <label class="rating-option list-type-option">
+                            <input type="radio" name="listType" value="wishlist" checked>
+                            <div class="rating-label">
+                                <div class="rating-title">⭐ Wish List</div>
+                                <div class="rating-desc">Courses you want to play</div>
+                            </div>
+                        </label>
+                        <label class="rating-option list-type-option">
+                            <input type="radio" name="listType" value="played">
+                            <div class="rating-label">
+                                <div class="rating-title">✅ Played</div>
+                                <div class="rating-desc">Courses you've already played</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Course Name Input (Required) -->
+                <div class="form-group">
+                    <label for="courseName">Course Name *</label>
+                    <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px;">
+                        <div class="autocomplete-container">
+                            <input type="text" id="courseName" required placeholder="e.g., Pebble Beach Golf Links" autocomplete="off">
+                            <div class="autocomplete-dropdown" id="autocompleteDropdown"></div>
+                        </div>
+                        <button type="button" id="btnRefreshInfo" class="btn btn-secondary" style="margin: 0; padding: 12px 16px; font-size: 14px; white-space: nowrap;" title="Refresh address and website info">🔄 Refresh</button>
+                    </div>
+                    <!-- This div shows "Looking up address..." or "Address found" messages -->
+                    <div class="address-lookup" id="addressLookupStatus"></div>
+                </div>
+
+                <!-- ============================================
+                     SHARED LOCATION FIELDS (for both Wishlist and Played)
+                     ============================================ -->
+                <!-- Address Input (Auto-filled by looking up the course name) -->
+                <div class="form-group">
+                    <label for="address">Address</label>
+                    <input type="text" id="address" placeholder="Will auto-fill or you can enter manually">
+                </div>
+
+                <!-- City Input -->
+                <div class="form-group">
+                    <label for="city">City</label>
+                    <input type="text" id="city" placeholder="e.g., Pebble Beach">
+                </div>
+
+                <!-- State Input -->
+                <div class="form-group">
+                    <label for="state">State</label>
+                    <input type="text" id="state" placeholder="e.g., California">
+                </div>
+
+                <!-- Country Input -->
+                <div class="form-group">
+                    <label for="country">Country</label>
+                    <input type="text" id="country" placeholder="e.g., USA">
+                </div>
+
+                <!-- Course Website -->
+                <div class="form-group">
+                    <label for="website">Course Website</label>
+                    <input type="text" id="website" placeholder="Will auto-fill or you can enter manually">
+                </div>
+
+                <!-- ============================================
+                     WISH LIST FIELDS
+                     Only shown when "Wish List" is selected
+                     ============================================ -->
+                <div id="wishlistFields">
+                    <!-- Where You Heard About It (Optional) -->
+                    <div class="form-group">
+                        <label for="heardFrom">Where did you hear about it?</label>
+                        <input type="text" id="heardFrom" placeholder="e.g., Friend, Magazine, YouTube">
+                    </div>
+
+                    <!-- Rating Selection - Your 3-tier system -->
+                    <div class="form-group">
+                        <label>Rating</label>
+                        <div class="rating-options">
+                            <!-- Option 1: Must Play -->
+                            <label class="rating-option">
+                                <input type="radio" name="rating" value="must">
+                                <div class="rating-label">
+                                    <div class="rating-title">🌟 Must Play</div>
+                                    <div class="rating-desc">Would make a special trip</div>
+                                </div>
+                            </label>
+                            <!-- Option 2: Would Like to Play -->
+                            <label class="rating-option">
+                                <input type="radio" name="rating" value="would">
+                                <div class="rating-label">
+                                    <div class="rating-title">⭐ Would Like to Play</div>
+                                    <div class="rating-desc">If convenient</div>
+                                </div>
+                            </label>
+                            <!-- Option 3: Would Play if Nearby -->
+                            <label class="rating-option">
+                                <input type="radio" name="rating" value="nearby">
+                                <div class="rating-label">
+                                    <div class="rating-title">✨ Would Play if Nearby</div>
+                                    <div class="rating-desc">If in the same city</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Notes Section (Optional) -->
+                    <div class="form-group">
+                        <label for="wishlistNotes">Notes</label>
+                        <textarea id="wishlistNotes" placeholder="Any additional thoughts or details..."></textarea>
+                    </div>
+                </div>
+
+                <!-- ============================================
+                     PLAYED FIELDS
+                     Only shown when "Played" is selected
+                     ============================================ -->
+                <div id="playedFields" style="display: none;">
+                    <!-- Date Played (Required for played courses) -->
+                    <div class="form-group">
+                        <label for="datePlayed">Date *</label>
+                        <input type="date" id="datePlayed">
+                    </div>
+
+                    <!-- 9 or 18 Holes -->
+                    <div class="form-group">
+                        <label>Holes Played</label>
+                        <div class="rating-options">
+                            <label class="rating-option">
+                                <input type="radio" name="holes" value="9">
+                                <div class="rating-label">
+                                    <div class="rating-title">9 Holes</div>
+                                </div>
+                            </label>
+                            <label class="rating-option">
+                                <input type="radio" name="holes" value="18" checked>
+                                <div class="rating-label">
+                                    <div class="rating-title">18 Holes</div>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Score -->
+                    <div class="form-group">
+                        <label for="score">Score</label>
+                        <input type="text" id="score" placeholder="e.g., 85, 92">
+                    </div>
+
+                    <!-- Who You Played With -->
+                    <div class="form-group">
+                        <label for="playedWith">People Played With</label>
+                        <input type="text" id="playedWith" placeholder="e.g., John, Sarah, Dad">
+                    </div>
+
+                    <!-- Notes for Played -->
+                    <div class="form-group">
+                        <label for="playedNotes">Notes</label>
+                        <textarea id="playedNotes" placeholder="How was the experience? Any memorable moments?"></textarea>
+                    </div>
+                </div>
+
+                <!-- Submit and Cancel Buttons -->
+                <button type="submit" class="btn btn-primary">Add Course</button>
+                <button type="button" id="btnCancelAdd" class="btn btn-secondary">Cancel</button>
+            </form>
+        </div>
+
+        <!-- ============================================
+             WISH LIST VIEW
+             Shows all courses you want to play
+             ============================================ -->
+        <div id="wishList" class="course-list active">
+            <!-- JavaScript will insert your wish list courses here dynamically -->
+        </div>
+
+        <!-- ============================================
+             PLAYED LIST VIEW
+             Shows all courses you've played (can have duplicates)
+             ============================================ -->
+        <div id="playedList" class="course-list">
+            <!-- JavaScript will insert your played courses here dynamically -->
+        </div>
+
+        <!-- ============================================
+             COURSE DETAIL MODAL (POPUP)
+             Hidden popup that shows when you click on a course
+             Displays all details and has a delete button
+             ============================================ -->
+        <div id="courseModal" class="course-detail-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <!-- Course name will be inserted here by JavaScript -->
+                    <h2 id="modalCourseName" style="color: #1e3c72; flex: 1;"></h2>
+                    <!-- X button to close the popup -->
+                    <button class="modal-close" id="btnCloseModal">&times;</button>
+                </div>
+                
+                <!-- All course details will be inserted here by JavaScript -->
+                <div id="modalContent">
+                    <!-- Details will be inserted here -->
+                </div>
+                
+                <!-- Buttons shown based on which list you're viewing -->
+                <div id="modalButtons">
+                    <!-- "Mark as Played" button (only for wish list courses) -->
+                    <button id="btnMarkAsPlayed" class="btn btn-primary" style="display: none; margin-bottom: 10px;">✅ Mark as Played</button>
+                    <!-- Edit button -->
+                    <button id="btnEditCourse" class="btn btn-primary" style="margin-bottom: 10px;">✏️ Edit</button>
+                    <!-- Delete button (red) -->
+                    <button id="btnDeleteCourse" class="btn btn-delete">Delete Course</button>
+                </div>
+            </div>
+        </div>
+        </div><!-- end mainApp -->
+    </div>
+
+    <!-- ============================================
+         JAVASCRIPT CODE
+         This is where all the app logic lives - making buttons work,
+         saving data, showing/hiding things, etc.
+         ============================================ -->
+    <script>
+        console.log('JavaScript is loading...');
+        
+        // ==========================================
+        // FIREBASE CONFIGURATION & INITIALIZATION
+        //
+        // *** ONE-TIME SETUP REQUIRED ***
+        // You need to enable Email/Password sign-in in Firebase.
+        // Follow the step-by-step instructions below.
+        //
+        // Already done: Realtime Database + security rules
+        // Still needed: Enable Email/Password auth (see instructions below)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDifFA4lfZyuq83mZLisCPQLO2iISzrb8I",
+            authDomain: "golf-tracker-abbf1.firebaseapp.com",
+            databaseURL: "https://golf-tracker-abbf1-default-rtdb.firebaseio.com",
+            projectId: "golf-tracker-abbf1",
+            storageBucket: "golf-tracker-abbf1.firebasestorage.app",
+            messagingSenderId: "347480815517",
+            appId: "1:347480815517:web:821e0055e59fe8f6cb6174",
+            measurementId: "G-M1Q2HGQWG2"
+        };
+        
+        // Initialize Firebase
+        let database;
+        let currentUserId = null;
+        let useCloudSync = false;
+        let firebaseListeners = [];  // Track listeners so we can detach on logout
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            console.log('Firebase initialized');
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+        }
+
+        // ==========================================
+        // AUTH STATE LISTENER
+        // This is the HEART of the login system.
+        // Firebase calls this automatically whenever:
+        //   - The page first loads (checks if already logged in)
+        //   - A user logs in
+        //   - A user logs out
+        // It controls which screen is shown.
+        // ==========================================
+        firebase.auth().onAuthStateChanged(function(user) {
+            document.getElementById('loadingScreen').style.display = 'none';
+            
+            if (user) {
+                // USER IS LOGGED IN
+                currentUserId = user.uid;
+                useCloudSync = true;
+                console.log('User signed in:', user.email, 'UID:', user.uid);
+                
+                document.getElementById('userBarEmail').textContent = 
+                    '👤 ' + (user.displayName || user.email);
+                
+                document.getElementById('authScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                
+                loadDataFromCloud();
+            } else {
+                // USER IS NOT LOGGED IN
+                currentUserId = null;
+                useCloudSync = false;
+                console.log('No user signed in');
+                
+                document.getElementById('authScreen').style.display = 'block';
+                document.getElementById('mainApp').style.display = 'none';
+                
+                wishlistCourses = [];
+                playedCourses = [];
+                renderWishList();
+                renderPlayedList();
+                
+                // Detach Firebase listeners
+                firebaseListeners.forEach(function(ref) { ref.off(); });
+                firebaseListeners = [];
+            }
+        });
+
+        // ==========================================
+        // AUTH SCREEN NAVIGATION
+        // ==========================================
+        document.getElementById('linkShowSignup').addEventListener('click', function() {
+            document.getElementById('loginView').style.display = 'none';
+            document.getElementById('signupView').style.display = 'block';
+            document.getElementById('resetView').style.display = 'none';
+            clearAuthErrors();
+        });
+        document.getElementById('linkShowLogin').addEventListener('click', function() {
+            document.getElementById('loginView').style.display = 'block';
+            document.getElementById('signupView').style.display = 'none';
+            document.getElementById('resetView').style.display = 'none';
+            clearAuthErrors();
+        });
+        document.getElementById('linkForgotPassword').addEventListener('click', function() {
+            document.getElementById('loginView').style.display = 'none';
+            document.getElementById('signupView').style.display = 'none';
+            document.getElementById('resetView').style.display = 'block';
+            document.getElementById('resetEmail').value = document.getElementById('loginEmail').value;
+            clearAuthErrors();
+        });
+        document.getElementById('linkBackToLogin').addEventListener('click', function() {
+            document.getElementById('loginView').style.display = 'block';
+            document.getElementById('signupView').style.display = 'none';
+            document.getElementById('resetView').style.display = 'none';
+            clearAuthErrors();
+        });
+
+        function clearAuthErrors() {
+            ['loginError','signupError','resetError','resetSuccess'].forEach(function(id) {
+                document.getElementById(id).style.display = 'none';
+            });
+        }
+        function showAuthError(id, msg) {
+            var el = document.getElementById(id);
+            el.textContent = msg;
+            el.style.display = 'block';
+        }
+        function friendlyAuthError(error) {
+            switch (error.code) {
+                case 'auth/user-not-found': return 'No account found with this email. Would you like to sign up?';
+                case 'auth/wrong-password':
+                case 'auth/invalid-credential': return 'Incorrect password. Please try again or reset your password.';
+                case 'auth/email-already-in-use': return 'An account with this email already exists. Try signing in instead.';
+                case 'auth/weak-password': return 'Password must be at least 6 characters.';
+                case 'auth/invalid-email': return 'Please enter a valid email address.';
+                case 'auth/too-many-requests': return 'Too many attempts. Please wait a moment and try again.';
+                case 'auth/network-request-failed': return 'Network error. Please check your internet connection.';
+                default: return error.message || 'Something went wrong. Please try again.';
+            }
+        }
+
+        // LOGIN
+        document.getElementById('btnLogin').addEventListener('click', async function() {
+            var email = document.getElementById('loginEmail').value.trim();
+            var password = document.getElementById('loginPassword').value;
+            if (!email || !password) { showAuthError('loginError', 'Please enter your email and password.'); return; }
+            this.disabled = true; this.textContent = 'Signing in...'; clearAuthErrors();
+            try { await firebase.auth().signInWithEmailAndPassword(email, password); }
+            catch (error) { showAuthError('loginError', friendlyAuthError(error)); }
+            finally { this.disabled = false; this.textContent = 'Sign In'; }
+        });
+        document.getElementById('loginPassword').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('btnLogin').click();
+        });
+        document.getElementById('loginEmail').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('loginPassword').focus();
+        });
+
+        // SIGN UP
+        document.getElementById('btnSignup').addEventListener('click', async function() {
+            var name = document.getElementById('signupName').value.trim();
+            var email = document.getElementById('signupEmail').value.trim();
+            var password = document.getElementById('signupPassword').value;
+            var confirm = document.getElementById('signupConfirm').value;
+            if (!email || !password) { showAuthError('signupError', 'Please enter your email and password.'); return; }
+            if (password !== confirm) { showAuthError('signupError', 'Passwords do not match.'); return; }
+            if (password.length < 6) { showAuthError('signupError', 'Password must be at least 6 characters.'); return; }
+            this.disabled = true; this.textContent = 'Creating account...'; clearAuthErrors();
+            try {
+                var cred = await firebase.auth().createUserWithEmailAndPassword(email, password);
+                if (name) {
+                    await cred.user.updateProfile({ displayName: name });
+                    document.getElementById('userBarEmail').textContent = '👤 ' + name;
+                }
+            } catch (error) { showAuthError('signupError', friendlyAuthError(error)); }
+            finally { this.disabled = false; this.textContent = 'Create Account'; }
+        });
+        document.getElementById('signupConfirm').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') document.getElementById('btnSignup').click();
+        });
+
+        // PASSWORD RESET
+        document.getElementById('btnReset').addEventListener('click', async function() {
+            var email = document.getElementById('resetEmail').value.trim();
+            if (!email) { showAuthError('resetError', 'Please enter your email address.'); return; }
+            this.disabled = true; this.textContent = 'Sending...'; clearAuthErrors();
+            try {
+                await firebase.auth().sendPasswordResetEmail(email);
+                var el = document.getElementById('resetSuccess');
+                el.textContent = 'Password reset email sent! Check your inbox (and spam folder).';
+                el.style.display = 'block';
+            } catch (error) { showAuthError('resetError', friendlyAuthError(error)); }
+            finally { this.disabled = false; this.textContent = 'Send Reset Link'; }
+        });
+
+        // SIGN OUT
+        document.getElementById('btnLogout').addEventListener('click', function() {
+            firebase.auth().signOut().catch(function(err) { console.error('Sign out error:', err); });
+        });
+        
+        // ==========================================
+        // DATA STORAGE VARIABLES
+        // Two separate arrays: one for wish list, one for played courses
+        // ==========================================
+        let wishlistCourses = [];  // Courses you want to play
+        let playedCourses = [];    // Courses you've played (can have duplicates)
+        let currentCourseId = null;  // Keeps track of which course popup is open
+        let currentListType = null;  // Tracks whether we're viewing 'wishlist' or 'played'
+
+        // localStorage fallback removed - now using Firebase email/password auth only
+
+        // ==========================================
+        // LOAD DATA FROM FIREBASE CLOUD
+        // Syncs data across all your devices
+        // ==========================================
+        function loadDataFromCloud() {
+            if (!useCloudSync || !currentUserId || !database) return;
+            
+            var userRef = database.ref('users/' + currentUserId);
+            
+            var wishlistRef = userRef.child('wishlist');
+            wishlistRef.on('value', function(snapshot) {
+                var data = snapshot.val();
+                wishlistCourses = data ? Object.values(data) : [];
+                renderWishList();
+            });
+            firebaseListeners.push(wishlistRef);
+            
+            var playedRef = userRef.child('played');
+            playedRef.on('value', function(snapshot) {
+                var data = snapshot.val();
+                playedCourses = data ? Object.values(data) : [];
+                renderPlayedList();
+            });
+            firebaseListeners.push(playedRef);
+        }
+
+        // ==========================================
+        // SAVE DATA TO CLOUD (and Local Storage as backup)
+        // Whenever you add/delete a course, save to cloud
+        // ==========================================
+        function saveData() {
+            if (useCloudSync && currentUserId && database) {
+                const userRef = database.ref('users/' + currentUserId);
+                
+                // Convert arrays to objects with IDs as keys for Firebase
+                const wishlistObj = {};
+                wishlistCourses.forEach(course => {
+                    wishlistObj[course.id] = course;
+                });
+                
+                const playedObj = {};
+                playedCourses.forEach(round => {
+                    playedObj[round.id] = round;
+                });
+                
+                // Save to cloud
+                userRef.child('wishlist').set(wishlistObj)
+                    .catch(error => console.error('Error saving wishlist to cloud:', error));
+                    
+                userRef.child('played').set(playedObj)
+                    .catch(error => console.error('Error saving played to cloud:', error));
+            }
+        }
+
+        // ==========================================
+        // AUTOCOMPLETE FUNCTIONALITY
+        // Searches for golf courses as you type
+        // ==========================================
+        let autocompleteTimeout = null;
+        const courseNameInput = document.getElementById('courseName');
+        const autocompleteDropdown = document.getElementById('autocompleteDropdown');
+
+        // ==========================================
+        // COMPREHENSIVE LOCAL GOLF COURSE DATABASE
+        // Provides instant results without waiting for API
+        // ==========================================
+        const localCourseDatabase = [
+            // Pinehurst Resort
+            { name: 'Pinehurst No. 1', location: 'Pinehurst, NC' },
+            { name: 'Pinehurst No. 2', location: 'Pinehurst, NC' },
+            { name: 'Pinehurst No. 3', location: 'Pinehurst, NC' },
+            { name: 'Pinehurst No. 4', location: 'Pinehurst, NC' },
+            { name: 'Pinehurst No. 5', location: 'Pinehurst, NC' },
+            { name: 'Pinehurst No. 6', location: 'Pinehurst, NC' },
+            { name: 'Pinehurst No. 8', location: 'Pinehurst, NC' },
+            { name: 'Pinehurst No. 9', location: 'Pinehurst, NC' },
+            { name: 'Pinehurst No. 10 - The Cradle', location: 'Pinehurst, NC' },
+            { name: 'The Cradle at Pinehurst', location: 'Pinehurst, NC' },
+            
+            // Pebble Beach Resorts
+            { name: 'Pebble Beach Golf Links', location: 'Pebble Beach, CA' },
+            { name: 'Spyglass Hill Golf Course', location: 'Pebble Beach, CA' },
+            { name: 'The Links at Spanish Bay', location: 'Pebble Beach, CA' },
+            { name: 'Del Monte Golf Course', location: 'Monterey, CA' },
+            { name: 'Poppy Hills Golf Course', location: 'Pebble Beach, CA' },
+            
+            // Torrey Pines
+            { name: 'Torrey Pines North Course', location: 'La Jolla, CA' },
+            { name: 'Torrey Pines South Course', location: 'San Diego, CA' },
+            
+            // Atlanta Area
+            { name: 'Bobby Jones Golf Course', location: 'Atlanta, GA' },
+            { name: 'Ansley Golf Club', location: 'Atlanta, GA' },
+            { name: 'Ansley Golf Club - Settindown Creek', location: 'Roswell, GA' },
+            { name: 'East Lake Golf Club', location: 'Atlanta, GA' },
+            { name: 'Peachtree Golf Club', location: 'Atlanta, GA' },
+            { name: 'Atlanta Athletic Club - Highlands', location: 'Johns Creek, GA' },
+            { name: 'Atlanta Athletic Club - Riverside', location: 'Johns Creek, GA' },
+            { name: 'Cherokee Town and Country Club', location: 'Atlanta, GA' },
+            
+            // Bandon Dunes
+            { name: 'Bandon Dunes', location: 'Bandon, OR' },
+            { name: 'Pacific Dunes', location: 'Bandon, OR' },
+            { name: 'Bandon Trails', location: 'Bandon, OR' },
+            { name: 'Old Macdonald', location: 'Bandon, OR' },
+            { name: 'Sheep Ranch', location: 'Bandon, OR' },
+            { name: 'Bandon Preserve', location: 'Bandon, OR' },
+            
+            // Bethpage
+            { name: 'Bethpage Black Course', location: 'Farmingdale, NY' },
+            { name: 'Bethpage Red Course', location: 'Farmingdale, NY' },
+            { name: 'Bethpage Blue Course', location: 'Farmingdale, NY' },
+            { name: 'Bethpage Green Course', location: 'Farmingdale, NY' },
+            { name: 'Bethpage Yellow Course', location: 'Farmingdale, NY' },
+            
+            // Streamsong
+            { name: 'Streamsong Red', location: 'Bowling Green, FL' },
+            { name: 'Streamsong Blue', location: 'Bowling Green, FL' },
+            { name: 'Streamsong Black', location: 'Bowling Green, FL' },
+            
+            // Major Championship Courses
+            { name: 'Augusta National Golf Club', location: 'Augusta, GA' },
+            { name: 'Oakmont Country Club', location: 'Oakmont, PA' },
+            { name: 'Shinnecock Hills Golf Club', location: 'Southampton, NY' },
+            { name: 'Merion Golf Club', location: 'Ardmore, PA' },
+            { name: 'Winged Foot Golf Club', location: 'Mamaroneck, NY' },
+            { name: 'Olympic Club', location: 'San Francisco, CA' },
+            { name: 'Baltusrol Golf Club', location: 'Springfield, NJ' },
+            
+            // TPC Courses
+            { name: 'TPC Sawgrass - Stadium Course', location: 'Ponte Vedra Beach, FL' },
+            { name: 'TPC Scottsdale - Stadium Course', location: 'Scottsdale, AZ' },
+            
+            // Other Notable US Courses
+            { name: 'Kiawah Island Ocean Course', location: 'Kiawah Island, SC' },
+            { name: 'Chambers Bay', location: 'University Place, WA' },
+            { name: 'Whistling Straits', location: 'Kohler, WI' },
+            { name: 'Shadow Creek', location: 'Las Vegas, NV' },
+            { name: 'Pine Valley Golf Club', location: 'Pine Valley, NJ' },
+            { name: 'Cypress Point Club', location: 'Pebble Beach, CA' },
+            { name: 'Sand Hills Golf Club', location: 'Mullen, NE' },
+            { name: 'Riviera Country Club', location: 'Pacific Palisades, CA' },
+            
+            // Scotland
+            { name: 'St Andrews Old Course', location: 'St Andrews, Scotland' },
+            { name: 'St Andrews New Course', location: 'St Andrews, Scotland' },
+            { name: 'Royal Dornoch', location: 'Dornoch, Scotland' },
+            { name: 'Carnoustie Golf Links', location: 'Carnoustie, Scotland' },
+            { name: 'Muirfield', location: 'Gullane, Scotland' },
+            { name: 'Royal Troon', location: 'Troon, Scotland' },
+            { name: 'Turnberry', location: 'Turnberry, Scotland' },
+            
+            // Ireland
+            { name: 'Royal County Down', location: 'Newcastle, Northern Ireland' },
+            { name: 'Ballybunion Golf Club', location: 'Ballybunion, Ireland' },
+            { name: 'Lahinch Golf Club', location: 'Lahinch, Ireland' },
+            { name: 'Portmarnock Golf Club', location: 'Portmarnock, Ireland' },
+            { name: 'Royal Portrush', location: 'Portrush, Northern Ireland' },
+            
+            // International
+            { name: 'Royal Melbourne', location: 'Melbourne, Australia' },
+            { name: 'Kingston Heath Golf Club', location: 'Melbourne, Australia' },
+            { name: 'Cape Kidnappers', location: 'Hawke\'s Bay, New Zealand' },
+            { name: 'Kauri Cliffs', location: 'Matauri Bay, New Zealand' }
+        ];
+
+        // ==========================================
+        // FAST LOCAL SEARCH WITH API FALLBACK
+        // ==========================================
+        let autocompleteService;
+        
+        // Initialize Google Places services when page loads
+        function initGooglePlaces() {
+            try {
+                if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+                    autocompleteService = new google.maps.places.AutocompleteService();
+                    console.log('Google Places API loaded successfully');
+                } else {
+                    console.log('Google Places API not available - using local database only');
+                }
+            } catch (error) {
+                console.error('Error initializing Google Places:', error);
+            }
+        }
+        
+        // Call init after a delay - don't let it block the form
+        setTimeout(function() {
+            try {
+                initGooglePlaces();
+            } catch (error) {
+                console.error('Google init error:', error);
+            }
+        }, 1000);
+        
+        // Function to search for golf courses - LOCAL FIRST for speed
+        function searchGolfCourses(query) {
+            if (query.length < 2) {
+                autocompleteDropdown.classList.remove('active');
+                return;
+            }
+
+            // INSTANT LOCAL SEARCH - No delay!
+            const queryLower = query.toLowerCase().trim();
+            const queryWords = queryLower.split(/\s+/);
+            
+            const localResults = localCourseDatabase.filter(course => {
+                const courseName = course.name.toLowerCase();
+                // Check if ALL query words match
+                return queryWords.every(word => {
+                    const courseWords = courseName.split(/\s+/);
+                    return courseWords.some(courseWord => courseWord.startsWith(word)) ||
+                           courseName.includes(word);
+                });
+            }).slice(0, 10);
+
+            // Show local results immediately
+            if (localResults.length > 0) {
+                displayResults(localResults);
+            } else {
+                // Only if no local results, try OpenStreetMap (faster than Google)
+                autocompleteDropdown.innerHTML = '<div class="autocomplete-loading">Searching...</div>';
+                autocompleteDropdown.classList.add('active');
+                
+                if (query.length >= 3) {
+                    searchWithOpenStreetMap(query);
+                } else {
+                    autocompleteDropdown.innerHTML = '<div class="autocomplete-no-results">No courses found. Try a different search.</div>';
+                }
+            }
+        }
+
+        // Fast OpenStreetMap search (faster than Google Places)
+        async function searchWithOpenStreetMap(query) {
+            try {
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/search?` +
+                    `q=${encodeURIComponent(query + ' golf course')}&` +
+                    `format=json&` +
+                    `limit=10&` +
+                    `addressdetails=1`,
+                    {
+                        headers: {
+                            'User-Agent': 'GolfCourseTracker/1.0'
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Search failed');
+                }
+
+                const data = await response.json();
+                
+                const results = data
+                    .filter(place => {
+                        const name = place.display_name.toLowerCase();
+                        return name.includes('golf');
+                    })
+                    .map(place => {
+                        const parts = place.display_name.split(',');
+                        let courseName = parts[0].trim();
+                        
+                        let location = '';
+                        if (place.address) {
+                            const city = place.address.city || place.address.town || place.address.village || '';
+                            const state = place.address.state || '';
+                            const country = place.address.country || '';
+                            
+                            if (city && state) {
+                                location = `${city}, ${state}`;
+                            } else if (city && country) {
+                                location = `${city}, ${country}`;
+                            } else if (state && country) {
+                                location = `${state}, ${country}`;
+                            } else {
+                                location = country || parts.slice(-2).join(', ').trim();
+                            }
+                        } else {
+                            location = parts.slice(-2).join(', ').trim();
+                        }
+                        
+                        return {
+                            name: courseName,
+                            location: location
+                        };
+                    })
+                    .slice(0, 10);
+
+                displayResults(results);
+                
+            } catch (error) {
+                console.error('OpenStreetMap search error:', error);
+                autocompleteDropdown.innerHTML = '<div class="autocomplete-no-results">Search unavailable. Please enter course name manually.</div>';
+            }
+        }
+
+        // Google API search (kept as backup but not actively used due to speed)
+        function searchWithGoogleAPI(query) {
+            if (!autocompleteService) {
+                searchWithOpenStreetMap(query);
+                return;
+            }
+
+            try {
+                const request = {
+                    input: query + ' golf course',
+                    types: ['establishment']
+                };
+
+                autocompleteService.getPlacePredictions(request, (predictions, status) => {
+                    if (status !== google.maps.places.PlacesServiceStatus.OK || !predictions) {
+                        // Fallback to OpenStreetMap
+                        searchWithOpenStreetMap(query);
+                        return;
+                    }
+
+                    const results = predictions
+                        .filter(prediction => {
+                            const desc = prediction.description.toLowerCase();
+                            return desc.includes('golf');
+                        })
+                        .slice(0, 10)
+                        .map(prediction => {
+                            const name = prediction.structured_formatting.main_text;
+                            const location = prediction.structured_formatting.secondary_text || '';
+                            return { name, location };
+                        });
+
+                    displayResults(results);
+                });
+            } catch (error) {
+                console.error('Google API error:', error);
+                searchWithOpenStreetMap(query);
+            }
+        }
+
+        // Display search results
+        function displayResults(results) {
+            if (results.length === 0) {
+                autocompleteDropdown.innerHTML = '<div class="autocomplete-no-results">No courses found. Please try a different search.</div>';
+            } else {
+                autocompleteDropdown.classList.add('active');
+                autocompleteDropdown.innerHTML = results.map(course => `
+                    <div class="autocomplete-item" data-name="${escapeHtml(course.name)}" data-location="${escapeHtml(course.location)}">
+                        <div class="autocomplete-item-name">${escapeHtml(course.name)}</div>
+                        <div class="autocomplete-item-location">${escapeHtml(course.location)}</div>
+                    </div>
+                `).join('');
+
+                // Add click handlers to each result
+                document.querySelectorAll('.autocomplete-item').forEach(item => {
+                    item.addEventListener('click', async function() {
+                        const courseName = this.getAttribute('data-name');
+                        const location = this.getAttribute('data-location');
+                        
+                        courseNameInput.value = courseName;
+                        
+                        // Parse location string into city, state, country
+                        // Location format is typically "City, State" or "City, Country"
+                        if (location) {
+                            const parts = location.split(',').map(p => p.trim());
+                            
+                            // Fill city
+                            const cityInput = document.getElementById('city');
+                            if (cityInput && parts.length > 0) {
+                                cityInput.value = parts[0];
+                            }
+                            
+                            // Fill state
+                            const stateInput = document.getElementById('state');
+                            if (stateInput && parts.length > 1) {
+                                stateInput.value = parts[1];
+                            }
+                            
+                            // Fill country - default to USA if it looks like a US state
+                            const countryInput = document.getElementById('country');
+                            if (countryInput) {
+                                if (parts.length > 1) {
+                                    // Check if second part is a US state (2 letters)
+                                    if (parts[1].length === 2) {
+                                        countryInput.value = 'USA';
+                                    } else {
+                                        countryInput.value = parts[1];
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // Auto-fill address by looking up the selected course
+                        const statusEl = document.getElementById('addressLookupStatus');
+                        statusEl.innerHTML = '<span class="loading">Looking up address and website...</span>';
+                        
+                        try {
+                            const response = await fetch(
+                                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(courseName + ' golf course')}&limit=1`,
+                                {
+                                    headers: {
+                                        'User-Agent': 'GolfCourseTracker/1.0'
+                                    }
+                                }
+                            );
+                            
+                            const data = await response.json();
+                            
+                            if (data && data.length > 0) {
+                                const result = data[0];
+                                document.getElementById('address').value = result.display_name;
+                                statusEl.innerHTML = '✓ Address found';
+                                setTimeout(() => statusEl.textContent = '', 3000);
+                            } else {
+                                statusEl.textContent = '';
+                            }
+                        } catch (error) {
+                            statusEl.textContent = '';
+                        }
+                        
+                        // Smart website auto-fill: Try official website, then Wikipedia, then leave blank
+                        const websiteInput = document.getElementById('website');
+                        if (websiteInput && !websiteInput.value) {
+                            await findCourseWebsite(courseName, websiteInput);
+                        }
+                        
+                        autocompleteDropdown.classList.remove('active');
+                    });
+                });
+            }
+        }
+
+        // Function to intelligently find course website
+        async function findCourseWebsite(courseName, websiteInput) {
+            try {
+                // Step 1: Check Wikipedia for official website link in the article
+                const wikiQuery = encodeURIComponent(courseName);
+                
+                // Get Wikipedia page content to extract official website
+                const wikiResponse = await fetch(
+                    `https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=revisions|info&rvprop=content&rvslots=main&titles=${wikiQuery}&inprop=url`
+                );
+                const wikiData = await wikiResponse.json();
+                
+                if (wikiData.query && wikiData.query.pages) {
+                    const pages = Object.values(wikiData.query.pages);
+                    if (pages.length > 0 && pages[0].pageid) {
+                        const page = pages[0];
+                        
+                        // Try to extract official website from page content
+                        if (page.revisions && page.revisions[0] && page.revisions[0].slots && page.revisions[0].slots.main) {
+                            const content = page.revisions[0].slots.main['*'];
+                            
+                            // Look for common website patterns in Wikipedia infoboxes
+                            const websitePatterns = [
+                                /\|\s*website\s*=\s*\[?(https?:\/\/[^\s\]|]+)/i,
+                                /\|\s*url\s*=\s*\[?(https?:\/\/[^\s\]|]+)/i,
+                                /\|\s*homepage\s*=\s*\[?(https?:\/\/[^\s\]|]+)/i,
+                                /\[https?:\/\/www\.[^\s\]]+/i
+                            ];
+                            
+                            for (const pattern of websitePatterns) {
+                                const match = content.match(pattern);
+                                if (match) {
+                                    let url = match[1] || match[0];
+                                    // Clean up the URL
+                                    url = url.replace(/^\[/, '').replace(/\]$/, '').replace(/\|.*$/, '').trim();
+                                    
+                                    // Verify it's a golf-related URL (not Facebook, Twitter, etc.)
+                                    if (url && !url.includes('facebook.com') && !url.includes('twitter.com') && 
+                                        !url.includes('instagram.com') && !url.includes('youtube.com')) {
+                                        websiteInput.value = url;
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // If we found a Wikipedia page but no official website, use Wikipedia
+                        websiteInput.value = page.fullurl;
+                        return;
+                    }
+                }
+                
+                // Step 2: Try a general web search approach
+                // Search for the course with "official site" to find the main website
+                const searchQuery = encodeURIComponent(`"${courseName}" golf course official site`);
+                
+                // Use a CORS-enabled search API (limited but works for many cases)
+                try {
+                    // Try searching with a simple approach - construct likely website URL
+                    const domainGuess = courseName.toLowerCase()
+                        .replace(/golf club|golf course|country club/gi, '')
+                        .trim()
+                        .replace(/\s+/g, '')
+                        .replace(/[^a-z0-9]/g, '');
+                    
+                    // Try common domain patterns
+                    const possibleDomains = [
+                        `https://www.${domainGuess}golf.com`,
+                        `https://www.${domainGuess}gc.com`,
+                        `https://www.${domainGuess}.com`,
+                        `https://${domainGuess}golf.com`,
+                        `https://${domainGuess}.com`
+                    ];
+                    
+                    // Test if any of these domains exist (just check, don't navigate)
+                    for (const domain of possibleDomains) {
+                        try {
+                            const testResponse = await fetch(domain, { 
+                                method: 'HEAD', 
+                                mode: 'no-cors',
+                                cache: 'no-cache'
+                            });
+                            // If no error thrown, the domain might exist
+                            // Note: no-cors means we can't read the response, but we can try
+                            websiteInput.value = domain;
+                            return;
+                        } catch (e) {
+                            // Domain doesn't exist or is unreachable, try next
+                            continue;
+                        }
+                    }
+                } catch (error) {
+                    // Search failed, continue to Step 3
+                }
+                
+                // Step 3: If all else fails, leave blank for manual entry
+                websiteInput.value = '';
+                
+            } catch (error) {
+                console.error('Website lookup error:', error);
+                // If all fails, leave blank
+                websiteInput.value = '';
+            }
+        }
+
+        // Helper function to escape HTML to prevent XSS
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Listen for typing in course name field
+        courseNameInput.addEventListener('input', function(e) {
+            const query = e.target.value.trim();
+            
+            // Clear previous timeout
+            if (autocompleteTimeout) {
+                clearTimeout(autocompleteTimeout);
+            }
+            
+            // Wait only 100ms after user stops typing before searching
+            autocompleteTimeout = setTimeout(() => {
+                searchGolfCourses(query);
+            }, 100);
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.autocomplete-container')) {
+                autocompleteDropdown.classList.remove('active');
+            }
+        });
+
+        // Close dropdown when input loses focus (but delay to allow click on dropdown)
+        courseNameInput.addEventListener('blur', function() {
+            setTimeout(() => {
+                autocompleteDropdown.classList.remove('active');
+            }, 200);
+        });
+
+        // ==========================================
+        // REFRESH INFO BUTTON
+        // Manually re-fetch address and website when course name is changed
+        // ==========================================
+        document.getElementById('btnRefreshInfo').addEventListener('click', async function() {
+            const courseName = courseNameInput.value.trim();
+            
+            if (!courseName || courseName.length < 3) {
+                alert('Please enter a course name first');
+                return;
+            }
+            
+            const statusEl = document.getElementById('addressLookupStatus');
+            statusEl.innerHTML = '<span class="loading">Looking up address and website...</span>';
+            
+            // Look up address
+            try {
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(courseName + ' golf course')}&limit=1`,
+                    {
+                        headers: {
+                            'User-Agent': 'GolfCourseTracker/1.0'
+                        }
+                    }
+                );
+                
+                const data = await response.json();
+                
+                if (data && data.length > 0) {
+                    const result = data[0];
+                    
+                    // Fill address
+                    document.getElementById('address').value = result.display_name;
+                    
+                    // Try to parse city, state, country from the result
+                    if (result.address) {
+                        const city = result.address.city || result.address.town || result.address.village || '';
+                        const state = result.address.state || '';
+                        const country = result.address.country || '';
+                        
+                        if (city) document.getElementById('city').value = city;
+                        if (state) document.getElementById('state').value = state;
+                        if (country) {
+                            // Check if state looks like US state (2 letters)
+                            if (state && state.length === 2) {
+                                document.getElementById('country').value = 'USA';
+                            } else {
+                                document.getElementById('country').value = country;
+                            }
+                        }
+                    }
+                    
+                    statusEl.innerHTML = '✓ Address found';
+                    setTimeout(() => statusEl.textContent = '', 3000);
+                } else {
+                    statusEl.textContent = 'No address found - please enter manually';
+                    setTimeout(() => statusEl.textContent = '', 3000);
+                }
+            } catch (error) {
+                statusEl.textContent = 'Could not lookup address';
+                setTimeout(() => statusEl.textContent = '', 3000);
+            }
+            
+            // Look up website
+            const websiteInput = document.getElementById('website');
+            if (websiteInput) {
+                await findCourseWebsite(courseName, websiteInput);
+            }
+        });
+
+        // ==========================================
+        // BUTTON CLICK HANDLERS - VIEW TOGGLE
+        // These make the "Wish List", "Played", and "Add" buttons work
+        // ==========================================
+        
+        // When "Wish List" button is clicked
+        document.getElementById('btnShowWishList').addEventListener('click', function() {
+            document.getElementById('wishList').classList.add('active');
+            document.getElementById('playedList').classList.remove('active');
+            document.getElementById('addForm').classList.remove('active');
+            
+            this.classList.add('active');
+            document.getElementById('btnShowPlayedList').classList.remove('active');
+            document.getElementById('btnShowAdd').classList.remove('active');
+        });
+
+        // When "Played" button is clicked
+        document.getElementById('btnShowPlayedList').addEventListener('click', function() {
+            document.getElementById('playedList').classList.add('active');
+            document.getElementById('wishList').classList.remove('active');
+            document.getElementById('addForm').classList.remove('active');
+            
+            this.classList.add('active');
+            document.getElementById('btnShowWishList').classList.remove('active');
+            document.getElementById('btnShowAdd').classList.remove('active');
+        });
+
+        // When "Add" button is clicked
+        document.getElementById('btnShowAdd').addEventListener('click', function() {
+            document.getElementById('addForm').classList.add('active');
+            document.getElementById('wishList').classList.remove('active');
+            document.getElementById('playedList').classList.remove('active');
+            
+            this.classList.add('active');
+            document.getElementById('btnShowWishList').classList.remove('active');
+            document.getElementById('btnShowPlayedList').classList.remove('active');
+        });
+
+        // When "Cancel" button is clicked on the form
+        document.getElementById('btnCancelAdd').addEventListener('click', function() {
+            document.getElementById('btnShowWishList').click();
+            document.getElementById('courseForm').reset();
+            // Reset to wishlist by default
+            document.querySelector('input[name="listType"][value="wishlist"]').checked = true;
+            showWishlistFields();
+        });
+
+        // ==========================================
+        // TOGGLE BETWEEN WISH LIST AND PLAYED FIELDS
+        // Show/hide different form fields based on selection
+        // ==========================================
+        document.querySelectorAll('input[name="listType"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                if (this.value === 'wishlist') {
+                    showWishlistFields();
+                } else {
+                    showPlayedFields();
+                }
+            });
+        });
+
+        function showWishlistFields() {
+            document.getElementById('wishlistFields').style.display = 'block';
+            document.getElementById('playedFields').style.display = 'none';
+            // Make date NOT required for wishlist
+            document.getElementById('datePlayed').removeAttribute('required');
+        }
+
+        function showPlayedFields() {
+            document.getElementById('wishlistFields').style.display = 'none';
+            document.getElementById('playedFields').style.display = 'block';
+            // Make date required for played
+            document.getElementById('datePlayed').setAttribute('required', 'required');
+        }
+
+        // ==========================================
+        // RATING OPTION STYLING
+        // Makes rating/option boxes highlight when you click them
+        // ==========================================
+        document.querySelectorAll('.rating-option, .list-type-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const radioName = this.querySelector('input[type="radio"]').name;
+                // Remove highlight from all options with the same name
+                document.querySelectorAll(`input[name="${radioName}"]`).forEach(radio => {
+                    radio.closest('.rating-option, .list-type-option').classList.remove('selected');
+                });
+                // Add highlight to the clicked option
+                this.classList.add('selected');
+                this.querySelector('input[type="radio"]').checked = true;
+            });
+        });
+
+        // ==========================================
+        // COURSE NAME INPUT HANDLER
+        // Only auto-fills when you select from dropdown, not while typing
+        // ==========================================
+        let addressTimeout;
+        let websiteTimeout;
+        
+        // We've removed the auto-fill on typing
+        // Address/website will only fill when you select a course from the dropdown
+
+        // ==========================================
+        // FORM SUBMISSION - ADDING A NEW COURSE
+        // When you click "Add Course" button, this saves to the right list
+        // ==========================================
+        console.log('Setting up form submit handler...');
+        document.getElementById('courseForm').addEventListener('submit', function(e) {
+            console.log('Form submitted!');
+            e.preventDefault();
+            
+            const listType = document.querySelector('input[name="listType"]:checked').value;
+            const courseName = document.getElementById('courseName').value;
+            
+            // Get shared location fields
+            const address = document.getElementById('address').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+            const country = document.getElementById('country').value;
+            const website = document.getElementById('website').value;
+            
+            if (listType === 'wishlist') {
+                // Add to wish list
+                const newCourse = {
+                    id: Date.now(),
+                    name: courseName,
+                    address: address,
+                    city: city,
+                    state: state,
+                    country: country,
+                    website: website,
+                    heardFrom: document.getElementById('heardFrom').value,
+                    rating: document.querySelector('input[name="rating"]:checked')?.value || '',
+                    notes: document.getElementById('wishlistNotes').value,
+                    dateAdded: new Date().toISOString()
+                };
+                
+                wishlistCourses.push(newCourse);
+                renderWishList();
+            } else {
+                // Add to played list
+                const newRound = {
+                    id: Date.now(),
+                    name: courseName,
+                    address: address,
+                    city: city,
+                    state: state,
+                    country: country,
+                    website: website,
+                    datePlayed: document.getElementById('datePlayed').value,
+                    holes: document.querySelector('input[name="holes"]:checked')?.value || '18',
+                    playedWith: document.getElementById('playedWith').value,
+                    score: document.getElementById('score').value,
+                    notes: document.getElementById('playedNotes').value
+                };
+                
+                playedCourses.push(newRound);
+                renderPlayedList();
+                
+                // Check if this was moved from wishlist
+                const wishlistId = sessionStorage.getItem('moveFromWishlist');
+                if (wishlistId) {
+                    // Ask if they want to remove from wish list
+                    if (confirm(`"${courseName}" has been added to your played list!\n\nDo you want to remove it from your wish list?`)) {
+                        wishlistCourses = wishlistCourses.filter(c => c.id !== parseInt(wishlistId));
+                        renderWishList();
+                    }
+                    sessionStorage.removeItem('moveFromWishlist');
+                }
+            }
+            
+            saveData();
+            this.reset();
+            
+            // Remove all highlights
+            document.querySelectorAll('.rating-option, .list-type-option').forEach(opt => {
+                opt.classList.remove('selected');
+            });
+            
+            // Reset to wishlist view
+            document.getElementById('btnShowWishList').click();
+            showWishlistFields();
+        });
+
+        // ==========================================
+        // DISPLAY WISH LIST
+        // Shows all courses you want to play
+        // ==========================================
+        function renderWishList() {
+            const listEl = document.getElementById('wishList');
+            
+            if (wishlistCourses.length === 0) {
+                listEl.innerHTML = `
+                    <div class="card empty-state">
+                        <div class="empty-state-icon">⛳</div>
+                        <p>No courses on your wish list yet!</p>
+                        <p style="margin-top: 8px; font-size: 14px;">Click "Add" to add courses you want to play.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const ratingLabels = {
+                must: 'Must Play',
+                would: 'Would Like',
+                nearby: 'If Nearby'
+            };
+            
+            const ratingClasses = {
+                must: 'rating-must',
+                would: 'rating-would',
+                nearby: 'rating-nearby'
+            };
+            
+            listEl.innerHTML = wishlistCourses.map(course => {
+                // Build location string from city, state, country
+                let locationStr = '';
+                if (course.city || course.state || course.country) {
+                    const parts = [];
+                    if (course.city) parts.push(course.city);
+                    if (course.state) parts.push(course.state);
+                    if (course.country) parts.push(course.country);
+                    locationStr = parts.join(', ');
+                }
+                
+                return `
+                    <div class="course-item" data-id="${course.id}" data-type="wishlist">
+                        <div class="course-header">
+                            <div class="course-name">${course.name}</div>
+                            ${course.rating ? `<div class="course-rating ${ratingClasses[course.rating]}">${ratingLabels[course.rating]}</div>` : ''}
+                        </div>
+                        ${locationStr ? `<div class="course-location">📍 ${locationStr}</div>` : ''}
+                        ${course.heardFrom ? `<div class="course-source">via ${course.heardFrom}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            document.querySelectorAll('#wishList .course-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    showCourseDetail(parseInt(this.dataset.id), 'wishlist');
+                });
+            });
+        }
+
+        // ==========================================
+        // DISPLAY PLAYED LIST
+        // Shows all courses you've played with stats
+        // Groups by course name and counts times played
+        // ==========================================
+        function renderPlayedList() {
+            const listEl = document.getElementById('playedList');
+            
+            if (playedCourses.length === 0) {
+                listEl.innerHTML = `
+                    <div class="card empty-state">
+                        <div class="empty-state-icon">✅</div>
+                        <p>No rounds recorded yet!</p>
+                        <p style="margin-top: 8px; font-size: 14px;">Click "Add" to log courses you've played.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Group rounds by course name and count them
+            const courseGroups = {};
+            playedCourses.forEach(round => {
+                if (!courseGroups[round.name]) {
+                    courseGroups[round.name] = [];
+                }
+                courseGroups[round.name].push(round);
+            });
+            
+            // Sort rounds by date (most recent first)
+            Object.keys(courseGroups).forEach(courseName => {
+                courseGroups[courseName].sort((a, b) => new Date(b.datePlayed) - new Date(a.datePlayed));
+            });
+            
+            // Create HTML for each course group
+            listEl.innerHTML = Object.keys(courseGroups).map(courseName => {
+                const rounds = courseGroups[courseName];
+                const timesPlayed = rounds.length;
+                const mostRecent = rounds[0];
+                
+                // Build location string from city, state, country
+                let locationStr = '';
+                if (mostRecent.city || mostRecent.state || mostRecent.country) {
+                    const parts = [];
+                    if (mostRecent.city) parts.push(mostRecent.city);
+                    if (mostRecent.state) parts.push(mostRecent.state);
+                    if (mostRecent.country) parts.push(mostRecent.country);
+                    locationStr = parts.join(', ');
+                }
+                
+                return `
+                    <div class="course-item" data-id="${mostRecent.id}" data-type="played" data-course-name="${courseName}">
+                        <div class="course-header">
+                            <div class="course-name">${courseName}</div>
+                            <div style="display: flex; gap: 6px;">
+                                ${timesPlayed > 1 ? `<div class="times-played-badge">${timesPlayed}x played</div>` : ''}
+                            </div>
+                        </div>
+                        <div class="course-location">📅 Most recent: ${new Date(mostRecent.datePlayed).toLocaleDateString()}</div>
+                        ${locationStr ? `<div class="course-source">📍 ${locationStr}</div>` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            document.querySelectorAll('#playedList .course-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    showPlayedCourseRounds(this.dataset.courseName);
+                });
+            });
+        }
+
+        // ==========================================
+        // SHOW WISH LIST COURSE DETAIL POPUP
+        // Displays all info for a course you want to play
+        // ==========================================
+        function showCourseDetail(courseId, listType) {
+            currentListType = listType;
+            
+            if (listType === 'wishlist') {
+                const course = wishlistCourses.find(c => c.id === courseId);
+                if (!course) return;
+                
+                currentCourseId = courseId;
+                
+                const ratingLabels = {
+                    must: '🌟 Must Play - Would make a special trip',
+                    would: '⭐ Would Like to Play - If convenient',
+                    nearby: '✨ Would Play if Nearby - If in the same city'
+                };
+                
+                document.getElementById('modalCourseName').textContent = course.name;
+                document.getElementById('modalContent').innerHTML = `
+                    ${course.website ? `
+                        <div class="detail-section">
+                            <div class="detail-label">Website</div>
+                            <div class="detail-value"><a href="${course.website}" target="_blank" style="color: #2a5298; text-decoration: underline;">${course.website}</a></div>
+                        </div>
+                    ` : ''}
+                    
+                    ${course.address ? `
+                        <div class="detail-section">
+                            <div class="detail-label">Address</div>
+                            <div class="detail-value">${course.address}</div>
+                        </div>
+                    ` : ''}
+                    
+                    ${course.city ? `
+                        <div class="detail-section">
+                            <div class="detail-label">City</div>
+                            <div class="detail-value">${course.city}</div>
+                        </div>
+                    ` : ''}
+                    
+                    ${course.state ? `
+                        <div class="detail-section">
+                            <div class="detail-label">State</div>
+                            <div class="detail-value">${course.state}</div>
+                        </div>
+                    ` : ''}
+                    
+                    ${course.country ? `
+                        <div class="detail-section">
+                            <div class="detail-label">Country</div>
+                            <div class="detail-value">${course.country}</div>
+                        </div>
+                    ` : ''}
+                    
+                    ${course.rating ? `
+                        <div class="detail-section">
+                            <div class="detail-label">Rating</div>
+                            <div class="detail-value">${ratingLabels[course.rating]}</div>
+                        </div>
+                    ` : ''}
+                    
+                    ${course.heardFrom ? `
+                        <div class="detail-section">
+                            <div class="detail-label">Heard From</div>
+                            <div class="detail-value">${course.heardFrom}</div>
+                        </div>
+                    ` : ''}
+                    
+                    ${course.notes ? `
+                        <div class="detail-section">
+                            <div class="detail-label">Notes</div>
+                            <div class="detail-value">${course.notes}</div>
+                        </div>
+                    ` : ''}
+                    
+                    <div class="detail-section">
+                        <div class="detail-label">Date Added</div>
+                        <div class="detail-value">${new Date(course.dateAdded).toLocaleDateString()}</div>
+                    </div>
+                `;
+                
+                // Show "Mark as Played" button for wishlist courses
+                document.getElementById('btnMarkAsPlayed').style.display = 'block';
+                document.getElementById('courseModal').classList.add('active');
+            }
+        }
+
+        // ==========================================
+        // SHOW ALL ROUNDS FOR A PLAYED COURSE
+        // When you click a course from played list, show all times you played it
+        // ==========================================
+        function showPlayedCourseRounds(courseName) {
+            const rounds = playedCourses.filter(r => r.name === courseName);
+            if (rounds.length === 0) return;
+            
+            currentListType = 'played';
+            currentCourseId = courseName; // Store course name instead of single ID
+            
+            // Sort by date, most recent first
+            rounds.sort((a, b) => new Date(b.datePlayed) - new Date(a.datePlayed));
+            
+            document.getElementById('modalCourseName').textContent = courseName;
+            
+            const roundsHtml = rounds.map((round, index) => {
+                // Build location string
+                let locationStr = '';
+                if (round.city || round.state || round.country) {
+                    const parts = [];
+                    if (round.city) parts.push(round.city);
+                    if (round.state) parts.push(round.state);
+                    if (round.country) parts.push(round.country);
+                    locationStr = parts.join(', ');
+                }
+                
+                return `
+                    <div class="detail-section" style="border-bottom: ${index < rounds.length - 1 ? '1px solid #e0e0e0' : 'none'}; padding-bottom: ${index < rounds.length - 1 ? '20px' : '0'}; margin-bottom: ${index < rounds.length - 1 ? '20px' : '0'};">
+                        <div style="font-weight: 700; color: #1e3c72; margin-bottom: 12px;">Round ${index + 1} - ${new Date(round.datePlayed).toLocaleDateString()}</div>
+                        
+                        ${round.website ? `
+                            <div style="margin-bottom: 8px;">
+                                <span style="font-weight: 600; color: #666; font-size: 13px;">WEBSITE: </span>
+                                <a href="${round.website}" target="_blank" style="color: #2a5298; text-decoration: underline;">${round.website}</a>
+                            </div>
+                        ` : ''}
+                        
+                        ${round.holes ? `
+                            <div style="margin-bottom: 8px;">
+                                <span style="font-weight: 600; color: #666; font-size: 13px;">HOLES: </span>
+                                <span>${round.holes} holes</span>
+                            </div>
+                        ` : ''}
+                        
+                        ${round.score ? `
+                            <div style="margin-bottom: 8px;">
+                                <span style="font-weight: 600; color: #666; font-size: 13px;">SCORE: </span>
+                                <span>${round.score}</span>
+                            </div>
+                        ` : ''}
+                        
+                        ${round.playedWith ? `
+                            <div style="margin-bottom: 8px;">
+                                <span style="font-weight: 600; color: #666; font-size: 13px;">PEOPLE PLAYED WITH: </span>
+                                <span>${round.playedWith}</span>
+                            </div>
+                        ` : ''}
+                        
+                        ${round.address ? `
+                            <div style="margin-bottom: 8px;">
+                                <span style="font-weight: 600; color: #666; font-size: 13px;">ADDRESS: </span>
+                                <span>${round.address}</span>
+                            </div>
+                        ` : ''}
+                        
+                        ${locationStr ? `
+                            <div style="margin-bottom: 8px;">
+                                <span style="font-weight: 600; color: #666; font-size: 13px;">LOCATION: </span>
+                                <span>${locationStr}</span>
+                            </div>
+                        ` : ''}
+                        
+                        ${round.notes ? `
+                            <div style="margin-top: 12px;">
+                                <div style="font-weight: 600; color: #666; font-size: 13px; margin-bottom: 4px;">NOTES:</div>
+                                <div>${round.notes}</div>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('modalContent').innerHTML = `
+                <div style="margin-bottom: 12px; color: #666;">
+                    Played ${rounds.length} time${rounds.length > 1 ? 's' : ''}
+                </div>
+                ${roundsHtml}
+            `;
+            
+            // Hide "Mark as Played" button for played courses
+            document.getElementById('btnMarkAsPlayed').style.display = 'none';
+            document.getElementById('courseModal').classList.add('active');
+        }
+
+        // ==========================================
+        // CLOSE POPUP BUTTONS
+        // Different ways to close the detail popup
+        // ==========================================
+        document.getElementById('btnCloseModal').addEventListener('click', function() {
+            document.getElementById('courseModal').classList.remove('active');
+        });
+
+        document.getElementById('courseModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                this.classList.remove('active');
+            }
+        });
+
+        // ==========================================
+        // MARK AS PLAYED BUTTON
+        // Moves a course from wish list to the add form (played mode)
+        // Pre-fills the course name so you can add round details
+        // ==========================================
+        document.getElementById('btnMarkAsPlayed').addEventListener('click', function() {
+            // Find the course on the wish list
+            const course = wishlistCourses.find(c => c.id === currentCourseId);
+            if (!course) return;
+            
+            // Close the modal
+            document.getElementById('courseModal').classList.remove('active');
+            
+            // Switch to Add form
+            document.getElementById('btnShowAdd').click();
+            
+            // Select "Played" option
+            document.querySelector('input[name="listType"][value="played"]').checked = true;
+            document.querySelector('input[name="listType"][value="played"]').closest('.list-type-option').classList.add('selected');
+            document.querySelector('input[name="listType"][value="wishlist"]').closest('.list-type-option').classList.remove('selected');
+            showPlayedFields();
+            
+            // Pre-fill the course name
+            document.getElementById('courseName').value = course.name;
+            
+            // Pre-fill location fields if available
+            if (course.address) {
+                document.getElementById('address').value = course.address;
+            }
+            if (course.city) {
+                document.getElementById('city').value = course.city;
+            }
+            if (course.state) {
+                document.getElementById('state').value = course.state;
+            }
+            if (course.country) {
+                document.getElementById('country').value = course.country;
+            }
+            
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('datePlayed').value = today;
+            
+            // Scroll to top of form
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Optional: Ask if they want to remove from wish list after adding
+            // We'll handle this after they submit the form
+            sessionStorage.setItem('moveFromWishlist', currentCourseId);
+        });
+
+        // ==========================================
+        // DELETE COURSE/ROUNDS BUTTON
+        // Delete from wish list or all rounds of a played course
+        // ==========================================
+        document.getElementById('btnDeleteCourse').addEventListener('click', function() {
+            if (currentListType === 'wishlist') {
+                if (confirm('Are you sure you want to delete this course from your wish list?')) {
+                    wishlistCourses = wishlistCourses.filter(c => c.id !== currentCourseId);
+                    saveData();
+                    renderWishList();
+                    document.getElementById('courseModal').classList.remove('active');
+                }
+            } else if (currentListType === 'played') {
+                const courseName = currentCourseId; // currentCourseId stores course name for played
+                const roundCount = playedCourses.filter(r => r.name === courseName).length;
+                
+                if (confirm(`Are you sure you want to delete all ${roundCount} round${roundCount > 1 ? 's' : ''} at ${courseName}?`)) {
+                    playedCourses = playedCourses.filter(r => r.name !== courseName);
+                    saveData();
+                    renderPlayedList();
+                    document.getElementById('courseModal').classList.remove('active');
+                }
+            }
+        });
+
+        // ==========================================
+        // EDIT COURSE BUTTON
+        // Opens the form with existing course data pre-filled for editing
+        // ==========================================
+        document.getElementById('btnEditCourse').addEventListener('click', function() {
+            // Close modal
+            document.getElementById('courseModal').classList.remove('active');
+            
+            // Switch to Add form
+            document.getElementById('btnShowAdd').click();
+            
+            if (currentListType === 'wishlist') {
+                const course = wishlistCourses.find(c => c.id === currentCourseId);
+                if (!course) return;
+                
+                // Select wishlist option
+                document.querySelector('input[name="listType"][value="wishlist"]').checked = true;
+                document.querySelector('input[name="listType"][value="wishlist"]').closest('.list-type-option').classList.add('selected');
+                document.querySelector('input[name="listType"][value="played"]').closest('.list-type-option').classList.remove('selected');
+                showWishlistFields();
+                
+                // Pre-fill all fields
+                document.getElementById('courseName').value = course.name || '';
+                document.getElementById('address').value = course.address || '';
+                document.getElementById('city').value = course.city || '';
+                document.getElementById('state').value = course.state || '';
+                document.getElementById('country').value = course.country || '';
+                document.getElementById('website').value = course.website || '';
+                document.getElementById('heardFrom').value = course.heardFrom || '';
+                document.getElementById('wishlistNotes').value = course.notes || '';
+                
+                // Set rating
+                if (course.rating) {
+                    const ratingRadio = document.querySelector(`input[name="rating"][value="${course.rating}"]`);
+                    if (ratingRadio) {
+                        ratingRadio.checked = true;
+                        ratingRadio.closest('.rating-option').classList.add('selected');
+                    }
+                }
+                
+                // Delete the old entry (we'll create a new one when they submit)
+                wishlistCourses = wishlistCourses.filter(c => c.id !== currentCourseId);
+                saveData();
+                renderWishList();
+                
+            } else if (currentListType === 'played') {
+                // For played courses, we need to handle multiple rounds
+                // We'll just edit the most recent round for now
+                const rounds = playedCourses.filter(r => r.name === currentCourseId);
+                if (rounds.length === 0) return;
+                
+                const mostRecent = rounds.sort((a, b) => new Date(b.datePlayed) - new Date(a.datePlayed))[0];
+                
+                // Select played option
+                document.querySelector('input[name="listType"][value="played"]').checked = true;
+                document.querySelector('input[name="listType"][value="played"]').closest('.list-type-option').classList.add('selected');
+                document.querySelector('input[name="listType"][value="wishlist"]').closest('.list-type-option').classList.remove('selected');
+                showPlayedFields();
+                
+                // Pre-fill all fields
+                document.getElementById('courseName').value = mostRecent.name || '';
+                document.getElementById('address').value = mostRecent.address || '';
+                document.getElementById('city').value = mostRecent.city || '';
+                document.getElementById('state').value = mostRecent.state || '';
+                document.getElementById('country').value = mostRecent.country || '';
+                document.getElementById('website').value = mostRecent.website || '';
+                document.getElementById('datePlayed').value = mostRecent.datePlayed || '';
+                document.getElementById('score').value = mostRecent.score || '';
+                document.getElementById('playedWith').value = mostRecent.playedWith || '';
+                document.getElementById('playedNotes').value = mostRecent.notes || '';
+                
+                // Set holes
+                if (mostRecent.holes) {
+                    const holesRadio = document.querySelector(`input[name="holes"][value="${mostRecent.holes}"]`);
+                    if (holesRadio) {
+                        holesRadio.checked = true;
+                        holesRadio.closest('.rating-option').classList.add('selected');
+                    }
+                }
+                
+                // Delete the old entry (we'll create a new one when they submit)
+                playedCourses = playedCourses.filter(r => r.id !== mostRecent.id);
+                saveData();
+                renderPlayedList();
+            }
+            
+            // Scroll to top of form
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    </script>
+</body>
+</html>
