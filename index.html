@@ -1734,48 +1734,10 @@
                     console.log('Wikipedia lookup failed, trying domain guessing...');
                 }
 
-                // Step 3: Smart domain guessing
-                // Try many realistic domain patterns that golf clubs actually use
-                const nameLower = courseName.toLowerCase();
-                
-                // Full name with no spaces (e.g., "ansleygolfclub")
-                const fullNoSpaces = nameLower.replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
-                
-                // Name without "golf club/course/country club" (e.g., "ansley")
-                const nameOnly = nameLower
-                    .replace(/golf club|golf course|country club|resort|golf links/gi, '')
-                    .trim().replace(/\s+/g, '').replace(/[^a-z0-9]/g, '');
-                
-                // Name with hyphens (e.g., "ansley-golf-club")
-                const nameHyphens = nameLower.replace(/[^a-z0-9\s]/g, '').trim().replace(/\s+/g, '-');
-                
-                // Build a comprehensive list of domain patterns to try
-                const possibleDomains = [
-                    // Full name patterns (most common for golf clubs)
-                    'https://www.' + fullNoSpaces + '.com',
-                    'https://www.' + fullNoSpaces + '.org',
-                    'https://' + fullNoSpaces + '.com',
-                    
-                    // Name-only patterns with golf suffixes
-                    'https://www.' + nameOnly + 'golf.com',
-                    'https://www.' + nameOnly + 'golfclub.com',
-                    'https://www.' + nameOnly + 'gc.com',
-                    'https://www.' + nameOnly + 'cc.com',
-                    'https://www.' + nameOnly + '.com',
-                    
-                    // Hyphenated patterns
-                    'https://www.' + nameHyphens + '.com',
-                    'https://' + nameHyphens + '.com',
-                ];
-                
-                // Remove duplicates
-                const uniqueDomains = [...new Set(possibleDomains)];
-                
-                // Instead of no-cors (which can't tell if a site exists), 
-                // we just set the most likely one and let the user verify/change it
-                // The most likely pattern for a golf club is the full name with no spaces
-                // e.g., "Ansley Golf Club" → ansleygolfclub.com
-                websiteInput.value = 'https://www.' + fullNoSpaces + '.com';
+                // Step 3: If DuckDuckGo and Wikipedia both failed, leave blank
+                // It's better to have an empty field you fill in yourself
+                // than a wrong URL you might not notice
+                websiteInput.value = '';
                 
             } catch (error) {
                 console.error('Website lookup error:', error);
