@@ -939,7 +939,10 @@
                         <!-- Input fields to add one person -->
                         <div id="playerInputArea" style="background: #f8f9fa; border-radius: 8px; padding: 12px; border: 2px solid #e0e0e0;">
                             <div style="margin-bottom: 8px;">
-                                <input type="text" id="playerName" placeholder="Name *" style="margin-bottom: 8px;">
+                                <div class="autocomplete-container">
+                                    <input type="text" id="playerName" placeholder="Name *" style="margin-bottom: 8px;" autocomplete="off">
+                                    <div class="autocomplete-dropdown" id="playerAutocompleteDropdown"></div>
+                                </div>
                                 <input type="text" id="playerCompany" placeholder="Company (optional)" style="margin-bottom: 8px;">
                                 <input type="text" id="playerEmail" placeholder="Email (optional)">
                             </div>
@@ -1088,6 +1091,7 @@
                 
                 wishlistCourses = [];
                 playedCourses = [];
+                savedPlayers = [];
                 renderWishList();
                 renderPlayedList();
                 
@@ -1215,6 +1219,7 @@
         // ==========================================
         let wishlistCourses = [];  // Courses you want to play
         let playedCourses = [];    // Courses you've played (can have duplicates)
+        let savedPlayers = [];     // Directory of people you've played with (synced to cloud)
         let currentCourseId = null;  // Keeps track of which course popup is open
         let currentListType = null;  // Tracks whether we're viewing 'wishlist' or 'played'
 
@@ -1244,6 +1249,14 @@
                 renderPlayedList();
             });
             firebaseListeners.push(playedRef);
+            
+            // Load saved players directory
+            var playersRef = userRef.child('savedPlayers');
+            playersRef.on('value', function(snapshot) {
+                var data = snapshot.val();
+                savedPlayers = data ? Object.values(data) : [];
+            });
+            firebaseListeners.push(playersRef);
         }
 
         // ==========================================
@@ -1271,6 +1284,16 @@
                     
                 userRef.child('played').set(playedObj)
                     .catch(error => console.error('Error saving played to cloud:', error));
+                
+                // Save players directory
+                const playersObj = {};
+                savedPlayers.forEach(function(player) {
+                    // Use a sanitized version of the name as the key
+                    const key = player.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+                    playersObj[key] = player;
+                });
+                userRef.child('savedPlayers').set(playersObj)
+                    .catch(error => console.error('Error saving players to cloud:', error));
             }
         }
 
@@ -1975,11 +1998,26 @@
                 return;
             }
 
-            playersArray.push({
+            const newPlayer = {
                 name: name,
                 company: companyInput.value.trim(),
                 email: emailInput.value.trim()
+            };
+
+            playersArray.push(newPlayer);
+
+            // Save this player to the directory (update if already exists)
+            const existingIndex = savedPlayers.findIndex(function(p) {
+                return p.name.toLowerCase() === name.toLowerCase();
             });
+            if (existingIndex >= 0) {
+                // Update existing player's info (company/email may have changed)
+                if (newPlayer.company) savedPlayers[existingIndex].company = newPlayer.company;
+                if (newPlayer.email) savedPlayers[existingIndex].email = newPlayer.email;
+            } else {
+                savedPlayers.push(newPlayer);
+            }
+            saveData();  // Save the updated players directory to Firebase
 
             // Clear the inputs for the next person
             nameInput.value = '';
@@ -1987,7 +2025,71 @@
             emailInput.value = '';
             nameInput.focus();
 
+            // Close the player autocomplete dropdown
+            document.getElementById('playerAutocompleteDropdown').classList.remove('active');
+
             renderPlayersList();
+        });
+
+        // ==========================================
+        // PLAYER NAME AUTOCOMPLETE
+        // Shows previously saved players as you type
+        // ==========================================
+        let playerAutocompleteTimeout = null;
+        const playerNameInput = document.getElementById('playerName');
+        const playerDropdown = document.getElementById('playerAutocompleteDropdown');
+
+        playerNameInput.addEventListener('input', function() {
+            const query = this.value.trim().toLowerCase();
+
+            if (playerAutocompleteTimeout) clearTimeout(playerAutocompleteTimeout);
+
+            if (query.length < 1) {
+                playerDropdown.classList.remove('active');
+                return;
+            }
+
+            playerAutocompleteTimeout = setTimeout(function() {
+                // Filter saved players that match what's been typed
+                const matches = savedPlayers.filter(function(player) {
+                    return player.name.toLowerCase().includes(query);
+                });
+
+                if (matches.length === 0) {
+                    playerDropdown.classList.remove('active');
+                    return;
+                }
+
+                playerDropdown.classList.add('active');
+                playerDropdown.innerHTML = matches.map(function(player) {
+                    let detailParts = [];
+                    if (player.company) detailParts.push(player.company);
+                    if (player.email) detailParts.push(player.email);
+                    const detailStr = detailParts.join(' · ');
+                    return '<div class="autocomplete-item player-autocomplete-item" ' +
+                        'data-name="' + escapeHtml(player.name) + '" ' +
+                        'data-company="' + escapeHtml(player.company || '') + '" ' +
+                        'data-email="' + escapeHtml(player.email || '') + '">' +
+                        '<div class="autocomplete-item-name">' + escapeHtml(player.name) + '</div>' +
+                        (detailStr ? '<div class="autocomplete-item-location">' + escapeHtml(detailStr) + '</div>' : '') +
+                    '</div>';
+                }).join('');
+
+                // Add click handlers to each suggestion
+                playerDropdown.querySelectorAll('.player-autocomplete-item').forEach(function(item) {
+                    item.addEventListener('click', function() {
+                        document.getElementById('playerName').value = this.getAttribute('data-name');
+                        document.getElementById('playerCompany').value = this.getAttribute('data-company');
+                        document.getElementById('playerEmail').value = this.getAttribute('data-email');
+                        playerDropdown.classList.remove('active');
+                    });
+                });
+            }, 100);
+        });
+
+        // Close player dropdown when clicking outside
+        playerNameInput.addEventListener('blur', function() {
+            setTimeout(function() { playerDropdown.classList.remove('active'); }, 200);
         });
 
         // Let user press Enter in player fields to add
