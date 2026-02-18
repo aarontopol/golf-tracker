@@ -16,6 +16,14 @@
     <title>Golf Course Tracker</title>
     
     <!-- ============================================
+         FIREBASE - CLOUD SYNC
+         Enables syncing data across all your devices
+         ============================================ -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <!-- ============================================
          CSS STYLES SECTION
          This controls how everything looks (colors, sizes, spacing, etc.)
          ============================================ -->
@@ -789,6 +797,73 @@
         console.log('JavaScript is loading...');
         
         // ==========================================
+        // FIREBASE CONFIGURATION & INITIALIZATION
+        // Cloud sync for all your devices
+        // 
+        // SETUP INSTRUCTIONS:
+        // 1. Go to https://console.firebase.google.com/
+        // 2. Click "Add project" or use existing project
+        // 3. Enable "Realtime Database" in Build menu
+        // 4. Set database rules to:
+        //    {
+        //      "rules": {
+        //        "users": {
+        //          "$uid": {
+        //            ".read": "$uid === auth.uid",
+        //            ".write": "$uid === auth.uid"
+        //          }
+        //        }
+        //      }
+        //    }
+        // 5. Enable "Authentication" → "Anonymous" sign-in
+        // 6. Go to Project Settings → Get your config
+        // 7. Replace the values below with your config
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDifFA4lfZyuq83mZLisCPQLO2iISzrb8I",
+            authDomain: "golf-tracker-abbf1.firebaseapp.com",
+            databaseURL: "https://golf-tracker-abbf1-default-rtdb.firebaseio.com",
+            projectId: "golf-tracker-abbf1",
+            storageBucket: "golf-tracker-abbf1.firebasestorage.app",
+            messagingSenderId: "347480815517",
+            appId: "1:347480815517:web:821e0055e59fe8f6cb6174",
+            measurementId: "G-M1Q2HGQWG2"
+        };
+        
+        // Initialize Firebase
+        let database;
+        let currentUserId = null;
+        let useCloudSync = false;
+        
+        try {
+            firebase.initializeApp(firebaseConfig);
+            database = firebase.database();
+            console.log('Firebase initialized');
+            
+            // Anonymous authentication (no login required)
+            firebase.auth().signInAnonymously()
+                .then((userCredential) => {
+                    currentUserId = userCredential.user.uid;
+                    useCloudSync = true;
+                    console.log('Signed in anonymously with ID:', currentUserId);
+                    
+                    // Load data from cloud after authentication
+                    loadDataFromCloud();
+                })
+                .catch((error) => {
+                    console.error('Firebase auth error:', error);
+                    useCloudSync = false;
+                    // Fall back to localStorage
+                    loadData();
+                });
+        } catch (error) {
+            console.error('Firebase initialization error:', error);
+            useCloudSync = false;
+            // Fall back to localStorage
+            loadData();
+        }
+        
+        // ==========================================
         // DATA STORAGE VARIABLES
         // Two separate arrays: one for wish list, one for played courses
         // ==========================================
@@ -798,7 +873,7 @@
         let currentListType = null;  // Tracks whether we're viewing 'wishlist' or 'played'
 
         // ==========================================
-        // LOAD SAVED DATA FROM PHONE STORAGE
+        // LOAD SAVED DATA FROM LOCAL STORAGE (Fallback)
         // When app starts, get all previously saved courses
         // localStorage keeps data even after closing the browser/app
         // ==========================================
@@ -812,24 +887,83 @@
             if (savedPlayed) {
                 playedCourses = JSON.parse(savedPlayed);
             }
+            
+            renderWishList();
+            renderPlayedList();
         }
 
         // ==========================================
-        // SAVE DATA TO PHONE STORAGE
-        // Whenever you add/delete a course, save the updated lists
+        // LOAD DATA FROM FIREBASE CLOUD
+        // Syncs data across all your devices
+        // ==========================================
+        function loadDataFromCloud() {
+            if (!useCloudSync || !currentUserId || !database) {
+                loadData();
+                return;
+            }
+            
+            const userRef = database.ref('users/' + currentUserId);
+            
+            // Listen for wishlist changes
+            userRef.child('wishlist').on('value', (snapshot) => {
+                const data = snapshot.val();
+                wishlistCourses = data ? Object.values(data) : [];
+                renderWishList();
+                
+                // Also save to localStorage as backup
+                localStorage.setItem('golfWishlist', JSON.stringify(wishlistCourses));
+            });
+            
+            // Listen for played courses changes
+            userRef.child('played').on('value', (snapshot) => {
+                const data = snapshot.val();
+                playedCourses = data ? Object.values(data) : [];
+                renderPlayedList();
+                
+                // Also save to localStorage as backup
+                localStorage.setItem('golfPlayed', JSON.stringify(playedCourses));
+            });
+        }
+
+        // ==========================================
+        // SAVE DATA TO CLOUD (and Local Storage as backup)
+        // Whenever you add/delete a course, save to cloud
         // ==========================================
         function saveData() {
+            // Always save to localStorage as backup
             localStorage.setItem('golfWishlist', JSON.stringify(wishlistCourses));
             localStorage.setItem('golfPlayed', JSON.stringify(playedCourses));
+            
+            // Save to Firebase cloud if enabled
+            if (useCloudSync && currentUserId && database) {
+                const userRef = database.ref('users/' + currentUserId);
+                
+                // Convert arrays to objects with IDs as keys for Firebase
+                const wishlistObj = {};
+                wishlistCourses.forEach(course => {
+                    wishlistObj[course.id] = course;
+                });
+                
+                const playedObj = {};
+                playedCourses.forEach(round => {
+                    playedObj[round.id] = round;
+                });
+                
+                // Save to cloud
+                userRef.child('wishlist').set(wishlistObj)
+                    .catch(error => console.error('Error saving wishlist to cloud:', error));
+                    
+                userRef.child('played').set(playedObj)
+                    .catch(error => console.error('Error saving played to cloud:', error));
+            }
         }
 
         // ==========================================
         // APP INITIALIZATION
-        // Run these functions when the page first loads
+        // Firebase authentication will trigger loadDataFromCloud()
+        // If Firebase fails, loadData() is called as fallback
         // ==========================================
-        loadData();
-        renderWishList();
-        renderPlayedList();
+        // Note: loadData() and rendering is now handled by Firebase auth callback
 
         // ==========================================
         // AUTOCOMPLETE FUNCTIONALITY
