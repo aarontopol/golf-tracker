@@ -623,6 +623,46 @@
 
         /* Disabled button style */
         .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+
+        /* ==========================================
+           PLAYER CHIPS
+           Individual person badges in the "Played With" section
+           ========================================== */
+        .player-chip {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #f0f4ff;
+            border: 1px solid #c8d6f0;
+            border-radius: 8px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+        }
+        .player-chip-info {
+            flex: 1;
+        }
+        .player-chip-name {
+            font-weight: 600;
+            color: #1e3c72;
+            font-size: 15px;
+        }
+        .player-chip-detail {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+        .player-chip-remove {
+            background: none;
+            border: none;
+            color: #cc0000;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0 0 0 12px;
+            line-height: 1;
+        }
+        .player-chip-remove:hover {
+            color: #ff0000;
+        }
     </style>
 </head>
 <body>
@@ -891,10 +931,20 @@
                         <input type="text" id="score" placeholder="e.g., 85, 92">
                     </div>
 
-                    <!-- Who You Played With -->
+                    <!-- Who You Played With - Add one person at a time -->
                     <div class="form-group">
-                        <label for="playedWith">People Played With</label>
-                        <input type="text" id="playedWith" placeholder="e.g., John, Sarah, Dad">
+                        <label>People Played With</label>
+                        <!-- List of added players (starts empty) -->
+                        <div id="playersList" style="margin-bottom: 10px;"></div>
+                        <!-- Input fields to add one person -->
+                        <div id="playerInputArea" style="background: #f8f9fa; border-radius: 8px; padding: 12px; border: 2px solid #e0e0e0;">
+                            <div style="margin-bottom: 8px;">
+                                <input type="text" id="playerName" placeholder="Name *" style="margin-bottom: 8px;">
+                                <input type="text" id="playerCompany" placeholder="Company (optional)" style="margin-bottom: 8px;">
+                                <input type="text" id="playerEmail" placeholder="Email (optional)">
+                            </div>
+                            <button type="button" id="btnAddPlayer" class="btn btn-primary" style="padding: 10px; font-size: 14px;">+ Add Person</button>
+                        </div>
                     </div>
 
                     <!-- Notes for Played -->
@@ -1851,6 +1901,8 @@
         document.getElementById('btnCancelAdd').addEventListener('click', function() {
             document.getElementById('btnShowWishList').click();
             document.getElementById('courseForm').reset();
+            playersArray = [];
+            renderPlayersList();
             // Reset to wishlist by default
             document.querySelector('input[name="listType"][value="wishlist"]').checked = true;
             showWishlistFields();
@@ -1883,6 +1935,78 @@
             // Make date required for played
             document.getElementById('datePlayed').setAttribute('required', 'required');
         }
+
+        // ==========================================
+        // PLAYERS LIST (People Played With)
+        // Add one person at a time with name, company, email
+        // ==========================================
+        let playersArray = [];  // Stores the list of players for the current form
+
+        function renderPlayersList() {
+            const listEl = document.getElementById('playersList');
+            if (playersArray.length === 0) {
+                listEl.innerHTML = '';
+                return;
+            }
+            listEl.innerHTML = playersArray.map(function(player, index) {
+                let detailParts = [];
+                if (player.company) detailParts.push(player.company);
+                if (player.email) detailParts.push(player.email);
+                const detailStr = detailParts.length > 0 ? detailParts.join(' · ') : '';
+                return '<div class="player-chip">' +
+                    '<div class="player-chip-info">' +
+                        '<div class="player-chip-name">' + escapeHtml(player.name) + '</div>' +
+                        (detailStr ? '<div class="player-chip-detail">' + escapeHtml(detailStr) + '</div>' : '') +
+                    '</div>' +
+                    '<button type="button" class="player-chip-remove" data-index="' + index + '">×</button>' +
+                '</div>';
+            }).join('');
+
+            // Add remove handlers
+            listEl.querySelectorAll('.player-chip-remove').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    playersArray.splice(parseInt(this.dataset.index), 1);
+                    renderPlayersList();
+                });
+            });
+        }
+
+        document.getElementById('btnAddPlayer').addEventListener('click', function() {
+            const nameInput = document.getElementById('playerName');
+            const companyInput = document.getElementById('playerCompany');
+            const emailInput = document.getElementById('playerEmail');
+
+            const name = nameInput.value.trim();
+            if (!name) {
+                nameInput.style.borderColor = '#dc3545';
+                setTimeout(function() { nameInput.style.borderColor = '#e0e0e0'; }, 2000);
+                return;
+            }
+
+            playersArray.push({
+                name: name,
+                company: companyInput.value.trim(),
+                email: emailInput.value.trim()
+            });
+
+            // Clear the inputs for the next person
+            nameInput.value = '';
+            companyInput.value = '';
+            emailInput.value = '';
+            nameInput.focus();
+
+            renderPlayersList();
+        });
+
+        // Let user press Enter in player fields to add
+        ['playerName', 'playerCompany', 'playerEmail'].forEach(function(id) {
+            document.getElementById(id).addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('btnAddPlayer').click();
+                }
+            });
+        });
 
         // ==========================================
         // RATING OPTION STYLING
@@ -1970,7 +2094,7 @@
                     website: website,
                     datePlayed: document.getElementById('datePlayed').value,
                     holes: document.querySelector('input[name="holes"]:checked')?.value || '18',
-                    playedWith: document.getElementById('playedWith').value,
+                    playedWith: playersArray.slice(),  // Save a copy of the players array
                     score: document.getElementById('score').value,
                     notes: document.getElementById('playedNotes').value
                 };
@@ -1992,6 +2116,10 @@
             
             saveData();
             this.reset();
+            
+            // Clear the players list
+            playersArray = [];
+            renderPlayersList();
             
             // Remove all highlights
             document.querySelectorAll('.rating-option, .list-type-option').forEach(opt => {
@@ -2120,7 +2248,18 @@
                                 ${timesPlayed > 1 ? `<div class="times-played-badge">${timesPlayed}x played</div>` : ''}
                             </div>
                         </div>
-                        <div class="course-location">📅 Most recent: ${new Date(mostRecent.datePlayed).toLocaleDateString()}</div>
+                        <div class="course-location">📅 ${new Date(mostRecent.datePlayed).toLocaleDateString()}</div>
+                        ${mostRecent.score ? `<div class="course-location">🏌️ Score: ${mostRecent.score}</div>` : ''}
+                        ${(() => {
+                            // Build "played with" string from array or legacy string
+                            let playedWithStr = '';
+                            if (Array.isArray(mostRecent.playedWith) && mostRecent.playedWith.length > 0) {
+                                playedWithStr = mostRecent.playedWith.map(p => p.name).join(', ');
+                            } else if (typeof mostRecent.playedWith === 'string' && mostRecent.playedWith) {
+                                playedWithStr = mostRecent.playedWith;
+                            }
+                            return playedWithStr ? `<div class="course-location">👥 ${playedWithStr}</div>` : '';
+                        })()}
                         ${locationStr ? `<div class="course-source">📍 ${locationStr}</div>` : ''}
                     </div>
                 `;
@@ -2276,8 +2415,15 @@
                         
                         ${round.playedWith ? `
                             <div style="margin-bottom: 8px;">
-                                <span style="font-weight: 600; color: #666; font-size: 13px;">PEOPLE PLAYED WITH: </span>
-                                <span>${round.playedWith}</span>
+                                <span style="font-weight: 600; color: #666; font-size: 13px;">PLAYED WITH: </span>
+                                <span>${Array.isArray(round.playedWith) 
+                                    ? round.playedWith.map(function(p) {
+                                        let parts = [p.name];
+                                        if (p.company) parts.push(p.company);
+                                        if (p.email) parts.push(p.email);
+                                        return parts.join(' — ');
+                                    }).join('; ')
+                                    : round.playedWith}</span>
                             </div>
                         ` : ''}
                         
@@ -2475,8 +2621,20 @@
                 document.getElementById('website').value = mostRecent.website || '';
                 document.getElementById('datePlayed').value = mostRecent.datePlayed || '';
                 document.getElementById('score').value = mostRecent.score || '';
-                document.getElementById('playedWith').value = mostRecent.playedWith || '';
                 document.getElementById('playedNotes').value = mostRecent.notes || '';
+                
+                // Load the players array for editing
+                if (Array.isArray(mostRecent.playedWith)) {
+                    playersArray = mostRecent.playedWith.slice();
+                } else if (typeof mostRecent.playedWith === 'string' && mostRecent.playedWith) {
+                    // Convert legacy string format to array
+                    playersArray = mostRecent.playedWith.split(',').map(function(name) {
+                        return { name: name.trim(), company: '', email: '' };
+                    });
+                } else {
+                    playersArray = [];
+                }
+                renderPlayersList();
                 
                 // Set holes
                 if (mostRecent.holes) {
