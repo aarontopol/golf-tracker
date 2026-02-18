@@ -1898,6 +1898,16 @@
                 // Add highlight to the clicked option
                 this.classList.add('selected');
                 this.querySelector('input[type="radio"]').checked = true;
+                
+                // If this is the Wishlist/Played toggle, switch the form fields
+                if (radioName === 'listType') {
+                    const selectedValue = this.querySelector('input[type="radio"]').value;
+                    if (selectedValue === 'wishlist') {
+                        showWishlistFields();
+                    } else {
+                        showPlayedFields();
+                    }
+                }
             });
         });
 
