@@ -648,6 +648,24 @@
         /* Main app hidden by default until login */
         #mainApp { display: none; }
 
+        /* Golf Quote Banner */
+        .golf-quote {
+            color: rgba(255,255,255,0.85);
+            font-style: italic;
+            font-size: 14px;
+            text-align: center;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+        .golf-quote-author {
+            font-style: normal;
+            font-weight: 600;
+            font-size: 12px;
+            color: rgba(255,255,255,0.6);
+            margin-top: 4px;
+        }
+
         /* Disabled button style */
         .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
 
@@ -892,6 +910,9 @@
              MAIN APP (only visible after login)
              ============================================ -->
         <div id="mainApp">
+
+            <!-- Golf Quote Banner -->
+            <div id="golfQuote" class="golf-quote"></div>
 
         <!-- ============================================
              VIEW TOGGLE BUTTONS
@@ -1234,6 +1255,7 @@
                 document.getElementById('userBarArea').style.display = 'flex';
                 
                 loadDataFromCloud();
+                displayRandomGolfQuote();
             } else {
                 // USER IS NOT LOGGED IN
                 currentUserId = null;
@@ -1255,6 +1277,60 @@
                 firebaseListeners = [];
             }
         });
+
+        // ==========================================
+        // GOLF QUOTES
+        // A random quote displays each time you load the app
+        // ==========================================
+        const golfQuotes = [
+            { text: "The most important shot in golf is the next one.", author: "Ben Hogan" },
+            { text: "Golf is deceptively simple and endlessly complicated.", author: "Arnold Palmer" },
+            { text: "Success in golf depends less on strength of body than upon strength of mind and character.", author: "Arnold Palmer" },
+            { text: "Golf is the closest game to the game we call life.", author: "Bobby Jones" },
+            { text: "I never learned anything from a match that I won.", author: "Bobby Jones" },
+            { text: "The secret of golf is to turn three shots into two.", author: "Bobby Jones" },
+            { text: "Concentrate on hitting the green. The hole will come to you.", author: "Cary Middlecoff" },
+            { text: "I know I am getting better at golf because I am hitting fewer spectators.", author: "Gerald Ford" },
+            { text: "They say golf is like life, but don't believe them. Golf is more complicated than that.", author: "Gardner Dickinson" },
+            { text: "Golf is a game in which you yell fore, shoot six, and write down five.", author: "Paul Harvey" },
+            { text: "The only thing a golfer needs is more daylight.", author: "Ben Hogan" },
+            { text: "I play in the low 80s. If it's any hotter than that, I won't play.", author: "Joe E. Lewis" },
+            { text: "Golf is a game whose aim is to hit a very small ball into an even smaller hole, with weapons singularly ill-designed for the purpose.", author: "Winston Churchill" },
+            { text: "Give me golf clubs, fresh air, and a beautiful partner, and you can keep the clubs and the fresh air.", author: "Jack Benny" },
+            { text: "If you are caught on a golf course during a storm and are afraid of lightning, hold up a 1-iron. Not even God can hit a 1-iron.", author: "Lee Trevino" },
+            { text: "I'm hitting the woods just great, but I'm having a terrible time getting out of them.", author: "Harry Toscano" },
+            { text: "Golf is a puzzle without an answer.", author: "Gary Player" },
+            { text: "The more I practice, the luckier I get.", author: "Gary Player" },
+            { text: "Eighteen holes of match play will teach you more about your foe than 18 years of dealing with him across a desk.", author: "Grantland Rice" },
+            { text: "A bad day of golf is better than a good day of work.", author: "Unknown" },
+            { text: "Golf is the only sport where the most feared opponent is you.", author: "Unknown" },
+            { text: "Every golfer has a little voice inside their head. Mine usually says the wrong thing.", author: "Lee Trevino" },
+            { text: "One of the most fascinating things about golf is how it reflects the cycle of life.", author: "Tom Watson" },
+            { text: "Swing easy, hit hard.", author: "Julius Boros" },
+            { text: "It's good sportsmanship to not pick up lost golf balls while they are still rolling.", author: "Mark Twain" },
+            { text: "Golf is about how well you accept, adjust, and score with your misses much more so than it is about your perfect shots.", author: "Tommy Armour" },
+            { text: "The only way to enjoy golf is to be a good sport about losing.", author: "Unknown" },
+            { text: "Don't play too much golf. Two rounds a day are plenty.", author: "Harry Vardon" },
+            { text: "Half of golf is fun; the other half is putting.", author: "Peter Dobereiner" },
+            { text: "It took me seventeen years to get 3,000 hits in baseball. It took one afternoon on the golf course.", author: "Hank Aaron" },
+            { text: "Golf combines two favorite American pastimes: taking long walks and hitting things with a stick.", author: "P.J. O'Rourke" },
+            { text: "You can make a lot of money in this game. Just ask my ex-wives. Both of them are so rich that neither of their husbands work.", author: "Lee Trevino" },
+            { text: "May thy ball lie in green pastures, and not in still waters.", author: "Ben Hogan" },
+            { text: "The ardent golfer would play Mount Everest if somebody would put a flag stick on top.", author: "Pete Dye" },
+            { text: "There is no similarity between golf and putting; they are two different games, one played in the air, and the other on the ground.", author: "Ben Hogan" },
+            { text: "You don't know what pressure is until you play for five bucks with only two in your pocket.", author: "Lee Trevino" },
+            { text: "Golf is a game that is played on a five-inch course — the distance between your ears.", author: "Bobby Jones" },
+            { text: "The golf swing is like a suitcase into which we are trying to pack one too many things.", author: "John Updike" },
+            { text: "I have a tip that can take five strokes off anyone's golf game: it's called an eraser.", author: "Arnold Palmer" },
+            { text: "After all these years, it's still embarrassing for me to play on the American golf tour. Like the time I asked my caddie for a sand wedge and he came back ten minutes later with a ham on rye.", author: "Chi-Chi Rodriguez" }
+        ];
+
+        function displayRandomGolfQuote() {
+            const quote = golfQuotes[Math.floor(Math.random() * golfQuotes.length)];
+            document.getElementById('golfQuote').innerHTML = 
+                '"' + quote.text + '"' +
+                '<div class="golf-quote-author">— ' + quote.author + '</div>';
+        }
 
         // ==========================================
         // AUTH SCREEN NAVIGATION
