@@ -1063,9 +1063,10 @@
                     </div>
                 </div>
 
-                <!-- Submit and Cancel Buttons -->
-                <button type="submit" class="btn btn-primary">Add Course</button>
+                <!-- Submit, Cancel, and Delete Buttons -->
+                <button type="submit" id="btnSubmitCourse" class="btn btn-primary">Add Course</button>
                 <button type="button" id="btnCancelAdd" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="btnDeleteFromForm" class="btn btn-delete" style="display: none; margin-top: 10px;">🗑️ Delete Course</button>
             </form>
         </div>
 
@@ -1333,6 +1334,8 @@
         let savedPlayers = [];     // Directory of people you've played with (synced to cloud)
         let currentCourseId = null;  // Keeps track of which course popup is open
         let currentListType = null;  // Tracks whether we're viewing 'wishlist' or 'played'
+        let editingId = null;        // ID of course/round being edited (null = adding new)
+        let editingType = null;      // 'wishlist' or 'played' when editing
 
         // localStorage fallback removed - now using Firebase email/password auth only
 
@@ -2025,6 +2028,12 @@
 
         // When "Cancel" button is clicked on the form
         document.getElementById('btnCancelAdd').addEventListener('click', function() {
+            // Clear editing state — original entry stays untouched
+            editingId = null;
+            editingType = null;
+            document.getElementById('btnSubmitCourse').textContent = 'Add Course';
+            document.getElementById('btnDeleteFromForm').style.display = 'none';
+            
             document.getElementById('btnShowWishList').click();
             document.getElementById('courseForm').reset();
             playersArray = [];
@@ -2376,7 +2385,7 @@
             if (listType === 'wishlist') {
                 // Add to wish list
                 const newCourse = {
-                    id: Date.now(),
+                    id: (editingId && editingType === 'wishlist') ? editingId : Date.now(),
                     name: courseName,
                     address: address,
                     city: city,
@@ -2389,12 +2398,22 @@
                     dateAdded: new Date().toISOString()
                 };
                 
-                wishlistCourses.push(newCourse);
+                if (editingId && editingType === 'wishlist') {
+                    // Replace existing entry
+                    const idx = wishlistCourses.findIndex(function(c) { return c.id === editingId; });
+                    if (idx >= 0) {
+                        wishlistCourses[idx] = newCourse;
+                    } else {
+                        wishlistCourses.push(newCourse);
+                    }
+                } else {
+                    wishlistCourses.push(newCourse);
+                }
                 renderWishList();
             } else {
                 // Add to played list
                 const newRound = {
-                    id: Date.now(),
+                    id: (editingId && editingType === 'played') ? editingId : Date.now(),
                     name: courseName,
                     address: address,
                     city: city,
@@ -2403,13 +2422,23 @@
                     website: website,
                     datePlayed: document.getElementById('datePlayed').value,
                     holes: document.querySelector('input[name="holes"]:checked')?.value || '18',
-                    playedWith: playersArray.slice(),  // Save a copy of the players array
+                    playedWith: playersArray.slice(),
                     score: document.getElementById('score').value,
                     notes: document.getElementById('playedNotes').value,
-                    photos: photosArray.slice()  // Save a copy of the photos array
+                    photos: photosArray.slice()
                 };
                 
-                playedCourses.push(newRound);
+                if (editingId && editingType === 'played') {
+                    // Replace existing entry
+                    const idx = playedCourses.findIndex(function(r) { return r.id === editingId; });
+                    if (idx >= 0) {
+                        playedCourses[idx] = newRound;
+                    } else {
+                        playedCourses.push(newRound);
+                    }
+                } else {
+                    playedCourses.push(newRound);
+                }
                 renderPlayedList();
                 
                 // Check if this was moved from wishlist
@@ -2426,6 +2455,12 @@
             
             saveData();
             this.reset();
+            
+            // Clear editing state
+            editingId = null;
+            editingType = null;
+            document.getElementById('btnSubmitCourse').textContent = 'Add Course';
+            document.getElementById('btnDeleteFromForm').style.display = 'none';
             
             // Clear the players list
             playersArray = [];
@@ -2917,10 +2952,11 @@
                     }
                 }
                 
-                // Delete the old entry (we'll create a new one when they submit)
-                wishlistCourses = wishlistCourses.filter(c => c.id !== currentCourseId);
-                saveData();
-                renderWishList();
+                // Track that we're editing (don't delete yet — only replace on submit)
+                editingId = currentCourseId;
+                editingType = 'wishlist';
+                document.getElementById('btnSubmitCourse').textContent = 'Save Changes';
+                document.getElementById('btnDeleteFromForm').style.display = 'block';
                 
             } else if (currentListType === 'played') {
                 // For played courses, we need to handle multiple rounds
@@ -2977,14 +3013,63 @@
                     }
                 }
                 
-                // Delete the old entry (we'll create a new one when they submit)
-                playedCourses = playedCourses.filter(r => r.id !== mostRecent.id);
-                saveData();
-                renderPlayedList();
+                // Track that we're editing (don't delete yet — only replace on submit)
+                editingId = mostRecent.id;
+                editingType = 'played';
+                document.getElementById('btnSubmitCourse').textContent = 'Save Changes';
+                document.getElementById('btnDeleteFromForm').style.display = 'block';
             }
             
             // Scroll to top of form
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // ==========================================
+        // DELETE FROM EDIT FORM
+        // Only visible when editing an existing course
+        // ==========================================
+        document.getElementById('btnDeleteFromForm').addEventListener('click', function() {
+            if (!editingId) return;
+            
+            if (editingType === 'wishlist') {
+                if (confirm('Are you sure you want to delete this course from your wish list?')) {
+                    wishlistCourses = wishlistCourses.filter(function(c) { return c.id !== editingId; });
+                    saveData();
+                    renderWishList();
+                    
+                    // Reset form and go back to wish list
+                    editingId = null;
+                    editingType = null;
+                    document.getElementById('courseForm').reset();
+                    document.getElementById('btnSubmitCourse').textContent = 'Add Course';
+                    this.style.display = 'none';
+                    playersArray = [];
+                    renderPlayersList();
+                    photosArray = [];
+                    renderPhotosPreview();
+                    document.getElementById('btnShowWishList').click();
+                    showWishlistFields();
+                }
+            } else if (editingType === 'played') {
+                if (confirm('Are you sure you want to delete this round?')) {
+                    playedCourses = playedCourses.filter(function(r) { return r.id !== editingId; });
+                    saveData();
+                    renderPlayedList();
+                    
+                    // Reset form and go back to played list
+                    editingId = null;
+                    editingType = null;
+                    document.getElementById('courseForm').reset();
+                    document.getElementById('btnSubmitCourse').textContent = 'Add Course';
+                    this.style.display = 'none';
+                    playersArray = [];
+                    renderPlayersList();
+                    photosArray = [];
+                    renderPhotosPreview();
+                    document.getElementById('btnShowPlayedList').click();
+                    showWishlistFields();
+                }
+            }
         });
     </script>
 </body>
