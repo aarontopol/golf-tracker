@@ -423,6 +423,18 @@
             font-style: italic;
         }
 
+        /* Clickable map pin links */
+        .map-link {
+            text-decoration: none;
+            display: block;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .map-link:hover {
+            color: #2a5298 !important;
+            text-decoration: underline;
+        }
+
         /* ==========================================
            EMPTY STATE
            What shows when you haven't added any courses yet
@@ -2274,7 +2286,7 @@
                             <div class="course-name">${course.name}</div>
                             ${course.rating ? `<div class="course-rating ${ratingClasses[course.rating]}">${ratingLabels[course.rating]}</div>` : ''}
                         </div>
-                        ${locationStr ? `<div class="course-location">📍 ${locationStr}</div>` : ''}
+                        ${locationStr ? `<a class="course-location map-link" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(course.name + ' ' + locationStr)}" target="_blank" onclick="event.stopPropagation();">📍 ${locationStr}</a>` : ''}
                         ${course.heardFrom ? `<div class="course-source">via ${course.heardFrom}</div>` : ''}
                     </div>
                 `;
@@ -2356,7 +2368,7 @@
                             }
                             return playedWithStr ? `<div class="course-location">👥 ${playedWithStr}</div>` : '';
                         })()}
-                        ${locationStr ? `<div class="course-source">📍 ${locationStr}</div>` : ''}
+                        ${locationStr ? `<a class="course-source map-link" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(courseName + ' ' + locationStr)}" target="_blank" onclick="event.stopPropagation();">📍 ${locationStr}</a>` : ''}
                     </div>
                 `;
             }).join('');
