@@ -677,6 +677,85 @@
         .player-chip-remove:hover {
             color: #ff0000;
         }
+
+        /* ==========================================
+           PHOTO THUMBNAILS
+           Preview images in the form and detail modal
+           ========================================== */
+        .photo-thumb-container {
+            position: relative;
+            display: inline-block;
+        }
+        .photo-thumb {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .photo-thumb:hover {
+            border-color: #2a5298;
+        }
+        .photo-thumb-remove {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 22px;
+            height: 22px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        .photo-thumb-remove:hover {
+            background: #c82333;
+        }
+        /* Full-size photo viewer overlay */
+        .photo-viewer {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .photo-viewer.active {
+            display: flex;
+        }
+        .photo-viewer img {
+            max-width: 95%;
+            max-height: 95%;
+            border-radius: 8px;
+        }
+        /* Detail modal photo grid */
+        .detail-photos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .detail-photo {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .detail-photo:hover {
+            border-color: #2a5298;
+        }
     </style>
 </head>
 <body>
@@ -969,6 +1048,19 @@
                         <label for="playedNotes">Notes</label>
                         <textarea id="playedNotes" placeholder="How was the experience? Any memorable moments?"></textarea>
                     </div>
+
+                    <!-- Photos -->
+                    <div class="form-group">
+                        <label>Photos</label>
+                        <!-- Preview area for added photos -->
+                        <div id="photosPreview" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;"></div>
+                        <!-- File input - on iPhone this opens Photos app, on PC opens file browser -->
+                        <label class="btn btn-secondary" style="text-align: center; display: block; cursor: pointer; margin-top: 0;">
+                            📷 Add Photos
+                            <input type="file" id="photoInput" accept="image/*" multiple style="display: none;">
+                        </label>
+                        <div style="font-size: 12px; color: #999; margin-top: 6px;">You can add multiple photos. Each photo is limited to 2MB.</div>
+                    </div>
                 </div>
 
                 <!-- Submit and Cancel Buttons -->
@@ -1024,6 +1116,11 @@
             </div>
         </div>
         </div><!-- end mainApp -->
+
+        <!-- Full-size photo viewer (click a thumbnail to see it big) -->
+        <div id="photoViewer" class="photo-viewer" onclick="this.classList.remove('active');">
+            <img id="photoViewerImg" src="" alt="Photo">
+        </div>
     </div>
 
     <!-- ============================================
@@ -1932,6 +2029,8 @@
             document.getElementById('courseForm').reset();
             playersArray = [];
             renderPlayersList();
+            photosArray = [];
+            renderPhotosPreview();
             // Reset to wishlist by default
             document.querySelector('input[name="listType"][value="wishlist"]').checked = true;
             showWishlistFields();
@@ -2117,6 +2216,105 @@
         });
 
         // ==========================================
+        // PHOTO UPLOAD HANDLING
+        // Converts photos to Base64 for storage in Firebase
+        // ==========================================
+        let photosArray = [];  // Stores Base64 photo strings for the current form
+
+        function renderPhotosPreview() {
+            const previewEl = document.getElementById('photosPreview');
+            if (photosArray.length === 0) {
+                previewEl.innerHTML = '';
+                return;
+            }
+            previewEl.innerHTML = photosArray.map(function(photoData, index) {
+                return '<div class="photo-thumb-container">' +
+                    '<img class="photo-thumb" src="' + photoData + '" onclick="showPhotoViewer(\'' + index + '_form\')" />' +
+                    '<button type="button" class="photo-thumb-remove" data-index="' + index + '">×</button>' +
+                '</div>';
+            }).join('');
+
+            // Add remove handlers
+            previewEl.querySelectorAll('.photo-thumb-remove').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    photosArray.splice(parseInt(this.dataset.index), 1);
+                    renderPhotosPreview();
+                });
+            });
+        }
+
+        // Handle file selection
+        document.getElementById('photoInput').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            
+            files.forEach(function(file) {
+                // Check file size (2MB limit for Firebase)
+                if (file.size > 2 * 1024 * 1024) {
+                    alert(file.name + ' is too large. Maximum size is 2MB per photo.');
+                    return;
+                }
+
+                // Convert to Base64
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    // Resize the image to save space
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        // Scale down if larger than 1200px on longest side
+                        const maxSize = 1200;
+                        if (width > maxSize || height > maxSize) {
+                            if (width > height) {
+                                height = Math.round(height * maxSize / width);
+                                width = maxSize;
+                            } else {
+                                width = Math.round(width * maxSize / height);
+                                height = maxSize;
+                            }
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+
+                        // Compress as JPEG at 70% quality
+                        const compressed = canvas.toDataURL('image/jpeg', 0.7);
+                        photosArray.push(compressed);
+                        renderPhotosPreview();
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+
+            // Reset the input so the same file can be selected again
+            this.value = '';
+        });
+
+        // Show full-size photo viewer
+        function showPhotoViewer(idStr) {
+            const parts = idStr.split('_');
+            const index = parseInt(parts[0]);
+            const source = parts[1];  // 'form' or 'detail'
+
+            let src = '';
+            if (source === 'form') {
+                src = photosArray[index];
+            } else if (source === 'detail') {
+                // Get from the detail modal image
+                src = document.querySelectorAll('.detail-photo')[index].src;
+            }
+
+            if (src) {
+                document.getElementById('photoViewerImg').src = src;
+                document.getElementById('photoViewer').classList.add('active');
+            }
+        }
+
+        // ==========================================
         // RATING OPTION STYLING
         // Makes rating/option boxes highlight when you click them
         // ==========================================
@@ -2204,7 +2402,8 @@
                     holes: document.querySelector('input[name="holes"]:checked')?.value || '18',
                     playedWith: playersArray.slice(),  // Save a copy of the players array
                     score: document.getElementById('score').value,
-                    notes: document.getElementById('playedNotes').value
+                    notes: document.getElementById('playedNotes').value,
+                    photos: photosArray.slice()  // Save a copy of the photos array
                 };
                 
                 playedCourses.push(newRound);
@@ -2228,6 +2427,10 @@
             // Clear the players list
             playersArray = [];
             renderPlayersList();
+            
+            // Clear photos
+            photosArray = [];
+            renderPhotosPreview();
             
             // Remove all highlights
             document.querySelectorAll('.rating-option, .list-type-option').forEach(opt => {
@@ -2555,6 +2758,16 @@
                                 <div>${round.notes}</div>
                             </div>
                         ` : ''}
+                        ${round.photos && round.photos.length > 0 ? `
+                            <div style="margin-top: 12px;">
+                                <div style="font-weight: 600; color: #666; font-size: 13px; margin-bottom: 8px;">PHOTOS:</div>
+                                <div class="detail-photos">
+                                    ${round.photos.map(function(photo, pIdx) {
+                                        return '<img class="detail-photo" src="' + photo + '" onclick="showPhotoViewer(\'' + pIdx + '_detail\')" />';
+                                    }).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
                     </div>
                 `;
             }).join('');
@@ -2743,6 +2956,14 @@
                     playersArray = [];
                 }
                 renderPlayersList();
+                
+                // Load photos for editing
+                if (Array.isArray(mostRecent.photos)) {
+                    photosArray = mostRecent.photos.slice();
+                } else {
+                    photosArray = [];
+                }
+                renderPhotosPreview();
                 
                 // Set holes
                 if (mostRecent.holes) {
