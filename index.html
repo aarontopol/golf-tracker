@@ -756,6 +756,34 @@
         .detail-photo:hover {
             border-color: #2a5298;
         }
+
+        /* Photo thumbnails in the played list cards */
+        .list-photo-strip {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+            align-items: center;
+        }
+        .list-photo-thumb {
+            width: 56px;
+            height: 56px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 2px solid #e0e0e0;
+        }
+        .list-photo-more {
+            width: 56px;
+            height: 56px;
+            border-radius: 6px;
+            background: #f0f0f0;
+            border: 2px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 600;
+            color: #666;
+        }
     </style>
 </head>
 <body>
@@ -2610,6 +2638,32 @@
                             return playedWithStr ? `<div class="course-location">👥 ${playedWithStr}</div>` : '';
                         })()}
                         ${locationStr ? `<a class="course-source map-link" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(courseName + ' ' + locationStr)}" target="_blank" onclick="event.stopPropagation();">📍 ${locationStr}</a>` : ''}
+                        ${(() => {
+                            // Collect all photos from all rounds for this course
+                            let allPhotos = [];
+                            rounds.forEach(function(r) {
+                                if (Array.isArray(r.photos)) {
+                                    allPhotos = allPhotos.concat(r.photos);
+                                }
+                            });
+                            if (allPhotos.length === 0) return '';
+                            // Shuffle photos randomly then show up to 4
+                            let shuffled = allPhotos.slice();
+                            for (let i = shuffled.length - 1; i > 0; i--) {
+                                const j = Math.floor(Math.random() * (i + 1));
+                                const temp = shuffled[i];
+                                shuffled[i] = shuffled[j];
+                                shuffled[j] = temp;
+                            }
+                            const shown = shuffled.slice(0, 4);
+                            const extra = allPhotos.length - shown.length;
+                            return '<div class="list-photo-strip">' +
+                                shown.map(function(p) {
+                                    return '<img class="list-photo-thumb" src="' + p + '" />';
+                                }).join('') +
+                                (extra > 0 ? '<div class="list-photo-more">+' + extra + '</div>' : '') +
+                            '</div>';
+                        })()}
                     </div>
                 `;
             }).join('');
