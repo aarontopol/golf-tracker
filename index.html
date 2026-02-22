@@ -2711,12 +2711,11 @@
                 return `
                     <div class="course-item" data-id="${mostRecent.id}" data-type="played" data-course-name="${courseName}">
                         <div class="course-header">
-                            <div class="course-name">${courseName}</div>
+                            <div class="course-name">${courseName} <span style="font-size: 13px; font-weight: 400; color: #666;">📅 ${new Date(mostRecent.datePlayed).toLocaleDateString()}</span></div>
                             <div style="display: flex; gap: 6px;">
                                 ${timesPlayed > 1 ? `<div class="times-played-badge">${timesPlayed}x played</div>` : ''}
                             </div>
                         </div>
-                        <div class="course-location">📅 ${new Date(mostRecent.datePlayed).toLocaleDateString()}</div>
                         ${mostRecent.score ? `<div class="course-location">🏌️ Score: ${mostRecent.score}</div>` : ''}
                         ${(() => {
                             // Build "played with" string from array or legacy string
