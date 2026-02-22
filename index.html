@@ -1059,7 +1059,7 @@
                             📷 Add Photos
                             <input type="file" id="photoInput" accept="image/*" multiple style="display: none;">
                         </label>
-                        <div style="font-size: 12px; color: #999; margin-top: 6px;">You can add multiple photos. Each photo is limited to 2MB.</div>
+                        <div style="font-size: 12px; color: #999; margin-top: 6px;">You can add multiple photos. Photos are automatically compressed.</div>
                     </div>
                 </div>
 
@@ -2248,11 +2248,7 @@
             const files = Array.from(e.target.files);
             
             files.forEach(function(file) {
-                // Check file size (2MB limit for Firebase)
-                if (file.size > 2 * 1024 * 1024) {
-                    alert(file.name + ' is too large. Maximum size is 2MB per photo.');
-                    return;
-                }
+                // No file size check here — we compress first, then it'll be small enough
 
                 // Convert to Base64
                 const reader = new FileReader();
@@ -2264,8 +2260,9 @@
                         let width = img.width;
                         let height = img.height;
 
-                        // Scale down if larger than 1200px on longest side
-                        const maxSize = 1200;
+                        // Scale down to max 800px on longest side
+                        // This keeps photos looking good while staying small
+                        const maxSize = 800;
                         if (width > maxSize || height > maxSize) {
                             if (width > height) {
                                 height = Math.round(height * maxSize / width);
@@ -2280,8 +2277,14 @@
                         canvas.height = height;
                         canvas.getContext('2d').drawImage(img, 0, 0, width, height);
 
-                        // Compress as JPEG at 70% quality
-                        const compressed = canvas.toDataURL('image/jpeg', 0.7);
+                        // Compress as JPEG at 50% quality (good balance of quality vs size)
+                        var compressed = canvas.toDataURL('image/jpeg', 0.5);
+                        
+                        // If still too large (over ~500KB as Base64), compress more
+                        if (compressed.length > 700000) {
+                            compressed = canvas.toDataURL('image/jpeg', 0.3);
+                        }
+                        
                         photosArray.push(compressed);
                         renderPhotosPreview();
                     };
