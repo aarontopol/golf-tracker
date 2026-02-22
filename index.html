@@ -452,6 +452,53 @@
             text-decoration: underline;
         }
 
+        /* Website link in wishlist card */
+        .course-website-link {
+            display: block;
+            color: #2a5298;
+            font-size: 12px;
+            text-decoration: none;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 200px;
+            transition: color 0.2s;
+        }
+        .course-website-link:hover {
+            color: #1e3c72;
+            text-decoration: underline;
+        }
+
+        /* Golf Digest Ranking Badge */
+        .gd-ranking {
+            text-align: center;
+            background: linear-gradient(135deg, #0b5e1f, #1a8a3a);
+            color: white;
+            border-radius: 8px;
+            padding: 6px 10px;
+            min-width: 70px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .gd-ranking-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            opacity: 0.85;
+            font-weight: 600;
+        }
+        .gd-ranking-number {
+            font-size: 22px;
+            font-weight: 800;
+            line-height: 1.1;
+        }
+        .gd-ranking-list {
+            font-size: 8px;
+            text-transform: uppercase;
+            opacity: 0.75;
+            letter-spacing: 0.3px;
+            margin-top: 1px;
+        }
+
         /* ==========================================
            EMPTY STATE
            What shows when you haven't added any courses yet
@@ -2603,6 +2650,177 @@
         // DISPLAY WISH LIST
         // Shows all courses you want to play
         // ==========================================
+        // ==========================================
+        // GOLF DIGEST RANKINGS DATABASE
+        // 2025-2026 America's 100 Greatest + Top 100 Public
+        // Used to show ranking badges on wishlist cards
+        // ==========================================
+        const golfDigestRankings = [
+            // America's 100 Greatest (2025-2026)
+            {name:"Pine Valley Golf Club",rank:1,list:"Top 100"},
+            {name:"Augusta National Golf Club",rank:2,list:"Top 100"},
+            {name:"Cypress Point Club",rank:3,list:"Top 100"},
+            {name:"Shinnecock Hills Golf Club",rank:4,list:"Top 100"},
+            {name:"Oakmont Country Club",rank:5,list:"Top 100"},
+            {name:"Merion Golf Club",rank:6,list:"Top 100"},
+            {name:"National Golf Links of America",rank:7,list:"Top 100"},
+            {name:"Sand Hills Golf Club",rank:8,list:"Top 100"},
+            {name:"Pebble Beach Golf Links",rank:9,list:"Top 100"},
+            {name:"Fishers Island Club",rank:10,list:"Top 100"},
+            {name:"Chicago Golf Club",rank:11,list:"Top 100"},
+            {name:"Pinehurst No. 2",rank:12,list:"Top 100"},
+            {name:"Winged Foot Golf Club",rank:13,list:"Top 100"},
+            {name:"Seminole Golf Club",rank:14,list:"Top 100"},
+            {name:"Streamsong Resort Red",rank:15,list:"Top 100 Public"},
+            {name:"Crystal Downs Country Club",rank:16,list:"Top 100"},
+            {name:"The Country Club",rank:17,list:"Top 100"},
+            {name:"Prairie Dunes Country Club",rank:18,list:"Top 100"},
+            {name:"Garden City Golf Club",rank:19,list:"Top 100"},
+            {name:"Los Angeles Country Club",rank:20,list:"Top 100"},
+            {name:"Oak Hill Country Club",rank:21,list:"Top 100"},
+            {name:"Riviera Country Club",rank:22,list:"Top 100"},
+            {name:"Pacific Dunes",rank:23,list:"Top 100"},
+            {name:"Bandon Dunes Pacific Dunes",rank:23,list:"Top 100"},
+            {name:"Shadow Creek Golf Course",rank:24,list:"Top 100"},
+            {name:"Camargo Club",rank:25,list:"Top 100"},
+            {name:"Whistling Straits",rank:26,list:"Top 100"},
+            {name:"The Straits Course at Whistling Straits",rank:26,list:"Top 100"},
+            {name:"Olympic Club",rank:27,list:"Top 100"},
+            {name:"San Francisco Golf Club",rank:28,list:"Top 100"},
+            {name:"Friar's Head",rank:29,list:"Top 100"},
+            {name:"The Ocean Course at Kiawah Island",rank:30,list:"Top 100"},
+            {name:"Kiawah Island Ocean Course",rank:30,list:"Top 100"},
+            {name:"Southern Hills Country Club",rank:31,list:"Top 100"},
+            {name:"Somerset Hills Country Club",rank:32,list:"Top 100"},
+            {name:"Oakland Hills Country Club",rank:33,list:"Top 100"},
+            {name:"Shoreacres",rank:34,list:"Top 100"},
+            {name:"Bethpage Black",rank:38,list:"Top 100"},
+            {name:"Bethpage State Park Golf Course",rank:38,list:"Top 100"},
+            {name:"TPC Sawgrass",rank:41,list:"Top 100"},
+            {name:"TPC Sawgrass Stadium Course",rank:41,list:"Top 100"},
+            {name:"Baltusrol Golf Club",rank:42,list:"Top 100"},
+            {name:"Bandon Dunes",rank:44,list:"Top 100"},
+            {name:"Bandon Dunes Golf Resort",rank:44,list:"Top 100"},
+            {name:"Erin Hills",rank:49,list:"Top 100"},
+            {name:"Erin Hills Golf Course",rank:49,list:"Top 100"},
+            {name:"Sleepy Hollow Country Club",rank:52,list:"Top 100"},
+            {name:"Maidstone Club",rank:53,list:"Top 100"},
+            {name:"Myopia Hunt Club",rank:54,list:"Top 100"},
+            {name:"Bandon Trails",rank:61,list:"Top 100"},
+            {name:"Bandon Dunes Bandon Trails",rank:61,list:"Top 100"},
+            {name:"Congressional Country Club",rank:67,list:"Top 100"},
+            {name:"The Lido",rank:69,list:"Top 100"},
+            {name:"Sand Valley The Lido",rank:69,list:"Top 100"},
+            {name:"CapRock Ranch",rank:72,list:"Top 100"},
+            {name:"Quaker Ridge Golf Club",rank:75,list:"Top 100"},
+            {name:"Kinloch Golf Club",rank:79,list:"Top 100"},
+            {name:"Old MacDonald",rank:81,list:"Top 100"},
+            {name:"Bandon Dunes Old MacDonald",rank:81,list:"Top 100"},
+            {name:"Ladera Golf Club",rank:83,list:"Top 100"},
+            {name:"Canyata",rank:86,list:"Top 100"},
+            {name:"Hudson National Golf Club",rank:88,list:"Top 100"},
+            {name:"The Kittansett Club",rank:89,list:"Top 100"},
+            {name:"Plainfield Country Club",rank:90,list:"Top 100"},
+            {name:"Boston Golf Club",rank:91,list:"Top 100"},
+            {name:"Valhalla Golf Club",rank:94,list:"Top 100"},
+            {name:"Aronimink Golf Club",rank:100,list:"Top 100"},
+            // Top 100 Greatest Public (2025-2026)
+            {name:"Pebble Beach Golf Links",rank:1,list:"Top 100 Public"},
+            {name:"Pacific Dunes",rank:2,list:"Top 100 Public"},
+            {name:"Shadow Creek",rank:3,list:"Top 100 Public"},
+            {name:"Whistling Straits",rank:4,list:"Top 100 Public"},
+            {name:"Kiawah Island Ocean Course",rank:5,list:"Top 100 Public"},
+            {name:"Pinehurst No. 2",rank:6,list:"Top 100 Public"},
+            {name:"Bethpage Black",rank:7,list:"Top 100 Public"},
+            {name:"TPC Sawgrass",rank:8,list:"Top 100 Public"},
+            {name:"Bandon Dunes",rank:9,list:"Top 100 Public"},
+            {name:"Erin Hills",rank:10,list:"Top 100 Public"},
+            {name:"Bandon Trails",rank:11,list:"Top 100 Public"},
+            {name:"The Lido",rank:12,list:"Top 100 Public"},
+            {name:"Old MacDonald",rank:14,list:"Top 100 Public"},
+            {name:"Blackwolf Run River Course",rank:17,list:"Top 100 Public"},
+            {name:"The River Course at Blackwolf Run",rank:17,list:"Top 100 Public"},
+            {name:"Streamsong Red",rank:20,list:"Top 100 Public"},
+            {name:"Sand Valley",rank:21,list:"Top 100 Public"},
+            {name:"Sand Valley Golf Resort",rank:21,list:"Top 100 Public"},
+            {name:"Kapalua Plantation Course",rank:23,list:"Top 100 Public"},
+            {name:"Kapalua Golf",rank:23,list:"Top 100 Public"},
+            {name:"Mammoth Dunes",rank:25,list:"Top 100 Public"},
+            {name:"Sand Valley Mammoth Dunes",rank:25,list:"Top 100 Public"},
+            {name:"Streamsong Blue",rank:26,list:"Top 100 Public"},
+            {name:"Sheep Ranch",rank:27,list:"Top 100 Public"},
+            {name:"Bandon Dunes Sheep Ranch",rank:27,list:"Top 100 Public"},
+            {name:"Harbour Town Golf Links",rank:28,list:"Top 100 Public"},
+            {name:"Primland Highland Course",rank:29,list:"Top 100 Public"},
+            {name:"Streamsong Black",rank:33,list:"Top 100 Public"},
+            {name:"Prairie Club Dunes",rank:36,list:"Top 100 Public"},
+            {name:"Yale Golf Course",rank:38,list:"Top 100 Public"},
+            {name:"Omni Homestead Cascades",rank:42,list:"Top 100 Public"},
+            {name:"Tobacco Road",rank:44,list:"Top 100 Public"},
+            {name:"Tobacco Road Golf Club",rank:44,list:"Top 100 Public"},
+            {name:"SentryWorld",rank:49,list:"Top 100 Public"},
+            {name:"Wolf Creek Golf Club",rank:59,list:"Top 100 Public"},
+            {name:"Pine Needles",rank:60,list:"Top 100 Public"},
+            {name:"Pine Needles Lodge",rank:60,list:"Top 100 Public"},
+            {name:"Irish Course at Whistling Straits",rank:65,list:"Top 100 Public"},
+            {name:"Lawsonia Links",rank:66,list:"Top 100 Public"},
+            {name:"Cascata Golf Club",rank:74,list:"Top 100 Public"},
+            {name:"Golden Horseshoe Gold",rank:75,list:"Top 100 Public"},
+            {name:"Taconic Golf Club",rank:78,list:"Top 100 Public"},
+            {name:"Trump National Doral Blue Monster",rank:86,list:"Top 100 Public"},
+            {name:"Mid Pines",rank:88,list:"Top 100 Public"},
+            {name:"Mid Pines Inn",rank:88,list:"Top 100 Public"},
+            {name:"The Park at West Palm Beach",rank:89,list:"Top 100 Public"},
+            {name:"Blackwolf Run Meadow Valleys",rank:92,list:"Top 100 Public"},
+            {name:"Prairie Club Pines",rank:90,list:"Top 100 Public"},
+            {name:"Southern Pines Golf Club",rank:98,list:"Top 100 Public"}
+        ];
+
+        // Fuzzy match a course name against the rankings database
+        function getGolfDigestRanking(courseName) {
+            if (!courseName) return null;
+            const search = courseName.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+            
+            let bestMatch = null;
+            let bestScore = 0;
+            
+            golfDigestRankings.forEach(function(entry) {
+                const entryName = entry.name.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+                
+                // Exact match
+                if (search === entryName) {
+                    if (!bestMatch || entry.rank < bestMatch.rank) {
+                        bestMatch = entry;
+                        bestScore = 100;
+                    }
+                    return;
+                }
+                
+                // One contains the other
+                if (search.includes(entryName) || entryName.includes(search)) {
+                    const score = Math.min(search.length, entryName.length) / Math.max(search.length, entryName.length) * 90;
+                    if (score > bestScore) {
+                        bestMatch = entry;
+                        bestScore = score;
+                    }
+                }
+                
+                // Check if key words match (for courses with alternate names)
+                const searchWords = search.split(/\s+/);
+                const entryWords = entryName.split(/\s+/);
+                const matchingWords = searchWords.filter(function(w) {
+                    return w.length > 2 && entryWords.some(function(ew) { return ew.includes(w) || w.includes(ew); });
+                });
+                const wordScore = matchingWords.length / Math.max(searchWords.length, entryWords.length) * 80;
+                if (wordScore > bestScore && wordScore > 50) {
+                    bestMatch = entry;
+                    bestScore = wordScore;
+                }
+            });
+            
+            return bestScore > 40 ? bestMatch : null;
+        }
+
         function renderWishList() {
             const listEl = document.getElementById('wishList');
             
@@ -2640,14 +2858,27 @@
                     locationStr = parts.join(', ');
                 }
                 
+                // Check for Golf Digest ranking
+                const gdRank = getGolfDigestRanking(course.name);
+
                 return `
                     <div class="course-item" data-id="${course.id}" data-type="wishlist">
                         <div class="course-header">
-                            <div class="course-name">${course.name}</div>
-                            ${course.rating ? `<div class="course-rating ${ratingClasses[course.rating]}">${ratingLabels[course.rating]}</div>` : ''}
+                            <div class="course-name-area" style="flex: 1; min-width: 0;">
+                                <div class="course-name">${course.name}</div>
+                                ${locationStr ? `<a class="course-location map-link" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(course.name + ' ' + locationStr)}" target="_blank" onclick="event.stopPropagation();">📍 ${locationStr}</a>` : ''}
+                                ${course.website ? `<a class="course-website-link" href="${course.website}" target="_blank" onclick="event.stopPropagation();">🌐 ${course.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</a>` : ''}
+                                ${course.heardFrom ? `<div class="course-source">via ${course.heardFrom}</div>` : ''}
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                                ${course.rating ? `<div class="course-rating ${ratingClasses[course.rating]}">${ratingLabels[course.rating]}</div>` : ''}
+                                ${gdRank ? `<div class="gd-ranking" onclick="event.stopPropagation();">
+                                    <div class="gd-ranking-label">Golf Digest</div>
+                                    <div class="gd-ranking-number">#${gdRank.rank}</div>
+                                    <div class="gd-ranking-list">${gdRank.list}</div>
+                                </div>` : ''}
+                            </div>
                         </div>
-                        ${locationStr ? `<a class="course-location map-link" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(course.name + ' ' + locationStr)}" target="_blank" onclick="event.stopPropagation();">📍 ${locationStr}</a>` : ''}
-                        ${course.heardFrom ? `<div class="course-source">via ${course.heardFrom}</div>` : ''}
                     </div>
                 `;
             }).join('');
