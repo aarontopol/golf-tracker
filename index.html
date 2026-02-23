@@ -77,27 +77,53 @@
         }
 
         .title-animation-area {
-            display: flex;
-            align-items: flex-end;
-            gap: 0;
-            overflow: hidden;
+            flex: 1;
+            min-width: 0;
         }
 
-        /* Golfer putting animation */
-        .golfer-putt {
-            font-size: 28px;
-            animation: golferSwing 1.8s ease-out forwards;
-            transform-origin: bottom center;
-            margin-right: 2px;
-            flex-shrink: 0;
+        .putt-animation {
+            width: 100%;
+            max-width: 380px;
+            height: 55px;
         }
 
-        @keyframes golferSwing {
-            0% { transform: rotate(0deg); }
-            15% { transform: rotate(-15deg); }    /* Backswing */
-            30% { transform: rotate(10deg); }     /* Hit! */
-            50% { transform: rotate(5deg); }      /* Follow through */
-            100% { transform: rotate(0deg); }     /* Settle */
+        .title-svg-text {
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        /* Putter swing - small pendulum motion like a real putt */
+        .putter-swing {
+            animation: putterStroke 1.2s ease-in-out forwards;
+        }
+        @keyframes putterStroke {
+            0%   { transform: rotate(8deg); }    /* Small backswing */
+            35%  { transform: rotate(8deg); }    /* Pause at top */
+            55%  { transform: rotate(-4deg); }   /* Strike! */
+            70%  { transform: rotate(-6deg); }   /* Short follow through */
+            100% { transform: rotate(-3deg); }   /* Settle */
+        }
+
+        /* Ball starts still, then rolls right below the text */
+        .rolling-ball {
+            animation: ballRollPath 2.8s ease-out 0.65s forwards;
+        }
+        @keyframes ballRollPath {
+            0%   { cx: 30;  opacity: 1; }
+            5%   { cx: 40;  opacity: 1; }
+            40%  { cx: 220; opacity: 1; }    /* Rolling fast */
+            70%  { cx: 310; opacity: 1; }    /* Slowing down */
+            90%  { cx: 333; opacity: 1; }    /* Almost stopped */
+            95%  { cx: 336; opacity: 0.8; }  /* Stopping */
+            100% { cx: 336; opacity: 0; }    /* Disappear as dot appears */
+        }
+
+        /* The period dot fades in right where the ball stops */
+        .end-dot {
+            animation: dotAppear 0.3s ease-in 3.3s forwards;
+        }
+        @keyframes dotAppear {
+            0%   { opacity: 0; }
+            100% { opacity: 1; }
         }
 
         h1 {
@@ -106,65 +132,6 @@
             text-shadow: 0 2px 4px rgba(0,0,0,0.2);
             margin: 0;
             white-space: nowrap;
-            position: relative;
-        }
-
-        .title-text {
-            position: relative;
-            z-index: 1;
-        }
-
-        /* Golf ball that rolls under the title */
-        .golf-ball-container {
-            display: inline-block;
-            width: 0;
-            position: relative;
-        }
-
-        .golf-ball {
-            display: inline-block;
-            font-size: 10px;
-            position: absolute;
-            bottom: 1px;
-            left: -210px;
-            opacity: 0;
-            animation: ballRoll 2.5s ease-out 0.5s forwards;
-        }
-
-        @keyframes ballRoll {
-            0% {
-                left: -210px;
-                opacity: 0;
-                transform: rotate(0deg) scale(0.8);
-            }
-            5% {
-                opacity: 1;
-                transform: rotate(0deg) scale(0.8);
-            }
-            /* Ball rolling fast under the text */
-            60% {
-                left: -10px;
-                opacity: 1;
-                transform: rotate(720deg) scale(0.8);
-            }
-            /* Ball slowing down */
-            80% {
-                left: 2px;
-                opacity: 1;
-                transform: rotate(900deg) scale(0.7);
-            }
-            /* Ball stops and shrinks to become a period */
-            95% {
-                left: 3px;
-                opacity: 1;
-                transform: rotate(1080deg) scale(0.5);
-            }
-            100% {
-                left: 3px;
-                opacity: 1;
-                font-size: 10px;
-                transform: rotate(1080deg) scale(0.5);
-            }
         }
 
         .user-bar-right {
@@ -956,16 +923,35 @@
         <!-- Top header bar: title on left, user info on right -->
         <div class="top-header">
             <div class="title-animation-area">
-                <!-- Golfer figure on the left, putting -->
-                <div class="golfer-putt" id="golferPutt">🏌️</div>
-                <!-- The title text -->
-                <h1>
-                    <span class="title-text">Golf Course Tracker</span>
-                    <!-- The ball that rolls under the text and becomes a period -->
-                    <span class="golf-ball-container">
-                        <span class="golf-ball" id="golfBall">⚪</span>
-                    </span>
-                </h1>
+                <svg class="putt-animation" viewBox="0 0 420 55" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Golfer figure -->
+                    <g class="golfer-group" transform="translate(18, 8)">
+                        <!-- Head -->
+                        <circle cx="0" cy="6" r="5" fill="white"/>
+                        <!-- Body -->
+                        <line x1="0" y1="11" x2="0" y2="28" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+                        <!-- Front leg (bent putting stance) -->
+                        <line x1="0" y1="28" x2="5" y2="40" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="5" y1="40" x2="4" y2="45" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <!-- Back leg (bent putting stance) -->
+                        <line x1="0" y1="28" x2="-5" y2="40" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="-5" y1="40" x2="-4" y2="45" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <!-- Arms holding putter -->
+                        <line x1="0" y1="16" x2="6" y2="24" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <line x1="0" y1="16" x2="8" y2="22" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                        <!-- Putter (the shaft + head that swings) -->
+                        <g class="putter-swing" transform-origin="7 23">
+                            <line x1="7" y1="23" x2="10" y2="44" stroke="rgba(255,255,255,0.8)" stroke-width="1.5" stroke-linecap="round"/>
+                            <rect x="8" y="43" width="6" height="2.5" rx="1" fill="rgba(255,255,255,0.8)"/>
+                        </g>
+                    </g>
+                    <!-- Golf ball - starts near the putter, rolls right, stops at end -->
+                    <circle class="rolling-ball" cx="30" cy="48" r="3" fill="white"/>
+                    <!-- Title text rendered on top -->
+                    <text x="42" y="38" class="title-svg-text" fill="white" font-family="inherit" font-weight="bold" font-size="24">Golf Course Tracker</text>
+                    <!-- Period/dot at the end (hidden, revealed when ball arrives) -->
+                    <circle class="end-dot" cx="336" cy="48" r="3" fill="white" opacity="0"/>
+                </svg>
             </div>
             <div id="userBarArea" class="user-bar-right" style="display: none;">
                 <div class="user-bar-email" id="userBarEmail"></div>
