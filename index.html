@@ -1767,146 +1767,113 @@
         // Provides instant results without waiting for API
         // ==========================================
         const localCourseDatabase = [
-            // Pinehurst Resort
-            { name: 'Pinehurst No. 1', location: 'Pinehurst, NC' },
-            { name: 'Pinehurst No. 2', location: 'Pinehurst, NC' },
-            { name: 'Pinehurst No. 3', location: 'Pinehurst, NC' },
-            { name: 'Pinehurst No. 4', location: 'Pinehurst, NC' },
-            { name: 'Pinehurst No. 5', location: 'Pinehurst, NC' },
-            { name: 'Pinehurst No. 6', location: 'Pinehurst, NC' },
-            { name: 'Pinehurst No. 8', location: 'Pinehurst, NC' },
-            { name: 'Pinehurst No. 9', location: 'Pinehurst, NC' },
-            { name: 'Pinehurst No. 10 - The Cradle', location: 'Pinehurst, NC' },
-            { name: 'The Cradle at Pinehurst', location: 'Pinehurst, NC' },
-            
-            // Pebble Beach Resorts
-            { name: 'Pebble Beach Golf Links', location: 'Pebble Beach, CA' },
-            { name: 'Spyglass Hill Golf Course', location: 'Pebble Beach, CA' },
-            { name: 'The Links at Spanish Bay', location: 'Pebble Beach, CA' },
-            { name: 'Del Monte Golf Course', location: 'Monterey, CA' },
-            { name: 'Poppy Hills Golf Course', location: 'Pebble Beach, CA' },
-            
-            // Torrey Pines
-            { name: 'Torrey Pines North Course', location: 'La Jolla, CA' },
-            { name: 'Torrey Pines South Course', location: 'San Diego, CA' },
-            
-            // Atlanta Area
-            { name: 'Bobby Jones Golf Course', location: 'Atlanta, GA' },
-            { name: 'Ansley Golf Club', location: 'Atlanta, GA' },
-            { name: 'Ansley Golf Club - Settindown Creek', location: 'Roswell, GA' },
-            { name: 'East Lake Golf Club', location: 'Atlanta, GA' },
-            { name: 'Peachtree Golf Club', location: 'Atlanta, GA' },
-            { name: 'Atlanta Athletic Club - Highlands', location: 'Johns Creek, GA' },
-            { name: 'Atlanta Athletic Club - Riverside', location: 'Johns Creek, GA' },
-            { name: 'Cherokee Town and Country Club', location: 'Atlanta, GA' },
-            
-            // Bandon Dunes
-            { name: 'Bandon Dunes', location: 'Bandon, OR' },
-            { name: 'Pacific Dunes', location: 'Bandon, OR' },
-            { name: 'Bandon Trails', location: 'Bandon, OR' },
-            { name: 'Old Macdonald', location: 'Bandon, OR' },
-            { name: 'Sheep Ranch', location: 'Bandon, OR' },
-            { name: 'Bandon Preserve', location: 'Bandon, OR' },
-            
-            // Bethpage
-            { name: 'Bethpage Black Course', location: 'Farmingdale, NY' },
-            { name: 'Bethpage Red Course', location: 'Farmingdale, NY' },
-            { name: 'Bethpage Blue Course', location: 'Farmingdale, NY' },
-            { name: 'Bethpage Green Course', location: 'Farmingdale, NY' },
-            { name: 'Bethpage Yellow Course', location: 'Farmingdale, NY' },
-            
-            // Streamsong
-            { name: 'Streamsong Red', location: 'Bowling Green, FL' },
-            { name: 'Streamsong Blue', location: 'Bowling Green, FL' },
-            { name: 'Streamsong Black', location: 'Bowling Green, FL' },
-            
-            // Major Championship Courses
-            { name: 'Augusta National Golf Club', location: 'Augusta, GA' },
-            { name: 'Oakmont Country Club', location: 'Oakmont, PA' },
-            { name: 'Shinnecock Hills Golf Club', location: 'Southampton, NY' },
-            { name: 'Merion Golf Club', location: 'Ardmore, PA' },
-            { name: 'Winged Foot Golf Club', location: 'Mamaroneck, NY' },
-            { name: 'Olympic Club', location: 'San Francisco, CA' },
-            { name: 'Baltusrol Golf Club', location: 'Springfield, NJ' },
-            
-            // TPC Courses
-            { name: 'TPC Sawgrass - Stadium Course', location: 'Ponte Vedra Beach, FL' },
-            { name: 'TPC Scottsdale - Stadium Course', location: 'Scottsdale, AZ' },
-            
-            // Other Notable US Courses
-            { name: 'Kiawah Island Ocean Course', location: 'Kiawah Island, SC' },
-            { name: 'Chambers Bay', location: 'University Place, WA' },
-            { name: 'Whistling Straits', location: 'Kohler, WI' },
-            { name: 'Shadow Creek', location: 'Las Vegas, NV' },
-            { name: 'Pine Valley Golf Club', location: 'Pine Valley, NJ' },
-            { name: 'Cypress Point Club', location: 'Pebble Beach, CA' },
-            { name: 'Sand Hills Golf Club', location: 'Mullen, NE' },
-            { name: 'Riviera Country Club', location: 'Pacific Palisades, CA' },
-            
-            // Scotland
-            { name: 'St Andrews Old Course', location: 'St Andrews, Scotland' },
-            { name: 'St Andrews New Course', location: 'St Andrews, Scotland' },
-            { name: 'Royal Dornoch', location: 'Dornoch, Scotland' },
-            { name: 'Carnoustie Golf Links', location: 'Carnoustie, Scotland' },
-            { name: 'Muirfield', location: 'Gullane, Scotland' },
-            { name: 'Royal Troon', location: 'Troon, Scotland' },
-            { name: 'Turnberry', location: 'Turnberry, Scotland' },
-            
-            // Ireland
-            { name: 'Royal County Down', location: 'Newcastle, Northern Ireland' },
-            { name: 'Ballybunion Golf Club', location: 'Ballybunion, Ireland' },
-            { name: 'Lahinch Golf Club', location: 'Lahinch, Ireland' },
-            { name: 'Portmarnock Golf Club', location: 'Portmarnock, Ireland' },
-            { name: 'Royal Portrush', location: 'Portrush, Northern Ireland' },
-            
-            // International
-            { name: 'Royal Melbourne', location: 'Melbourne, Australia' },
-            { name: 'Kingston Heath Golf Club', location: 'Melbourne, Australia' },
-            { name: 'Cape Kidnappers', location: 'Hawke\'s Bay, New Zealand' },
-            { name: 'Kauri Cliffs', location: 'Matauri Bay, New Zealand' },
-
-            // Additional well-known courses
-            { name: 'Ridgewood Country Club', location: 'Paramus, New Jersey' },
-            { name: 'The Ridgewood Golf Club', location: 'Paramus, New Jersey' },
-            { name: 'Ansley Golf Club', location: 'Atlanta, Georgia' },
-            { name: 'East Lake Golf Club', location: 'Atlanta, Georgia' },
-            { name: 'Atlanta Athletic Club', location: 'Johns Creek, Georgia' },
-            { name: 'Peachtree Golf Club', location: 'Atlanta, Georgia' },
-            { name: 'Capital City Club', location: 'Atlanta, Georgia' },
-            { name: 'Bobby Jones Golf Course', location: 'Atlanta, Georgia' },
-            { name: 'TPC Sugarloaf', location: 'Duluth, Georgia' },
-            { name: 'The Manor Golf Club', location: 'Milton, Georgia' },
-            { name: 'Hawks Ridge Golf Club', location: 'Ball Ground, Georgia' },
-            { name: 'Château Élan Golf Club', location: 'Braselton, Georgia' },
-            { name: 'Reynolds Lake Oconee', location: 'Greensboro, Georgia' },
-            { name: 'Sea Island Golf Club', location: 'St. Simons Island, Georgia' },
-            { name: 'The Landings Club', location: 'Savannah, Georgia' },
-            { name: 'Torrey Pines Golf Course', location: 'La Jolla, California' },
-            { name: 'Spyglass Hill Golf Course', location: 'Pebble Beach, California' },
-            { name: 'The Links at Spanish Bay', location: 'Pebble Beach, California' },
-            { name: 'Pasatiempo Golf Club', location: 'Santa Cruz, California' },
-            { name: 'Pelican Hill Golf Club', location: 'Newport Coast, California' },
-            { name: 'Trump National Golf Club', location: 'Rancho Palos Verdes, California' },
-            { name: 'Trump International Golf Club', location: 'West Palm Beach, Florida' },
-            { name: 'Trump National Doral', location: 'Miami, Florida' },
-            { name: 'Harding Park Golf Course', location: 'San Francisco, California' },
-            { name: 'Poppy Hills Golf Course', location: 'Pebble Beach, California' },
+            { name: 'Robert Trent Jones Golf Trail', location: 'Birmingham, Alabama' },
+            { name: 'Shoal Creek', location: 'Shoal Creek, Alabama' },
+            { name: 'Ross Bridge Golf Club', location: 'Hoover, Alabama' },
+            { name: 'Capitol Hill Golf Club', location: 'Prattville, Alabama' },
+            { name: 'FarmLinks Golf Club', location: 'Sylacauga, Alabama' },
+            { name: 'Ol Colony Golf Complex', location: 'Tuscaloosa, Alabama' },
+            { name: 'Kiva Dunes Golf Course', location: 'Gulf Shores, Alabama' },
+            { name: 'Grand National Golf Course', location: 'Opelika, Alabama' },
+            { name: 'Lakewood Golf Club', location: 'Point Clear, Alabama' },
+            { name: 'Oxmoor Valley Golf Course', location: 'Birmingham, Alabama' },
+            { name: 'The Shoals Golf Course', location: 'Muscle Shoals, Alabama' },
+            { name: 'Silver Lakes Golf Course', location: 'Glencoe, Alabama' },
+            { name: 'Moose Run Golf Course', location: 'Anchorage, Alaska' },
+            { name: 'Settlers Bay Golf Course', location: 'Wasilla, Alaska' },
+            { name: 'Palmer Golf Course', location: 'Palmer, Alaska' },
+            { name: 'Eagleglen Golf Course', location: 'Anchorage, Alaska' },
+            { name: 'Bear Valley Golf Course', location: 'Anchorage, Alaska' },
             { name: 'We-Ko-Pa Golf Club', location: 'Scottsdale, Arizona' },
             { name: 'Troon North Golf Club', location: 'Scottsdale, Arizona' },
             { name: 'TPC Scottsdale', location: 'Scottsdale, Arizona' },
             { name: 'Grayhawk Golf Club', location: 'Scottsdale, Arizona' },
             { name: 'Quintero Golf Club', location: 'Peoria, Arizona' },
-            { name: 'Bay Hill Club & Lodge', location: 'Orlando, Florida' },
-            { name: 'Arnold Palmer\'s Bay Hill', location: 'Orlando, Florida' },
-            { name: 'Innisbrook Resort', location: 'Palm Harbor, Florida' },
-            { name: 'Sawgrass Marriott Golf Resort', location: 'Ponte Vedra Beach, Florida' },
-            { name: 'World Golf Village', location: 'St. Augustine, Florida' },
-            { name: 'PGA National Resort', location: 'Palm Beach Gardens, Florida' },
-            { name: 'Doral Golf Resort', location: 'Miami, Florida' },
-            { name: 'Boca Raton Resort & Club', location: 'Boca Raton, Florida' },
-            { name: 'Jupiter Hills Club', location: 'Tequesta, Florida' },
+            { name: 'Whisper Rock Golf Club', location: 'Scottsdale, Arizona' },
+            { name: 'Desert Mountain Club', location: 'Scottsdale, Arizona' },
+            { name: 'Estancia Club', location: 'Scottsdale, Arizona' },
+            { name: 'Southern Dunes Golf Club', location: 'Maricopa, Arizona' },
+            { name: 'Wickenburg Ranch Golf Club', location: 'Wickenburg, Arizona' },
+            { name: 'Talking Stick Golf Club', location: 'Scottsdale, Arizona' },
+            { name: 'Desert Highlands Golf Club', location: 'Scottsdale, Arizona' },
+            { name: 'Boulders Golf Club', location: 'Scottsdale, Arizona' },
+            { name: 'Superstition Mountain Golf Club', location: 'Gold Canyon, Arizona' },
+            { name: 'Forest Highlands Golf Club', location: 'Flagstaff, Arizona' },
+            { name: 'Arizona Biltmore Golf Club', location: 'Phoenix, Arizona' },
+            { name: 'Ak-Chin Southern Dunes', location: 'Maricopa, Arizona' },
+            { name: 'Verrado Golf Club', location: 'Buckeye, Arizona' },
+            { name: 'SunRidge Canyon Golf Club', location: 'Fountain Hills, Arizona' },
+            { name: 'Gold Canyon Golf Resort', location: 'Gold Canyon, Arizona' },
+            { name: 'Alotian Club', location: 'Roland, Arkansas' },
+            { name: 'Big Cedar Lodge Golf', location: 'Ridgedale, Arkansas' },
+            { name: 'Stonebridge Meadows Golf Club', location: 'Fayetteville, Arkansas' },
+            { name: 'Mystic Creek Golf Club', location: 'El Dorado, Arkansas' },
+            { name: 'Mountain Ranch Golf Club', location: 'Fairfield Bay, Arkansas' },
+            { name: 'Hot Springs Country Club', location: 'Hot Springs, Arkansas' },
+            { name: 'Pebble Beach Golf Links', location: 'Pebble Beach, California' },
+            { name: 'Cypress Point Club', location: 'Pebble Beach, California' },
+            { name: 'Riviera Country Club', location: 'Pacific Palisades, California' },
+            { name: 'Los Angeles Country Club', location: 'Los Angeles, California' },
+            { name: 'Olympic Club', location: 'San Francisco, California' },
+            { name: 'Torrey Pines Golf Course', location: 'La Jolla, California' },
+            { name: 'Spyglass Hill Golf Course', location: 'Pebble Beach, California' },
+            { name: 'The Links at Spanish Bay', location: 'Pebble Beach, California' },
+            { name: 'Pasatiempo Golf Club', location: 'Santa Cruz, California' },
+            { name: 'Pelican Hill Golf Club', location: 'Newport Coast, California' },
+            { name: 'San Francisco Golf Club', location: 'San Francisco, California' },
+            { name: 'The Valley Club of Montecito', location: 'Santa Barbara, California' },
+            { name: 'Harding Park Golf Course', location: 'San Francisco, California' },
+            { name: 'Poppy Hills Golf Course', location: 'Pebble Beach, California' },
+            { name: 'CordeValle Golf Club', location: 'San Martin, California' },
+            { name: 'Monterey Peninsula Country Club', location: 'Pebble Beach, California' },
+            { name: 'The Preserve Golf Club', location: 'Carmel, California' },
+            { name: 'Tehama Golf Club', location: 'Carmel, California' },
+            { name: 'Sherwood Country Club', location: 'Thousand Oaks, California' },
+            { name: 'Trump National Golf Club Los Angeles', location: 'Rancho Palos Verdes, California' },
+            { name: 'Bel-Air Country Club', location: 'Los Angeles, California' },
+            { name: 'The Vintage Club', location: 'Indian Wells, California' },
+            { name: 'Shady Canyon Golf Club', location: 'Irvine, California' },
+            { name: 'Big Canyon Country Club', location: 'Newport Beach, California' },
+            { name: 'PGA West', location: 'La Quinta, California' },
+            { name: 'La Quinta Resort & Club', location: 'La Quinta, California' },
+            { name: 'Indian Wells Golf Resort', location: 'Indian Wells, California' },
+            { name: 'Maderas Golf Club', location: 'Poway, California' },
+            { name: 'Aviara Golf Club', location: 'Carlsbad, California' },
+            { name: 'Sandpiper Golf Club', location: 'Goleta, California' },
+            { name: 'Cherry Hills Country Club', location: 'Cherry Hills Village, Colorado' },
+            { name: 'Castle Pines Golf Club', location: 'Castle Rock, Colorado' },
+            { name: 'Colorado Golf Club', location: 'Parker, Colorado' },
+            { name: 'The Broadmoor Golf Club', location: 'Colorado Springs, Colorado' },
+            { name: 'Ballyneal Golf Club', location: 'Holyoke, Colorado' },
+            { name: 'Red Sky Golf Club', location: 'Vail, Colorado' },
+            { name: 'Sanctuary Golf Course', location: 'Sedalia, Colorado' },
+            { name: 'Bear Creek Golf Club', location: 'Denver, Colorado' },
+            { name: 'Arrowhead Golf Club', location: 'Littleton, Colorado' },
+            { name: 'The Club at Ravenna', location: 'Littleton, Colorado' },
+            { name: 'Fossil Trace Golf Club', location: 'Golden, Colorado' },
+            { name: 'TPC Colorado', location: 'Berthoud, Colorado' },
+            { name: 'Yale Golf Course', location: 'New Haven, Connecticut' },
+            { name: 'The Stanwich Club', location: 'Greenwich, Connecticut' },
+            { name: 'Ridgewood Country Club', location: 'Danbury, Connecticut' },
+            { name: 'TPC River Highlands', location: 'Cromwell, Connecticut' },
+            { name: 'Lake of Isles Golf Course', location: 'North Stonington, Connecticut' },
+            { name: 'Shorehaven Golf Club', location: 'Norwalk, Connecticut' },
+            { name: 'Country Club of Fairfield', location: 'Fairfield, Connecticut' },
+            { name: 'Hartford Golf Club', location: 'West Hartford, Connecticut' },
+            { name: 'Wethersfield Country Club', location: 'Wethersfield, Connecticut' },
+            { name: 'New Haven Country Club', location: 'Hamden, Connecticut' },
+            { name: 'Wilmington Country Club', location: 'Wilmington, Delaware' },
+            { name: 'Fieldstone Golf Club', location: 'Greenville, Delaware' },
+            { name: 'Baywood Greens Golf Course', location: 'Long Neck, Delaware' },
+            { name: 'The Salt Pond Golf Club', location: 'Bethany Beach, Delaware' },
+            { name: 'Royal Manchester Golf Links', location: 'Bear, Delaware' },
+            { name: 'TPC Sawgrass', location: 'Ponte Vedra Beach, Florida' },
             { name: 'Seminole Golf Club', location: 'Juno Beach, Florida' },
-            { name: 'The Breakers', location: 'Palm Beach, Florida' },
+            { name: 'Streamsong Resort', location: 'Streamsong, Florida' },
+            { name: 'Bay Hill Club & Lodge', location: 'Orlando, Florida' },
+            { name: 'PGA National Resort', location: 'Palm Beach Gardens, Florida' },
+            { name: 'Trump International Golf Club', location: 'West Palm Beach, Florida' },
+            { name: 'Trump National Doral', location: 'Miami, Florida' },
             { name: 'Calusa Pines Golf Club', location: 'Naples, Florida' },
             { name: 'Old Marsh Golf Club', location: 'Palm Beach Gardens, Florida' },
             { name: 'Medalist Golf Club', location: 'Hobe Sound, Florida' },
@@ -1914,33 +1881,375 @@
             { name: 'Pine Tree Golf Club', location: 'Boynton Beach, Florida' },
             { name: 'Loxahatchee Club', location: 'Jupiter, Florida' },
             { name: 'McArthur Golf Club', location: 'Hobe Sound, Florida' },
+            { name: 'Jupiter Hills Club', location: 'Tequesta, Florida' },
+            { name: 'The Breakers', location: 'Palm Beach, Florida' },
+            { name: 'Innisbrook Resort', location: 'Palm Harbor, Florida' },
+            { name: 'World Golf Village', location: 'St. Augustine, Florida' },
+            { name: 'Boca Raton Resort & Club', location: 'Boca Raton, Florida' },
+            { name: 'Cabot Citrus Farms', location: 'Brooksville, Florida' },
+            { name: 'Black Diamond Ranch', location: 'Lecanto, Florida' },
+            { name: 'Sawgrass Marriott Golf Resort', location: 'Ponte Vedra Beach, Florida' },
+            { name: 'Doral Golf Resort', location: 'Miami, Florida' },
+            { name: 'Walt Disney World Golf', location: 'Orlando, Florida' },
+            { name: 'TPC Tampa Bay', location: 'Lutz, Florida' },
+            { name: 'Augusta National Golf Club', location: 'Augusta, Georgia' },
+            { name: 'East Lake Golf Club', location: 'Atlanta, Georgia' },
+            { name: 'Peachtree Golf Club', location: 'Atlanta, Georgia' },
+            { name: 'Sea Island Golf Club', location: 'St. Simons Island, Georgia' },
+            { name: 'Reynolds Lake Oconee', location: 'Greensboro, Georgia' },
+            { name: 'Atlanta Athletic Club', location: 'Johns Creek, Georgia' },
+            { name: 'Capital City Club', location: 'Atlanta, Georgia' },
+            { name: 'Ansley Golf Club', location: 'Atlanta, Georgia' },
+            { name: 'Bobby Jones Golf Course', location: 'Atlanta, Georgia' },
+            { name: 'TPC Sugarloaf', location: 'Duluth, Georgia' },
+            { name: 'The Manor Golf Club', location: 'Milton, Georgia' },
+            { name: 'Hawks Ridge Golf Club', location: 'Ball Ground, Georgia' },
+            { name: 'Château Élan Golf Club', location: 'Braselton, Georgia' },
+            { name: 'The Landings Club', location: 'Savannah, Georgia' },
+            { name: 'Kapalua Golf Club', location: 'Lahaina, Hawaii' },
+            { name: 'Mauna Kea Golf Course', location: 'Kohala Coast, Hawaii' },
+            { name: 'Mauna Lani Golf Course', location: 'Kohala Coast, Hawaii' },
+            { name: 'Princeville Golf Club', location: 'Princeville, Hawaii' },
+            { name: 'Turtle Bay Resort Golf', location: 'Kahuku, Hawaii' },
+            { name: 'Ko Olina Golf Club', location: 'Kapolei, Hawaii' },
+            { name: 'Wailea Golf Club', location: 'Wailea, Hawaii' },
+            { name: 'Hualalai Golf Club', location: 'Kailua-Kona, Hawaii' },
+            { name: 'Nanea Golf Club', location: 'Kailua-Kona, Hawaii' },
+            { name: 'Kukuiula Golf Course', location: 'Poipu, Hawaii' },
+            { name: 'Circling Raven Golf Club', location: 'Worley, Idaho' },
+            { name: 'Coeur d\'Alene Resort Golf Course', location: 'Coeur d\'Alene, Idaho' },
+            { name: 'BanBury Golf Course', location: 'Eagle, Idaho' },
+            { name: 'Osprey Meadows Golf Course', location: 'Donnelly, Idaho' },
+            { name: 'Shadow Valley Golf Course', location: 'Boise, Idaho' },
+            { name: 'Chicago Golf Club', location: 'Wheaton, Illinois' },
+            { name: 'Medinah Country Club', location: 'Medinah, Illinois' },
+            { name: 'Olympia Fields Country Club', location: 'Olympia Fields, Illinois' },
+            { name: 'Cog Hill Golf & Country Club', location: 'Lemont, Illinois' },
+            { name: 'Shoreacres', location: 'Lake Bluff, Illinois' },
+            { name: 'Bob O\'Link Golf Club', location: 'Highland Park, Illinois' },
+            { name: 'Beverly Country Club', location: 'Chicago, Illinois' },
+            { name: 'Rich Harvest Farms', location: 'Sugar Grove, Illinois' },
+            { name: 'Conway Farms Golf Club', location: 'Lake Forest, Illinois' },
+            { name: 'Kemper Lakes Golf Club', location: 'Kildeer, Illinois' },
+            { name: 'The Glen Club', location: 'Glenview, Illinois' },
+            { name: 'Cantigny Golf', location: 'Wheaton, Illinois' },
+            { name: 'Ravinia Green Country Club', location: 'Riverwoods, Illinois' },
+            { name: 'Crooked Stick Golf Club', location: 'Carmel, Indiana' },
+            { name: 'Pete Dye Golf Club', location: 'Bridgeport, Indiana' },
+            { name: 'French Lick Resort', location: 'French Lick, Indiana' },
+            { name: 'Victoria National Golf Club', location: 'Newburgh, Indiana' },
+            { name: 'Brickyard Crossing Golf Course', location: 'Indianapolis, Indiana' },
+            { name: 'Wolf Run Golf Club', location: 'Zionsville, Indiana' },
+            { name: 'The Fort Golf Course', location: 'Indianapolis, Indiana' },
+            { name: 'Wakonda Club', location: 'Des Moines, Iowa' },
+            { name: 'Spirit Hollow Golf Course', location: 'Burlington, Iowa' },
+            { name: 'Harvester Golf Club', location: 'Rhodes, Iowa' },
+            { name: 'Amana Colonies Golf Course', location: 'Amana, Iowa' },
+            { name: 'Blue Top Ridge', location: 'Riverside, Iowa' },
+            { name: 'Tournament Club of Iowa', location: 'Polk City, Iowa' },
+            { name: 'Prairie Dunes Country Club', location: 'Hutchinson, Kansas' },
+            { name: 'Colbert Hills Golf Course', location: 'Manhattan, Kansas' },
+            { name: 'Flint Hills National Golf Club', location: 'Andover, Kansas' },
+            { name: 'Sand Creek Station Golf Club', location: 'Newton, Kansas' },
+            { name: 'Firekeeper Golf Course', location: 'Mayetta, Kansas' },
+            { name: 'Valhalla Golf Club', location: 'Louisville, Kentucky' },
+            { name: 'Keene Trace Golf Club', location: 'Nicholasville, Kentucky' },
+            { name: 'Persimmon Ridge Golf Club', location: 'Louisville, Kentucky' },
+            { name: 'Kearney Hill Golf Links', location: 'Lexington, Kentucky' },
+            { name: 'Olde Stone Country Club', location: 'Bowling Green, Kentucky' },
+            { name: 'TPC Louisiana', location: 'Avondale, Louisiana' },
+            { name: 'English Turn Golf & Country Club', location: 'New Orleans, Louisiana' },
+            { name: 'Carter Plantation Golf Course', location: 'Springfield, Louisiana' },
+            { name: 'The Bluffs on Thompson Creek', location: 'St. Francisville, Louisiana' },
+            { name: 'Money Hill Golf Club', location: 'Abita Springs, Louisiana' },
+            { name: 'Belgrade Lakes Golf Club', location: 'Belgrade Lakes, Maine' },
+            { name: 'Sugarloaf Golf Club', location: 'Carrabassett Valley, Maine' },
+            { name: 'Sunday River Golf Club', location: 'Bethel, Maine' },
+            { name: 'Samoset Resort Golf Club', location: 'Rockport, Maine' },
+            { name: 'Penobscot Valley Country Club', location: 'Orono, Maine' },
+            { name: 'Kebo Valley Golf Club', location: 'Bar Harbor, Maine' },
+            { name: 'Congressional Country Club', location: 'Bethesda, Maryland' },
+            { name: 'Caves Valley Golf Club', location: 'Owings Mills, Maryland' },
+            { name: 'Baltimore Country Club', location: 'Lutherville-Timonium, Maryland' },
+            { name: 'Bulle Rock Golf Course', location: 'Havre de Grace, Maryland' },
+            { name: 'Whiskey Creek Golf Club', location: 'Ijamsville, Maryland' },
+            { name: 'Renditions Golf Course', location: 'Davidsonville, Maryland' },
+            { name: 'Woodholme Country Club', location: 'Pikesville, Maryland' },
+            { name: 'The Country Club', location: 'Brookline, Massachusetts' },
+            { name: 'Salem Country Club', location: 'Peabody, Massachusetts' },
+            { name: 'Myopia Hunt Club', location: 'South Hamilton, Massachusetts' },
+            { name: 'Essex County Club', location: 'Manchester-by-the-Sea, Massachusetts' },
+            { name: 'Eastward Ho! Country Club', location: 'Chatham, Massachusetts' },
+            { name: 'Kittansett Club', location: 'Marion, Massachusetts' },
+            { name: 'Boston Golf Club', location: 'Hingham, Massachusetts' },
+            { name: 'TPC Boston', location: 'Norton, Massachusetts' },
+            { name: 'Pinehills Golf Club', location: 'Plymouth, Massachusetts' },
+            { name: 'Granite Links Golf Club', location: 'Quincy, Massachusetts' },
+            { name: 'Crystal Downs Country Club', location: 'Frankfort, Michigan' },
+            { name: 'Oakland Hills Country Club', location: 'Bloomfield Hills, Michigan' },
+            { name: 'Arcadia Bluffs Golf Club', location: 'Arcadia, Michigan' },
+            { name: 'Forest Dunes Golf Club', location: 'Roscommon, Michigan' },
+            { name: 'Kingsley Club', location: 'Kingsley, Michigan' },
+            { name: 'Bay Harbor Golf Club', location: 'Bay Harbor, Michigan' },
+            { name: 'Shanty Creek Resort', location: 'Bellaire, Michigan' },
+            { name: 'Treetops Resort', location: 'Gaylord, Michigan' },
+            { name: 'Boyne Highlands Resort', location: 'Harbor Springs, Michigan' },
+            { name: 'The Wolverine Golf Club', location: 'Mackinaw City, Michigan' },
+            { name: 'Hazeltine National Golf Club', location: 'Chaska, Minnesota' },
+            { name: 'Interlachen Country Club', location: 'Edina, Minnesota' },
+            { name: 'Windsong Farm Golf Club', location: 'Independence, Minnesota' },
+            { name: 'The Wilds Golf Club', location: 'Prior Lake, Minnesota' },
+            { name: 'Giants Ridge Golf Resort', location: 'Biwabik, Minnesota' },
+            { name: 'Spring Hill Golf Club', location: 'Wayzata, Minnesota' },
+            { name: 'Rush Creek Golf Club', location: 'Maple Grove, Minnesota' },
+            { name: 'Legends Club', location: 'Prior Lake, Minnesota' },
+            { name: 'Old Waverly Golf Club', location: 'West Point, Mississippi' },
+            { name: 'Fallen Oak Golf Course', location: 'Biloxi, Mississippi' },
+            { name: 'Dancing Rabbit Golf Club', location: 'Philadelphia, Mississippi' },
+            { name: 'Annandale Golf Club', location: 'Madison, Mississippi' },
+            { name: 'The Oaks Golf Club', location: 'Pass Christian, Mississippi' },
+            { name: 'Bellerive Country Club', location: 'St. Louis, Missouri' },
+            { name: 'Old Warson Country Club', location: 'Ladue, Missouri' },
+            { name: 'St. Louis Country Club', location: 'Ladue, Missouri' },
+            { name: 'Top of the Rock Golf Course', location: 'Ridgedale, Missouri' },
+            { name: 'Payne\'s Valley Golf Course', location: 'Hollister, Missouri' },
+            { name: 'The Club at Porto Cima', location: 'Sunrise Beach, Missouri' },
+            { name: 'Stock Farm Club', location: 'Hamilton, Montana' },
+            { name: 'Yellowstone Club', location: 'Big Sky, Montana' },
+            { name: 'Old Works Golf Course', location: 'Anaconda, Montana' },
+            { name: 'Whitefish Lake Golf Club', location: 'Whitefish, Montana' },
+            { name: 'Wilderness Club', location: 'Eureka, Montana' },
+            { name: 'Iron Horse Golf Club', location: 'Whitefish, Montana' },
+            { name: 'Sand Hills Golf Club', location: 'Mullen, Nebraska' },
+            { name: 'Dismal River Club', location: 'Mullen, Nebraska' },
+            { name: 'The Prairie Club', location: 'Valentine, Nebraska' },
+            { name: 'Firethorn Golf Club', location: 'Lincoln, Nebraska' },
+            { name: 'Champions Run', location: 'Omaha, Nebraska' },
+            { name: 'Indian Creek Golf Course', location: 'Omaha, Nebraska' },
+            { name: 'Shadow Creek Golf Course', location: 'North Las Vegas, Nevada' },
+            { name: 'Wynn Golf Club', location: 'Las Vegas, Nevada' },
+            { name: 'Cascata Golf Club', location: 'Boulder City, Nevada' },
+            { name: 'TPC Las Vegas', location: 'Las Vegas, Nevada' },
+            { name: 'TPC Summerlin', location: 'Las Vegas, Nevada' },
+            { name: 'Wolf Creek Golf Club', location: 'Mesquite, Nevada' },
+            { name: 'Edgewood Tahoe Golf Course', location: 'Stateline, Nevada' },
+            { name: 'Paiute Golf Resort', location: 'Las Vegas, Nevada' },
+            { name: 'Reflection Bay Golf Club', location: 'Henderson, Nevada' },
+            { name: 'Rio Secco Golf Club', location: 'Henderson, Nevada' },
+            { name: 'The Balsams Resort', location: 'Dixville Notch, New Hampshire' },
+            { name: 'Mount Washington Resort Golf Course', location: 'Bretton Woods, New Hampshire' },
+            { name: 'Portsmouth Country Club', location: 'Greenland, New Hampshire' },
+            { name: 'Breakfast Hill Golf Club', location: 'Greenland, New Hampshire' },
+            { name: 'Owl\'s Nest Golf Club', location: 'Thornton, New Hampshire' },
+            { name: 'Pine Valley Golf Club', location: 'Pine Valley, New Jersey' },
+            { name: 'Baltusrol Golf Club', location: 'Springfield, New Jersey' },
+            { name: 'Ridgewood Country Club', location: 'Paramus, New Jersey' },
+            { name: 'Bayonne Golf Club', location: 'Bayonne, New Jersey' },
+            { name: 'Galloway National Golf Club', location: 'Galloway, New Jersey' },
+            { name: 'Somerset Hills Country Club', location: 'Bernardsville, New Jersey' },
+            { name: 'Plainfield Country Club', location: 'Edison, New Jersey' },
+            { name: 'Hamilton Farm Golf Club', location: 'Gladstone, New Jersey' },
+            { name: 'Liberty National Golf Club', location: 'Jersey City, New Jersey' },
+            { name: 'Trump National Golf Club Bedminster', location: 'Bedminster, New Jersey' },
+            { name: 'Trump National Golf Club Colts Neck', location: 'Colts Neck, New Jersey' },
+            { name: 'Metedeconk National Golf Club', location: 'Jackson, New Jersey' },
+            { name: 'Arcola Country Club', location: 'Paramus, New Jersey' },
+            { name: 'Fiddler\'s Elbow Country Club', location: 'Bedminster, New Jersey' },
+            { name: 'Spring Lake Golf Club', location: 'Spring Lake, New Jersey' },
+            { name: 'Black Mesa Golf Club', location: 'La Mesilla, New Mexico' },
+            { name: 'Paa-Ko Ridge Golf Club', location: 'Sandia Park, New Mexico' },
+            { name: 'Towa Golf Resort', location: 'Santa Fe, New Mexico' },
+            { name: 'The Championship Golf Course at UNM', location: 'Albuquerque, New Mexico' },
+            { name: 'Cochiti Golf Club', location: 'Cochiti Lake, New Mexico' },
+            { name: 'Shinnecock Hills Golf Club', location: 'Southampton, New York' },
+            { name: 'National Golf Links of America', location: 'Southampton, New York' },
+            { name: 'Winged Foot Golf Club', location: 'Mamaroneck, New York' },
+            { name: 'Bethpage State Park', location: 'Farmingdale, New York' },
+            { name: 'Friar\'s Head', location: 'Baiting Hollow, New York' },
+            { name: 'Sebonack Golf Club', location: 'Southampton, New York' },
+            { name: 'The Bridge', location: 'Bridgehampton, New York' },
+            { name: 'Maidstone Club', location: 'East Hampton, New York' },
+            { name: 'Quaker Ridge Golf Club', location: 'Scarsdale, New York' },
+            { name: 'Deepdale Golf Club', location: 'Manhasset, New York' },
+            { name: 'Piping Rock Club', location: 'Locust Valley, New York' },
+            { name: 'Garden City Golf Club', location: 'Garden City, New York' },
+            { name: 'Hudson National Golf Club', location: 'Croton-on-Hudson, New York' },
+            { name: 'Sleepy Hollow Country Club', location: 'Briarcliff Manor, New York' },
+            { name: 'The Creek', location: 'Locust Valley, New York' },
+            { name: 'Oak Hill Country Club', location: 'Pittsford, New York' },
+            { name: 'Saratoga National Golf Club', location: 'Saratoga Springs, New York' },
+            { name: 'Pinehurst No. 2', location: 'Pinehurst, North Carolina' },
+            { name: 'Pinehurst No. 4', location: 'Pinehurst, North Carolina' },
+            { name: 'Pinehurst No. 8', location: 'Pinehurst, North Carolina' },
+            { name: 'Pinehurst No. 9', location: 'Pinehurst, North Carolina' },
+            { name: 'Quail Hollow Club', location: 'Charlotte, North Carolina' },
+            { name: 'Wade Hampton Golf Club', location: 'Cashiers, North Carolina' },
+            { name: 'Linville Golf Club', location: 'Linville, North Carolina' },
+            { name: 'Country Club of North Carolina', location: 'Pinehurst, North Carolina' },
+            { name: 'Grandfather Golf and Country Club', location: 'Linville, North Carolina' },
+            { name: 'Tobacco Road Golf Club', location: 'Sanford, North Carolina' },
+            { name: 'Mid Pines Inn and Golf Club', location: 'Southern Pines, North Carolina' },
+            { name: 'Pine Needles Lodge & Golf Club', location: 'Southern Pines, North Carolina' },
+            { name: 'Bully Pulpit Golf Course', location: 'Medora, North Dakota' },
+            { name: 'Hawktree Golf Club', location: 'Bismarck, North Dakota' },
+            { name: 'The Links of North Dakota', location: 'Williston, North Dakota' },
+            { name: 'Rose Creek Golf Course', location: 'Fargo, North Dakota' },
+            { name: 'Edgewood Golf Course', location: 'Fargo, North Dakota' },
+            { name: 'Muirfield Village Golf Club', location: 'Dublin, Ohio' },
+            { name: 'Canterbury Golf Club', location: 'Beachwood, Ohio' },
+            { name: 'Firestone Country Club', location: 'Akron, Ohio' },
+            { name: 'Scioto Country Club', location: 'Columbus, Ohio' },
+            { name: 'Camargo Club', location: 'Indian Hill, Ohio' },
+            { name: 'The Golf Club', location: 'New Albany, Ohio' },
+            { name: 'Double Eagle Club', location: 'Galena, Ohio' },
+            { name: 'Valhalla at The Grand Resort', location: 'Warren, Ohio' },
+            { name: 'Longaberger Golf Club', location: 'Nashport, Ohio' },
+            { name: 'Kinsale Golf and Fitness Club', location: 'Powell, Ohio' },
+            { name: 'Southern Hills Country Club', location: 'Tulsa, Oklahoma' },
+            { name: 'Oak Tree National', location: 'Edmond, Oklahoma' },
+            { name: 'The Patriot Golf Club', location: 'Owasso, Oklahoma' },
+            { name: 'Karsten Creek Golf Club', location: 'Stillwater, Oklahoma' },
+            { name: 'Shangri-La Golf Club', location: 'Afton, Oklahoma' },
+            { name: 'Bandon Dunes Golf Resort', location: 'Bandon, Oregon' },
+            { name: 'Pacific Dunes', location: 'Bandon, Oregon' },
+            { name: 'Old Macdonald', location: 'Bandon, Oregon' },
+            { name: 'Bandon Trails', location: 'Bandon, Oregon' },
+            { name: 'Sheep Ranch', location: 'Bandon, Oregon' },
+            { name: 'Pronghorn Golf Club', location: 'Bend, Oregon' },
+            { name: 'Tetherow Golf Club', location: 'Bend, Oregon' },
+            { name: 'Crosswater Club', location: 'Sunriver, Oregon' },
+            { name: 'Silvies Valley Ranch', location: 'Seneca, Oregon' },
+            { name: 'Portland Golf Club', location: 'Portland, Oregon' },
+            { name: 'Eugene Country Club', location: 'Eugene, Oregon' },
+            { name: 'The Reserve Vineyards & Golf Club', location: 'Aloha, Oregon' },
+            { name: 'Merion Golf Club', location: 'Ardmore, Pennsylvania' },
+            { name: 'Oakmont Country Club', location: 'Oakmont, Pennsylvania' },
+            { name: 'Aronimink Golf Club', location: 'Newtown Square, Pennsylvania' },
+            { name: 'Philadelphia Cricket Club', location: 'Flourtown, Pennsylvania' },
+            { name: 'Philadelphia Country Club', location: 'Gladwyne, Pennsylvania' },
+            { name: 'Laurel Valley Golf Club', location: 'Ligonier, Pennsylvania' },
+            { name: 'Huntingdon Valley Country Club', location: 'Huntingdon Valley, Pennsylvania' },
+            { name: 'Saucon Valley Country Club', location: 'Bethlehem, Pennsylvania' },
+            { name: 'Fox Chapel Golf Club', location: 'Pittsburgh, Pennsylvania' },
+            { name: 'Lancaster Country Club', location: 'Lancaster, Pennsylvania' },
+            { name: 'Newport Country Club', location: 'Newport, Rhode Island' },
+            { name: 'Wannamoisett Country Club', location: 'Rumford, Rhode Island' },
+            { name: 'Shelter Harbor Golf Club', location: 'Charlestown, Rhode Island' },
+            { name: 'Point Judith Country Club', location: 'Narragansett, Rhode Island' },
+            { name: 'Misquamicut Club', location: 'Watch Hill, Rhode Island' },
             { name: 'Harbour Town Golf Links', location: 'Hilton Head Island, South Carolina' },
             { name: 'Kiawah Island Golf Resort', location: 'Kiawah Island, South Carolina' },
-            { name: 'Cabot Saint Lucia', location: 'Point Hardy, Saint Lucia' },
-            { name: 'Cabot Citrus Farms', location: 'Brooksville, Florida' },
-            { name: 'Barnbougle Dunes', location: 'Bridport, Tasmania, Australia' },
-            { name: 'Royal County Down', location: 'Newcastle, Northern Ireland' },
+            { name: 'Yeamans Hall Club', location: 'Hanahan, South Carolina' },
+            { name: 'Congaree Golf Club', location: 'Ridgeland, South Carolina' },
+            { name: 'Caledonia Golf & Fish Club', location: 'Pawleys Island, South Carolina' },
+            { name: 'TPC Myrtle Beach', location: 'Murrells Inlet, South Carolina' },
+            { name: 'Dunes Golf & Beach Club', location: 'Myrtle Beach, South Carolina' },
+            { name: 'Tidewater Golf Club', location: 'North Myrtle Beach, South Carolina' },
+            { name: 'The Country Club of Charleston', location: 'Charleston, South Carolina' },
+            { name: 'Sutton Bay Golf Club', location: 'Agar, South Dakota' },
+            { name: 'The Bluffs Golf Course', location: 'Vermillion, South Dakota' },
+            { name: 'Red Rock Golf Course', location: 'Rapid City, South Dakota' },
+            { name: 'Willow Run Golf Course', location: 'Sioux Falls, South Dakota' },
+            { name: 'Meadow Brook Golf Course', location: 'Rapid City, South Dakota' },
+            { name: 'The Honors Course', location: 'Ooltewah, Tennessee' },
+            { name: 'TPC Southwind', location: 'Memphis, Tennessee' },
+            { name: 'The Lookout Mountain Club', location: 'Lookout Mountain, Tennessee' },
+            { name: 'Sweetens Cove Golf Club', location: 'South Pittsburg, Tennessee' },
+            { name: 'Hermitage Golf Course', location: 'Old Hickory, Tennessee' },
+            { name: 'Gaylord Springs Golf Links', location: 'Nashville, Tennessee' },
+            { name: 'Colonial Country Club', location: 'Fort Worth, Texas' },
+            { name: 'Preston Trail Golf Club', location: 'Dallas, Texas' },
+            { name: 'Brook Hollow Golf Club', location: 'Dallas, Texas' },
+            { name: 'Dallas National Golf Club', location: 'Dallas, Texas' },
+            { name: 'Trinity Forest Golf Club', location: 'Dallas, Texas' },
+            { name: 'Shady Oaks Country Club', location: 'Fort Worth, Texas' },
+            { name: 'Houston Oaks Country Club', location: 'Hockley, Texas' },
+            { name: 'Whispering Pines Golf Club', location: 'Trinity, Texas' },
+            { name: 'Boot Ranch', location: 'Fredericksburg, Texas' },
+            { name: 'Spanish Oaks Golf Club', location: 'Austin, Texas' },
+            { name: 'The Golf Club at Star Ranch', location: 'Hutto, Texas' },
+            { name: 'TPC San Antonio', location: 'San Antonio, Texas' },
+            { name: 'Barton Creek Resort', location: 'Austin, Texas' },
+            { name: 'The Clubs at Houston Oaks', location: 'Hockley, Texas' },
+            { name: 'Champions Golf Club', location: 'Houston, Texas' },
+            { name: 'Promontory Club', location: 'Park City, Utah' },
+            { name: 'Thanksgiving Point Golf Club', location: 'Lehi, Utah' },
+            { name: 'Sand Hollow Golf Club', location: 'Hurricane, Utah' },
+            { name: 'Entrada at Snow Canyon', location: 'St. George, Utah' },
+            { name: 'Victory Ranch Golf Club', location: 'Kamas, Utah' },
+            { name: 'Soldier Hollow Golf Course', location: 'Midway, Utah' },
+            { name: 'Red Ledges Golf Club', location: 'Heber City, Utah' },
+            { name: 'Stowe Country Club', location: 'Stowe, Vermont' },
+            { name: 'Okemo Valley Golf Club', location: 'Ludlow, Vermont' },
+            { name: 'Equinox Golf Resort', location: 'Manchester, Vermont' },
+            { name: 'Green Mountain National Golf Course', location: 'Killington, Vermont' },
+            { name: 'Stratton Mountain Golf Club', location: 'Stratton, Vermont' },
+            { name: 'The Homestead Resort', location: 'Hot Springs, Virginia' },
+            { name: 'Kinloch Golf Club', location: 'Manakin-Sabot, Virginia' },
+            { name: 'Robert Trent Jones Golf Club', location: 'Gainesville, Virginia' },
+            { name: 'Ballyhack Golf Club', location: 'Roanoke, Virginia' },
+            { name: 'Primland Resort', location: 'Meadows of Dan, Virginia' },
+            { name: 'TPC Potomac at Avenel Farm', location: 'Potomac, Maryland' },
+            { name: 'Keswick Hall & Golf Club', location: 'Keswick, Virginia' },
+            { name: 'Independence Golf Club', location: 'Midlothian, Virginia' },
+            { name: 'Kingsmill Resort', location: 'Williamsburg, Virginia' },
+            { name: 'Chambers Bay Golf Course', location: 'University Place, Washington' },
+            { name: 'Sahalee Country Club', location: 'Sammamish, Washington' },
+            { name: 'The Golf Club at Newcastle', location: 'Newcastle, Washington' },
+            { name: 'Salish Cliffs Golf Club', location: 'Shelton, Washington' },
+            { name: 'Gold Mountain Golf Club', location: 'Bremerton, Washington' },
+            { name: 'Gamble Sands Golf Club', location: 'Brewster, Washington' },
+            { name: 'Wine Valley Golf Club', location: 'Walla Walla, Washington' },
+            { name: 'The Greenbrier', location: 'White Sulphur Springs, West Virginia' },
+            { name: 'Pete Dye Golf Club', location: 'Bridgeport, West Virginia' },
+            { name: 'Stonewall Jackson Resort', location: 'Roanoke, West Virginia' },
+            { name: 'The Resort at Glade Springs', location: 'Daniels, West Virginia' },
+            { name: 'Oglebay Resort', location: 'Wheeling, West Virginia' },
+            { name: 'Whistling Straits', location: 'Kohler, Wisconsin' },
+            { name: 'Blackwolf Run', location: 'Kohler, Wisconsin' },
+            { name: 'Erin Hills', location: 'Erin, Wisconsin' },
+            { name: 'Sand Valley Golf Resort', location: 'Nekoosa, Wisconsin' },
+            { name: 'Mammoth Dunes', location: 'Nekoosa, Wisconsin' },
+            { name: 'Sentryworld Golf Course', location: 'Stevens Point, Wisconsin' },
+            { name: 'Lawsonia Golf Links', location: 'Green Lake, Wisconsin' },
+            { name: 'University Ridge Golf Course', location: 'Madison, Wisconsin' },
+            { name: 'Geneva National Golf Club', location: 'Lake Geneva, Wisconsin' },
+            { name: 'The Bull at Pinehurst Farms', location: 'Sheboygan Falls, Wisconsin' },
+            { name: 'Jackson Hole Golf & Tennis Club', location: 'Jackson, Wyoming' },
+            { name: '3 Creek Ranch Golf Club', location: 'Jackson, Wyoming' },
+            { name: 'Shooting Star Golf Club', location: 'Teton Village, Wyoming' },
+            { name: 'Teton Pines Country Club', location: 'Wilson, Wyoming' },
+            { name: 'The Golf Club at Devil\'s Tower', location: 'Hulett, Wyoming' },
+            { name: 'St Andrews Old Course', location: 'St Andrews, Scotland' },
             { name: 'Royal Dornoch', location: 'Dornoch, Scotland' },
-            { name: 'Turnberry', location: 'Turnberry, Scotland' },
+            { name: 'Muirfield', location: 'Gullane, Scotland' },
             { name: 'Carnoustie Golf Links', location: 'Carnoustie, Scotland' },
             { name: 'Royal Troon Golf Club', location: 'Troon, Scotland' },
-            { name: 'Muirfield', location: 'Gullane, Scotland' },
             { name: 'Trump Turnberry', location: 'Turnberry, Scotland' },
             { name: 'Trump Aberdeen', location: 'Balmedie, Scotland' },
             { name: 'Kingsbarns Golf Links', location: 'St Andrews, Scotland' },
             { name: 'North Berwick Golf Club', location: 'North Berwick, Scotland' },
             { name: 'Cruden Bay Golf Club', location: 'Cruden Bay, Scotland' },
+            { name: 'Castle Stuart Golf Links', location: 'Inverness, Scotland' },
+            { name: 'Gleneagles', location: 'Auchterarder, Scotland' },
             { name: 'Royal Birkdale Golf Club', location: 'Southport, England' },
             { name: 'Sunningdale Golf Club', location: 'Sunningdale, England' },
             { name: 'Wentworth Club', location: 'Virginia Water, England' },
-            { name: 'The Grove', location: 'Chandler\'s Cross, England' },
+            { name: 'Royal St George\'s Golf Club', location: 'Sandwich, England' },
+            { name: 'Royal Liverpool Golf Club', location: 'Hoylake, England' },
+            { name: 'Royal Lytham & St Annes', location: 'Lytham St Annes, England' },
             { name: 'Ballybunion Golf Club', location: 'Ballybunion, Ireland' },
             { name: 'Lahinch Golf Club', location: 'Lahinch, Ireland' },
             { name: 'Old Head Golf Links', location: 'Kinsale, Ireland' },
             { name: 'Portmarnock Golf Club', location: 'Dublin, Ireland' },
             { name: 'Waterville Golf Links', location: 'Waterville, Ireland' },
-            { name: 'Doonbeg Golf Club', location: 'Doonbeg, Ireland' },
             { name: 'Trump International Doonbeg', location: 'Doonbeg, Ireland' },
+            { name: 'Royal County Down', location: 'Newcastle, Northern Ireland' },
+            { name: 'Royal Portrush', location: 'Portrush, Northern Ireland' },
+            { name: 'Cabot Cliffs', location: 'Inverness, Nova Scotia, Canada' },
+            { name: 'Cabot Links', location: 'Inverness, Nova Scotia, Canada' },
+            { name: 'St George\'s Golf and Country Club', location: 'Toronto, Ontario, Canada' },
+            { name: 'Jasper Park Lodge Golf Course', location: 'Jasper, Alberta, Canada' },
             { name: 'Emirates Golf Club', location: 'Dubai, UAE' },
             { name: 'Jumeirah Golf Estates', location: 'Dubai, UAE' },
             { name: 'Yas Links', location: 'Abu Dhabi, UAE' },
@@ -1950,42 +2259,14 @@
             { name: 'Jebel Ali Golf Resort', location: 'Dubai, UAE' },
             { name: 'Dubai Creek Golf & Yacht Club', location: 'Dubai, UAE' },
             { name: 'The Els Club', location: 'Dubai, UAE' },
-            { name: 'Al Ain Equestrian Golf Club', location: 'Al Ain, UAE' },
             { name: 'Abu Dhabi Golf Club', location: 'Abu Dhabi, UAE' },
-            { name: 'Winged Foot Golf Club', location: 'Mamaroneck, New York' },
-            { name: 'Garden City Golf Club', location: 'Garden City, New York' },
-            { name: 'Friar\'s Head', location: 'Baiting Hollow, New York' },
-            { name: 'Sebonack Golf Club', location: 'Southampton, New York' },
-            { name: 'The Bridge', location: 'Bridgehampton, New York' },
-            { name: 'Maidstone Club', location: 'East Hampton, New York' },
-            { name: 'Quaker Ridge Golf Club', location: 'Scarsdale, New York' },
-            { name: 'Deepdale Golf Club', location: 'Manhasset, New York' },
-            { name: 'Piping Rock Club', location: 'Locust Valley, New York' },
-            { name: 'Bethpage State Park', location: 'Farmingdale, New York' },
-            { name: 'Hudson National Golf Club', location: 'Croton-on-Hudson, New York' },
-            { name: 'Sleepy Hollow Country Club', location: 'Briarcliff Manor, New York' },
-            { name: 'Bayonne Golf Club', location: 'Bayonne, New Jersey' },
-            { name: 'Galloway National Golf Club', location: 'Galloway, New Jersey' },
-            { name: 'Somerset Hills Country Club', location: 'Bernardsville, New Jersey' },
-            { name: 'Plainfield Country Club', location: 'Edison, New Jersey' },
-            { name: 'Hamilton Farm Golf Club', location: 'Gladstone, New Jersey' },
-            { name: 'Liberty National Golf Club', location: 'Jersey City, New Jersey' },
-            { name: 'The Creek', location: 'Locust Valley, New York' },
-            { name: 'Congressional Country Club', location: 'Bethesda, Maryland' },
-            { name: 'Aronimink Golf Club', location: 'Newtown Square, Pennsylvania' },
-            { name: 'Philadelphia Cricket Club', location: 'Flourtown, Pennsylvania' },
-            { name: 'Myopia Hunt Club', location: 'South Hamilton, Massachusetts' },
-            { name: 'Essex County Club', location: 'Manchester-by-the-Sea, Massachusetts' },
-            { name: 'Eastward Ho! Country Club', location: 'Chatham, Massachusetts' },
-            { name: 'Kittansett Club', location: 'Marion, Massachusetts' },
-            { name: 'Boston Golf Club', location: 'Hingham, Massachusetts' },
-            { name: 'Salem Country Club', location: 'Peabody, Massachusetts' },
-            { name: 'The Country Club', location: 'Brookline, Massachusetts' },
-            { name: 'Newport Country Club', location: 'Newport, Rhode Island' },
-            { name: 'Wannamoisett Country Club', location: 'Rumford, Rhode Island' },
-            { name: 'Yale Golf Course', location: 'New Haven, Connecticut' },
-            { name: 'The Stanwich Club', location: 'Greenwich, Connecticut' },
-            { name: 'Shelter Harbor Golf Club', location: 'Charlestown, Rhode Island' }
+            { name: 'Royal Melbourne', location: 'Melbourne, Australia' },
+            { name: 'Kingston Heath Golf Club', location: 'Melbourne, Australia' },
+            { name: 'Barnbougle Dunes', location: 'Bridport, Tasmania, Australia' },
+            { name: 'Cape Kidnappers', location: 'Hawke\'s Bay, New Zealand' },
+            { name: 'Kauri Cliffs', location: 'Matauri Bay, New Zealand' },
+            { name: 'Tara Iti Golf Club', location: 'Mangawhai, New Zealand' },
+            { name: 'Cabot Saint Lucia', location: 'Point Hardy, Saint Lucia' }
         ];
 
         // ==========================================
@@ -2250,83 +2531,91 @@
                             }
                         }
                         
-                        // Auto-fill address and website by looking up the selected course
+                        // Auto-fill website FIRST, then try to get address FROM the website
                         const statusEl = document.getElementById('addressLookupStatus');
                         statusEl.innerHTML = '<span class="loading">Looking up details...</span>';
                         
-                        try {
-                            // Try Nominatim with extratags - best source for golf course addresses
-                            const locationHint = location ? ', ' + location : '';
-                            const nomResponse = await fetch(
-                                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(courseName + locationHint)}&limit=5&addressdetails=1&extratags=1`,
-                                { headers: { 'User-Agent': 'GolfCourseTracker/1.0' } }
-                            );
-                            const nomData = await nomResponse.json();
-                            
-                            // Find the result whose name best matches our course
-                            const courseNameClean = courseName.toLowerCase().replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
-                            const courseWords = courseNameClean.split(/\s+/).filter(w => w.length > 2);
-                            
-                            let bestResult = null;
-                            let bestScore = -1;
-                            
-                            for (const r of nomData) {
-                                const rName = (r.name || r.display_name.split(',')[0] || '').toLowerCase()
-                                    .replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
-                                const rWords = rName.split(/\s+/).filter(w => w.length > 2);
-                                
-                                let matchCount = 0;
-                                for (const cw of courseWords) {
-                                    if (rWords.some(rw => rw.includes(cw) || cw.includes(rw))) matchCount++;
-                                }
-                                const score = courseWords.length > 0 ? matchCount / courseWords.length : 0;
-                                if (score > bestScore) {
-                                    bestScore = score;
-                                    bestResult = r;
-                                }
+                        // Step 1: Find the website
+                        const websiteInput = document.getElementById('website');
+                        if (websiteInput && !websiteInput.value) {
+                            await findCourseWebsite(courseName, location, websiteInput);
+                        }
+                        
+                        // Step 2: Try to get address from the website (if found)
+                        const addressInput = document.getElementById('address');
+                        if (websiteInput.value && addressInput && !addressInput.value) {
+                            const foundAddress = await scrapeAddressFromWebsite(websiteInput.value, courseName);
+                            if (foundAddress) {
+                                addressInput.value = foundAddress;
+                                statusEl.innerHTML = '✓ Address found from website';
+                                setTimeout(() => statusEl.textContent = '', 3000);
                             }
-                            
-                            // Only use if name matches well (>= 50% of significant words)
-                            if (bestResult && bestScore >= 0.5 && bestResult.address) {
-                                const a = bestResult.address;
-                                const addressParts = [];
-                                // Only include street address if it looks specific (not just a town name)
-                                if (a.house_number && a.road) {
-                                    addressParts.push(a.house_number + ' ' + a.road);
-                                } else if (a.road) {
-                                    addressParts.push(a.road);
-                                }
-                                if (a.city || a.town || a.village) addressParts.push(a.city || a.town || a.village);
-                                if (a.state) addressParts.push(a.state);
-                                if (a.postcode) addressParts.push(a.postcode);
-                                if (a.country) addressParts.push(a.country);
+                        }
+                        
+                        // Step 3: If no address from website, try Nominatim
+                        if (addressInput && !addressInput.value) {
+                            try {
+                                const locationHint = location ? ', ' + location : '';
+                                const nomResponse = await fetch(
+                                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(courseName + locationHint)}&limit=5&addressdetails=1&extratags=1`,
+                                    { headers: { 'User-Agent': 'GolfCourseTracker/1.0' } }
+                                );
+                                const nomData = await nomResponse.json();
                                 
-                                if (addressParts.length > 0) {
-                                    document.getElementById('address').value = addressParts.join(', ');
-                                    statusEl.innerHTML = '✓ Address found';
-                                    setTimeout(() => statusEl.textContent = '', 3000);
+                                const courseNameClean = courseName.toLowerCase().replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
+                                const courseWords = courseNameClean.split(/\s+/).filter(w => w.length > 2);
+                                
+                                let bestResult = null;
+                                let bestScore = -1;
+                                
+                                for (const r of nomData) {
+                                    const rName = (r.name || r.display_name.split(',')[0] || '').toLowerCase()
+                                        .replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
+                                    const rWords = rName.split(/\s+/).filter(w => w.length > 2);
+                                    
+                                    let matchCount = 0;
+                                    for (const cw of courseWords) {
+                                        if (rWords.some(rw => rw.includes(cw) || cw.includes(rw))) matchCount++;
+                                    }
+                                    const score = courseWords.length > 0 ? matchCount / courseWords.length : 0;
+                                    if (score > bestScore) {
+                                        bestScore = score;
+                                        bestResult = r;
+                                    }
+                                }
+                                
+                                if (bestResult && bestScore >= 0.5 && bestResult.address) {
+                                    const a = bestResult.address;
+                                    const addressParts = [];
+                                    if (a.house_number && a.road) addressParts.push(a.house_number + ' ' + a.road);
+                                    else if (a.road) addressParts.push(a.road);
+                                    if (a.city || a.town || a.village) addressParts.push(a.city || a.town || a.village);
+                                    if (a.state) addressParts.push(a.state);
+                                    if (a.postcode) addressParts.push(a.postcode);
+                                    if (a.country) addressParts.push(a.country);
+                                    
+                                    if (addressParts.length > 0) {
+                                        addressInput.value = addressParts.join(', ');
+                                        statusEl.innerHTML = '✓ Address found';
+                                        setTimeout(() => statusEl.textContent = '', 3000);
+                                    }
+                                    
+                                    const cityInput = document.getElementById('city');
+                                    const stateInput = document.getElementById('state');
+                                    const countryInput = document.getElementById('country');
+                                    if (cityInput && !cityInput.value) cityInput.value = a.city || a.town || a.village || '';
+                                    if (stateInput && !stateInput.value) stateInput.value = a.state || '';
+                                    if (countryInput && !countryInput.value) countryInput.value = a.country || '';
                                 } else {
                                     statusEl.textContent = '';
                                 }
-                                
-                                // Fill city/state/country
-                                const cityInput = document.getElementById('city');
-                                const stateInput = document.getElementById('state');
-                                const countryInput = document.getElementById('country');
-                                if (cityInput && !cityInput.value) cityInput.value = a.city || a.town || a.village || '';
-                                if (stateInput && !stateInput.value) stateInput.value = a.state || '';
-                                if (countryInput && !countryInput.value) countryInput.value = a.country || '';
-                            } else {
+                            } catch (error) {
                                 statusEl.textContent = '';
                             }
-                        } catch (error) {
+                        } else if (addressInput && addressInput.value) {
+                            // Address was found from website, already shown
+                        } else {
                             statusEl.textContent = '';
-                        }
-                        
-                        // Smart website auto-fill: Try official website, then Wikipedia, then leave blank
-                        const websiteInput = document.getElementById('website');
-                        if (websiteInput && !websiteInput.value) {
-                            await findCourseWebsite(courseName, websiteInput);
                         }
                         
                         autocompleteDropdown.classList.remove('active');
@@ -2335,19 +2624,146 @@
             }
         }
 
-        // Function to intelligently find course website
-        // Strategy: 
-        //   1. Try DuckDuckGo instant answer API
-        //   2. Try Wikipedia for official website link
-        //   3. Try Nominatim with extratags (has website data for some courses)
-        //   4. Try smart domain guessing with common golf club URL patterns
-        //   5. If nothing works, leave blank for manual entry
-        async function findCourseWebsite(courseName, websiteInput) {
+        // Function to scrape address from a golf course website using a CORS proxy
+        async function scrapeAddressFromWebsite(websiteUrl, courseName) {
             try {
-                // Step 1: DuckDuckGo Instant Answer API
+                // Use allorigins.win as a free CORS proxy
+                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(websiteUrl);
+                const response = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+                
+                if (!response.ok) return null;
+                
+                const html = await response.text();
+                
+                // Strategy 1: Look for structured data (JSON-LD) — most reliable
+                const jsonLdMatches = html.match(/<script[^>]*type\s*=\s*["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+                if (jsonLdMatches) {
+                    for (const match of jsonLdMatches) {
+                        try {
+                            const jsonStr = match.replace(/<\/?script[^>]*>/gi, '').trim();
+                            const jsonData = JSON.parse(jsonStr);
+                            const items = Array.isArray(jsonData) ? jsonData : [jsonData];
+                            for (const item of items) {
+                                const addr = item.address || (item['@graph'] && item['@graph'].find(g => g.address))?.address;
+                                if (addr) {
+                                    const parts = [];
+                                    if (addr.streetAddress) parts.push(addr.streetAddress);
+                                    if (addr.addressLocality) parts.push(addr.addressLocality);
+                                    if (addr.addressRegion) parts.push(addr.addressRegion);
+                                    if (addr.postalCode) parts.push(addr.postalCode);
+                                    if (parts.length >= 2) return parts.join(', ');
+                                }
+                            }
+                        } catch (e) { /* invalid JSON, skip */ }
+                    }
+                }
+                
+                // Strategy 2: Look for common address patterns in the HTML text
+                // Strip HTML tags to get plain text
+                const textContent = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+                
+                // US address pattern: number + street, city, state abbreviation + zip
+                const usAddressPattern = /(\d+\s+[A-Z][A-Za-z\s.]+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Boulevard|Blvd|Lane|Ln|Way|Court|Ct|Circle|Cir|Place|Pl|Parkway|Pkwy)[.,]?\s+[A-Za-z\s]+,\s*[A-Z]{2}\s*\d{5}(?:-\d{4})?)/g;
+                const usMatches = textContent.match(usAddressPattern);
+                if (usMatches && usMatches.length > 0) {
+                    return usMatches[0].trim();
+                }
+                
+                // Simpler US pattern: number + words + comma + state abbrev + zip
+                const simpleUsPattern = /(\d+\s+[A-Za-z\s.]{3,40},\s*[A-Za-z\s]+,\s*[A-Z]{2}\s+\d{5})/g;
+                const simpleMatches = textContent.match(simpleUsPattern);
+                if (simpleMatches && simpleMatches.length > 0) {
+                    return simpleMatches[0].trim();
+                }
+
+                // Strategy 3: Look for address in meta tags
+                const metaAddress = html.match(/content\s*=\s*["'](\d+[^"']*(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Boulevard|Blvd|Lane|Ln|Way)[^"']*\d{5}[^"']*)["']/i);
+                if (metaAddress) {
+                    return metaAddress[1].trim();
+                }
+                
+                // Strategy 4: Look for "address" near text with a zip code
+                const addressBlockPattern = /[Aa]ddress[:\s]*([^<\n]{10,80}\d{5})/;
+                const addressBlock = textContent.match(addressBlockPattern);
+                if (addressBlock) {
+                    return addressBlock[1].trim().replace(/^\s*[:|-]\s*/, '');
+                }
+                
+                return null;
+            } catch (error) {
+                console.log('Website scrape failed:', error.message);
+                return null;
+            }
+        }
+
+        // Function to intelligently find course website
+        // Uses location to disambiguate courses with the same name
+        async function findCourseWebsite(courseName, courseLocation, websiteInput) {
+            const locationStr = courseLocation || '';
+            const searchQuery = courseName + (locationStr ? ' ' + locationStr : '');
+            
+            try {
+                // Step 1: Nominatim with extratags - best for location-specific results
+                // This is tried first because it uses geo-data to disambiguate same-name courses
+                try {
+                    const nomResponse = await fetch(
+                        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery + ' golf')}&limit=5&extratags=1`,
+                        { headers: { 'User-Agent': 'GolfCourseTracker/1.0' } }
+                    );
+                    const nomData = await nomResponse.json();
+                    
+                    // Score results by name AND location match
+                    const courseNameClean = courseName.toLowerCase().replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
+                    const courseWords = courseNameClean.split(/\s+/).filter(w => w.length > 2);
+                    const locationLower = locationStr.toLowerCase();
+                    
+                    let bestResult = null;
+                    let bestScore = -1;
+                    
+                    for (const r of nomData) {
+                        const rName = (r.name || r.display_name.split(',')[0] || '').toLowerCase()
+                            .replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
+                        const rWords = rName.split(/\s+/).filter(w => w.length > 2);
+                        const rDisplay = (r.display_name || '').toLowerCase();
+                        
+                        // Name match score
+                        let matchCount = 0;
+                        for (const cw of courseWords) {
+                            if (rWords.some(rw => rw.includes(cw) || cw.includes(rw))) matchCount++;
+                        }
+                        let score = courseWords.length > 0 ? matchCount / courseWords.length : 0;
+                        
+                        // Location bonus - boost score if location matches
+                        if (locationLower) {
+                            const locParts = locationLower.split(',').map(p => p.trim());
+                            for (const part of locParts) {
+                                if (part && rDisplay.includes(part)) score += 0.3;
+                            }
+                        }
+                        
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestResult = r;
+                        }
+                    }
+                    
+                    if (bestResult && bestScore >= 0.5 && bestResult.extratags) {
+                        const website = bestResult.extratags.website || bestResult.extratags.url || bestResult.extratags.contact_website;
+                        if (website) {
+                            let url = website;
+                            if (!url.startsWith('http')) url = 'https://' + url;
+                            websiteInput.value = url;
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.log('Nominatim extratags lookup failed');
+                }
+
+                // Step 2: DuckDuckGo Instant Answer API - include location for disambiguation
                 try {
                     const ddgResponse = await fetch(
-                        'https://api.duckduckgo.com/?q=' + encodeURIComponent(courseName + ' golf club official site') + '&format=json&no_redirect=1'
+                        'https://api.duckduckgo.com/?q=' + encodeURIComponent(searchQuery + ' golf club official site') + '&format=json&no_redirect=1'
                     );
                     const ddgData = await ddgResponse.json();
                     
@@ -2378,7 +2794,7 @@
                     console.log('DuckDuckGo lookup failed');
                 }
 
-                // Step 2: Wikipedia lookup for official website
+                // Step 3: Wikipedia lookup
                 try {
                     const wikiQuery = encodeURIComponent(courseName);
                     const wikiResponse = await fetch(
@@ -2392,19 +2808,27 @@
                             const page = pages[0];
                             if (page.revisions && page.revisions[0] && page.revisions[0].slots && page.revisions[0].slots.main) {
                                 const content = page.revisions[0].slots.main['*'];
-                                const websitePatterns = [
-                                    /\|\s*website\s*=\s*\{?\s*(?:URL\|)?(?:\[)?(https?:\/\/[^\s\]|}]+)/i,
-                                    /\|\s*url\s*=\s*\[?(https?:\/\/[^\s\]|]+)/i,
-                                    /\|\s*homepage\s*=\s*\[?(https?:\/\/[^\s\]|]+)/i
-                                ];
-                                for (const pattern of websitePatterns) {
-                                    const match = content.match(pattern);
-                                    if (match) {
-                                        let url = (match[1] || match[0]).replace(/^\[/, '').replace(/\]$/, '').replace(/\|.*$/, '').trim();
-                                        if (url && !url.includes('facebook.com') && !url.includes('twitter.com') && 
-                                            !url.includes('instagram.com') && !url.includes('youtube.com')) {
-                                            websiteInput.value = url;
-                                            return;
+                                // Check if Wikipedia content mentions our location
+                                const contentLower = content.toLowerCase();
+                                const locationMatch = !locationStr || locationStr.split(',').some(p => 
+                                    p.trim() && contentLower.includes(p.trim().toLowerCase())
+                                );
+                                
+                                if (locationMatch) {
+                                    const websitePatterns = [
+                                        /\|\s*website\s*=\s*\{?\s*(?:URL\|)?(?:\[)?(https?:\/\/[^\s\]|}]+)/i,
+                                        /\|\s*url\s*=\s*\[?(https?:\/\/[^\s\]|]+)/i,
+                                        /\|\s*homepage\s*=\s*\[?(https?:\/\/[^\s\]|]+)/i
+                                    ];
+                                    for (const pattern of websitePatterns) {
+                                        const match = content.match(pattern);
+                                        if (match) {
+                                            let url = (match[1] || match[0]).replace(/^\[/, '').replace(/\]$/, '').replace(/\|.*$/, '').trim();
+                                            if (url && !url.includes('facebook.com') && !url.includes('twitter.com') && 
+                                                !url.includes('instagram.com') && !url.includes('youtube.com')) {
+                                                websiteInput.value = url;
+                                                return;
+                                            }
                                         }
                                     }
                                 }
@@ -2415,34 +2839,8 @@
                     console.log('Wikipedia lookup failed');
                 }
 
-                // Step 3: Try Nominatim with extratags (OSM sometimes has website info)
-                try {
-                    const nomResponse = await fetch(
-                        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(courseName + ' golf')}&limit=3&extratags=1`,
-                        { headers: { 'User-Agent': 'GolfCourseTracker/1.0' } }
-                    );
-                    const nomData = await nomResponse.json();
-                    for (const result of nomData) {
-                        if (result.extratags && result.extratags.website) {
-                            let url = result.extratags.website;
-                            if (!url.startsWith('http')) url = 'https://' + url;
-                            websiteInput.value = url;
-                            return;
-                        }
-                        if (result.extratags && result.extratags.url) {
-                            let url = result.extratags.url;
-                            if (!url.startsWith('http')) url = 'https://' + url;
-                            websiteInput.value = url;
-                            return;
-                        }
-                    }
-                } catch (e) {
-                    console.log('Nominatim extratags lookup failed');
-                }
-
                 // Step 4: Smart domain guessing
                 try {
-                    // Build candidate URLs from the course name
                     const cleanName = courseName.toLowerCase()
                         .replace(/^the\s+/i, '')
                         .replace(/\s+(golf|club|course|country|resort|links|cc|gc)s?\b/gi, '')
@@ -2450,6 +2848,9 @@
                         .trim();
                     const words = cleanName.split(/\s+/);
                     const joined = words.join('');
+                    
+                    // Get state abbreviation for location-specific domains
+                    const stateAbbrev = locationStr.match(/\b([A-Z]{2})\b/) ? locationStr.match(/\b([A-Z]{2})\b/)[1].toLowerCase() : '';
                     
                     const candidates = [
                         `https://www.${joined}cc.com`,
@@ -2459,17 +2860,17 @@
                         `https://www.${joined}.com`,
                         `https://www.the${joined}.com`
                     ];
+                    if (stateAbbrev) {
+                        candidates.push(`https://www.${joined}cc${stateAbbrev}.com`);
+                        candidates.push(`https://www.${joined}${stateAbbrev}.com`);
+                    }
                     
-                    // Try each candidate with a HEAD request
                     for (const url of candidates) {
                         try {
                             const resp = await fetch(url, { method: 'HEAD', mode: 'no-cors', signal: AbortSignal.timeout(2000) });
-                            // no-cors always returns opaque, but if it doesn't throw, the domain likely exists
                             websiteInput.value = url;
                             return;
-                        } catch (e) {
-                            // Domain doesn't exist, try next
-                        }
+                        } catch (e) { }
                     }
                 } catch (e) {
                     console.log('Domain guessing failed');
@@ -2586,7 +2987,10 @@
             // Look up website
             const websiteInput = document.getElementById('website');
             if (websiteInput) {
-                await findCourseWebsite(courseName, websiteInput);
+                const cityVal = document.getElementById('city') ? document.getElementById('city').value : '';
+                const stateVal = document.getElementById('state') ? document.getElementById('state').value : '';
+                const refreshLocation = [cityVal, stateVal].filter(Boolean).join(', ');
+                await findCourseWebsite(courseName, refreshLocation, websiteInput);
             }
         });
 
