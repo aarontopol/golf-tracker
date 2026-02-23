@@ -412,6 +412,85 @@
             display: block;
         }
 
+        /* Sort controls */
+        .sort-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 4px;
+            margin-bottom: 8px;
+        }
+        .sort-label {
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+            white-space: nowrap;
+        }
+        .sort-buttons {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+        .sort-btn {
+            padding: 5px 12px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 16px;
+            background: rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.8);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .sort-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        .sort-btn.active {
+            background: rgba(255,255,255,0.9);
+            color: #1e3c72;
+            font-weight: 600;
+            border-color: white;
+        }
+        .state-group-header {
+            font-size: 14px;
+            font-weight: 700;
+            color: rgba(255,255,255,0.9);
+            padding: 10px 4px 4px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            margin-bottom: 6px;
+            margin-top: 8px;
+        }
+        .state-group-header:first-child {
+            margin-top: 0;
+        }
+        .map-filter-container {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .map-filter-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .map-filter-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            flex: 1;
+            min-width: 120px;
+        }
+        .map-filter-clear {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            background: #e8e8e8;
+            color: #333;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
         /* Individual course item in the list */
         .course-item {
             background: white;
@@ -1360,16 +1439,36 @@
              WISH LIST VIEW
              Shows all courses you want to play
              ============================================ -->
-        <div id="wishList" class="course-list active">
-            <!-- JavaScript will insert your wish list courses here dynamically -->
+        <div id="wishListContainer" class="course-list active">
+            <div class="sort-controls" id="wishListSortControls" style="display:none;">
+                <div class="sort-label">Sort by:</div>
+                <div class="sort-buttons">
+                    <button class="sort-btn active" data-sort="alpha" data-list="wish">A–Z</button>
+                    <button class="sort-btn" data-sort="state" data-list="wish">State</button>
+                    <button class="sort-btn" data-sort="rating" data-list="wish">Rating</button>
+                    <button class="sort-btn" data-sort="map" data-list="wish">🗺️ Map</button>
+                </div>
+            </div>
+            <div id="wishList">
+            </div>
         </div>
 
         <!-- ============================================
              PLAYED LIST VIEW
              Shows all courses you've played (can have duplicates)
              ============================================ -->
-        <div id="playedList" class="course-list">
-            <!-- JavaScript will insert your played courses here dynamically -->
+        <div id="playedListContainer" class="course-list">
+            <div class="sort-controls" id="playedListSortControls" style="display:none;">
+                <div class="sort-label">Sort by:</div>
+                <div class="sort-buttons">
+                    <button class="sort-btn active" data-sort="date" data-list="played">Date</button>
+                    <button class="sort-btn" data-sort="alpha" data-list="played">A–Z</button>
+                    <button class="sort-btn" data-sort="state" data-list="played">State</button>
+                    <button class="sort-btn" data-sort="map" data-list="played">🗺️ Map</button>
+                </div>
+            </div>
+            <div id="playedList">
+            </div>
         </div>
 
         <!-- ============================================
@@ -3104,9 +3203,11 @@
         
         // When "Wish List" button is clicked
         document.getElementById('btnShowWishList').addEventListener('click', function() {
-            document.getElementById('wishList').classList.add('active');
-            document.getElementById('playedList').classList.remove('active');
+            document.getElementById('wishListContainer').classList.add('active');
+            document.getElementById('playedListContainer').classList.remove('active');
             document.getElementById('addForm').classList.remove('active');
+            if (wishlistCourses.length > 0) document.getElementById('wishListSortControls').style.display = 'flex';
+            document.getElementById('playedListSortControls').style.display = 'none';
             
             this.classList.add('active');
             document.getElementById('btnShowPlayedList').classList.remove('active');
@@ -3115,9 +3216,11 @@
 
         // When "Played" button is clicked
         document.getElementById('btnShowPlayedList').addEventListener('click', function() {
-            document.getElementById('playedList').classList.add('active');
-            document.getElementById('wishList').classList.remove('active');
+            document.getElementById('playedListContainer').classList.add('active');
+            document.getElementById('wishListContainer').classList.remove('active');
             document.getElementById('addForm').classList.remove('active');
+            if (playedCourses.length > 0) document.getElementById('playedListSortControls').style.display = 'flex';
+            document.getElementById('wishListSortControls').style.display = 'none';
             
             this.classList.add('active');
             document.getElementById('btnShowWishList').classList.remove('active');
@@ -3127,8 +3230,10 @@
         // When "Add" button is clicked
         document.getElementById('btnShowAdd').addEventListener('click', function() {
             document.getElementById('addForm').classList.add('active');
-            document.getElementById('wishList').classList.remove('active');
-            document.getElementById('playedList').classList.remove('active');
+            document.getElementById('wishListContainer').classList.remove('active');
+            document.getElementById('playedListContainer').classList.remove('active');
+            document.getElementById('wishListSortControls').style.display = 'none';
+            document.getElementById('playedListSortControls').style.display = 'none';
             
             this.classList.add('active');
             document.getElementById('btnShowWishList').classList.remove('active');
@@ -3764,10 +3869,131 @@
             return bestScore > 40 ? bestMatch : null;
         }
 
+        // ==========================================
+        // SORT & FILTER STATE
+        // ==========================================
+        let wishSortMode = 'alpha';
+        let playedSortMode = 'date';
+        let wishMapFilter = { country: '', state: '', city: '' };
+        let playedMapFilter = { country: '', state: '', city: '' };
+
+        // Sort button click handlers
+        document.addEventListener('click', function(e) {
+            if (!e.target.classList.contains('sort-btn')) return;
+            const list = e.target.dataset.list;
+            const sort = e.target.dataset.sort;
+            
+            // Update active button
+            e.target.closest('.sort-buttons').querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+            e.target.classList.add('active');
+            
+            if (list === 'wish') {
+                wishSortMode = sort;
+                renderWishList();
+            } else {
+                playedSortMode = sort;
+                renderPlayedList();
+            }
+        });
+
+        function getLocationParts(course) {
+            return {
+                country: (course.country || '').trim(),
+                state: (course.state || '').trim(),
+                city: (course.city || '').trim()
+            };
+        }
+
+        function getUniqueValues(courses, field) {
+            const vals = new Set();
+            courses.forEach(c => {
+                const v = (c[field] || '').trim();
+                if (v) vals.add(v);
+            });
+            return Array.from(vals).sort();
+        }
+
+        function renderMapFilter(containerId, courses, filter, onChangeCallback) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            
+            const countries = getUniqueValues(courses, 'country');
+            const states = filter.country 
+                ? getUniqueValues(courses.filter(c => (c.country || '').trim() === filter.country), 'state')
+                : getUniqueValues(courses, 'state');
+            const cities = filter.state
+                ? getUniqueValues(courses.filter(c => (c.state || '').trim() === filter.state), 'city')
+                : filter.country
+                    ? getUniqueValues(courses.filter(c => (c.country || '').trim() === filter.country), 'city')
+                    : getUniqueValues(courses, 'city');
+
+            container.innerHTML = `
+                <div class="map-filter-container">
+                    <div class="map-filter-row">
+                        <select class="map-filter-select" id="${containerId}Country">
+                            <option value="">All Countries</option>
+                            ${countries.map(c => `<option value="${escapeHtml(c)}" ${filter.country === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}
+                        </select>
+                        <select class="map-filter-select" id="${containerId}State">
+                            <option value="">All States</option>
+                            ${states.map(s => `<option value="${escapeHtml(s)}" ${filter.state === s ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('')}
+                        </select>
+                        <select class="map-filter-select" id="${containerId}City">
+                            <option value="">All Cities</option>
+                            ${cities.map(c => `<option value="${escapeHtml(c)}" ${filter.city === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}
+                        </select>
+                        <button class="map-filter-clear" onclick="clearMapFilter('${containerId}')">Clear</button>
+                    </div>
+                </div>
+            `;
+            
+            // Wire up change handlers
+            document.getElementById(containerId + 'Country').addEventListener('change', function() {
+                filter.country = this.value;
+                filter.state = '';
+                filter.city = '';
+                onChangeCallback();
+            });
+            document.getElementById(containerId + 'State').addEventListener('change', function() {
+                filter.state = this.value;
+                filter.city = '';
+                onChangeCallback();
+            });
+            document.getElementById(containerId + 'City').addEventListener('change', function() {
+                filter.city = this.value;
+                onChangeCallback();
+            });
+        }
+
+        // Called from the Clear button
+        window.clearMapFilter = function(containerId) {
+            if (containerId === 'wishMapFilter') {
+                wishMapFilter = { country: '', state: '', city: '' };
+                renderWishList();
+            } else {
+                playedMapFilter = { country: '', state: '', city: '' };
+                renderPlayedList();
+            }
+        };
+
+        function applyMapFilter(courses, filter) {
+            return courses.filter(c => {
+                if (filter.country && (c.country || '').trim() !== filter.country) return false;
+                if (filter.state && (c.state || '').trim() !== filter.state) return false;
+                if (filter.city && (c.city || '').trim() !== filter.city) return false;
+                return true;
+            });
+        }
+
+        // ==========================================
+        // DISPLAY WISH LIST
+        // ==========================================
         function renderWishList() {
             const listEl = document.getElementById('wishList');
+            const sortControls = document.getElementById('wishListSortControls');
             
             if (wishlistCourses.length === 0) {
+                sortControls.style.display = 'none';
                 listEl.innerHTML = `
                     <div class="card empty-state">
                         <div class="empty-state-icon">⛳</div>
@@ -3778,20 +4004,70 @@
                 return;
             }
             
-            const ratingLabels = {
-                must: 'Must Play',
-                would: 'Would Like',
-                nearby: 'If Nearby'
-            };
+            // Show sort controls when there are courses
+            if (document.getElementById('wishListContainer').classList.contains('active')) {
+                sortControls.style.display = 'flex';
+            }
             
-            const ratingClasses = {
-                must: 'rating-must',
-                would: 'rating-would',
-                nearby: 'rating-nearby'
-            };
+            const ratingLabels = { must: 'Must Play', would: 'Would Like', nearby: 'If Nearby' };
+            const ratingClasses = { must: 'rating-must', would: 'rating-would', nearby: 'rating-nearby' };
+            const ratingOrder = { must: 0, would: 1, nearby: 2, '': 3 };
             
-            listEl.innerHTML = wishlistCourses.map(course => {
-                // Build location string from city, state, country
+            let courses = [...wishlistCourses];
+            
+            // Apply map filter if active
+            if (wishSortMode === 'map') {
+                courses = applyMapFilter(courses, wishMapFilter);
+            }
+            
+            // Sort
+            if (wishSortMode === 'alpha' || wishSortMode === 'map') {
+                courses.sort((a, b) => a.name.localeCompare(b.name));
+            } else if (wishSortMode === 'state') {
+                courses.sort((a, b) => {
+                    const sa = (a.state || a.country || 'ZZZ').trim();
+                    const sb = (b.state || b.country || 'ZZZ').trim();
+                    if (sa !== sb) return sa.localeCompare(sb);
+                    return a.name.localeCompare(b.name);
+                });
+            } else if (wishSortMode === 'rating') {
+                courses.sort((a, b) => {
+                    const ra = ratingOrder[a.rating || ''];
+                    const rb = ratingOrder[b.rating || ''];
+                    if (ra !== rb) return ra - rb;
+                    return a.name.localeCompare(b.name);
+                });
+            }
+            
+            // Build HTML
+            let html = '';
+            
+            // Map filter dropdowns
+            if (wishSortMode === 'map') {
+                html += '<div id="wishMapFilter"></div>';
+            }
+            
+            // Group by state
+            let currentGroup = null;
+            
+            courses.forEach(course => {
+                // State group headers
+                if (wishSortMode === 'state') {
+                    const group = (course.state || course.country || 'Unknown').trim();
+                    if (group !== currentGroup) {
+                        currentGroup = group;
+                        html += `<div class="state-group-header">📍 ${escapeHtml(group)}</div>`;
+                    }
+                }
+                // Rating group headers
+                if (wishSortMode === 'rating') {
+                    const group = course.rating || '';
+                    if (group !== currentGroup) {
+                        currentGroup = group;
+                        html += `<div class="state-group-header">${group ? ratingLabels[group] : 'Unrated'}</div>`;
+                    }
+                }
+                
                 let locationStr = '';
                 if (course.city || course.state || course.country) {
                     const parts = [];
@@ -3801,10 +4077,9 @@
                     locationStr = parts.join(', ');
                 }
                 
-                // Check for Golf Digest ranking
                 const gdRank = getGolfDigestRanking(course.name);
 
-                return `
+                html += `
                     <div class="course-item" data-id="${course.id}" data-type="wishlist">
                         <div class="course-header">
                             <div class="course-name-area" style="flex: 1; min-width: 0;">
@@ -3824,7 +4099,18 @@
                         </div>
                     </div>
                 `;
-            }).join('');
+            });
+            
+            if (wishSortMode === 'map' && courses.length === 0 && wishlistCourses.length > 0) {
+                html += '<div class="card empty-state"><p>No courses match this filter.</p></div>';
+            }
+            
+            listEl.innerHTML = html;
+            
+            // Render map filter after DOM update
+            if (wishSortMode === 'map') {
+                renderMapFilter('wishMapFilter', wishlistCourses, wishMapFilter, renderWishList);
+            }
             
             document.querySelectorAll('#wishList .course-item').forEach(item => {
                 item.addEventListener('click', function() {
@@ -3840,8 +4126,10 @@
         // ==========================================
         function renderPlayedList() {
             const listEl = document.getElementById('playedList');
+            const sortControls = document.getElementById('playedListSortControls');
             
             if (playedCourses.length === 0) {
+                sortControls.style.display = 'none';
                 listEl.innerHTML = `
                     <div class="card empty-state">
                         <div class="empty-state-icon">✅</div>
@@ -3852,7 +4140,12 @@
                 return;
             }
             
-            // Group rounds by course name and count them
+            // Show sort controls when there are courses
+            if (document.getElementById('playedListContainer').classList.contains('active')) {
+                sortControls.style.display = 'flex';
+            }
+            
+            // Group rounds by course name
             const courseGroups = {};
             playedCourses.forEach(round => {
                 if (!courseGroups[round.name]) {
@@ -3861,18 +4154,65 @@
                 courseGroups[round.name].push(round);
             });
             
-            // Sort rounds by date (most recent first)
+            // Sort rounds within each group by date (most recent first)
             Object.keys(courseGroups).forEach(courseName => {
                 courseGroups[courseName].sort((a, b) => new Date(b.datePlayed) - new Date(a.datePlayed));
             });
             
-            // Create HTML for each course group
-            listEl.innerHTML = Object.keys(courseGroups).map(courseName => {
+            // Build grouped entries array
+            let entries = Object.keys(courseGroups).map(courseName => {
                 const rounds = courseGroups[courseName];
-                const timesPlayed = rounds.length;
                 const mostRecent = rounds[0];
+                return { courseName, rounds, mostRecent };
+            });
+            
+            // Apply map filter if active
+            if (playedSortMode === 'map') {
+                entries = entries.filter(e => {
+                    const c = e.mostRecent;
+                    if (playedMapFilter.country && (c.country || '').trim() !== playedMapFilter.country) return false;
+                    if (playedMapFilter.state && (c.state || '').trim() !== playedMapFilter.state) return false;
+                    if (playedMapFilter.city && (c.city || '').trim() !== playedMapFilter.city) return false;
+                    return true;
+                });
+            }
+            
+            // Sort entries
+            if (playedSortMode === 'date') {
+                entries.sort((a, b) => new Date(b.mostRecent.datePlayed) - new Date(a.mostRecent.datePlayed));
+            } else if (playedSortMode === 'alpha' || playedSortMode === 'map') {
+                entries.sort((a, b) => a.courseName.localeCompare(b.courseName));
+            } else if (playedSortMode === 'state') {
+                entries.sort((a, b) => {
+                    const sa = (a.mostRecent.state || a.mostRecent.country || 'ZZZ').trim();
+                    const sb = (b.mostRecent.state || b.mostRecent.country || 'ZZZ').trim();
+                    if (sa !== sb) return sa.localeCompare(sb);
+                    return a.courseName.localeCompare(b.courseName);
+                });
+            }
+            
+            // Build HTML
+            let html = '';
+            
+            // Map filter dropdowns
+            if (playedSortMode === 'map') {
+                html += '<div id="playedMapFilter"></div>';
+            }
+            
+            let currentGroup = null;
+            
+            entries.forEach(({ courseName, rounds, mostRecent }) => {
+                const timesPlayed = rounds.length;
                 
-                // Build location string from city, state, country
+                // State group header
+                if (playedSortMode === 'state') {
+                    const group = (mostRecent.state || mostRecent.country || 'Unknown').trim();
+                    if (group !== currentGroup) {
+                        currentGroup = group;
+                        html += `<div class="state-group-header">📍 ${escapeHtml(group)}</div>`;
+                    }
+                }
+                
                 let locationStr = '';
                 if (mostRecent.city || mostRecent.state || mostRecent.country) {
                     const parts = [];
@@ -3882,17 +4222,16 @@
                     locationStr = parts.join(', ');
                 }
                 
-                return `
-                    <div class="course-item" data-id="${mostRecent.id}" data-type="played" data-course-name="${courseName}">
+                html += `
+                    <div class="course-item" data-id="${mostRecent.id}" data-type="played" data-course-name="${escapeHtml(courseName)}">
                         <div class="course-header">
-                            <div class="course-name">${courseName} <span style="font-size: 13px; font-weight: 400; color: #666;">📅 ${new Date(mostRecent.datePlayed).toLocaleDateString()}</span></div>
+                            <div class="course-name">${escapeHtml(courseName)} <span style="font-size: 13px; font-weight: 400; color: #666;">📅 ${new Date(mostRecent.datePlayed).toLocaleDateString()}</span></div>
                             <div style="display: flex; gap: 6px;">
                                 ${timesPlayed > 1 ? `<div class="times-played-badge">${timesPlayed}x played</div>` : ''}
                             </div>
                         </div>
                         ${mostRecent.score ? `<div class="course-location">🏌️ Score: ${mostRecent.score}</div>` : ''}
                         ${(() => {
-                            // Build "played with" string from array or legacy string
                             let playedWithStr = '';
                             if (Array.isArray(mostRecent.playedWith) && mostRecent.playedWith.length > 0) {
                                 playedWithStr = mostRecent.playedWith.map(p => p.name).join(', ');
@@ -3903,7 +4242,6 @@
                         })()}
                         ${locationStr ? `<a class="course-source map-link" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(courseName + ' ' + locationStr)}" target="_blank" onclick="event.stopPropagation();">📍 ${locationStr}</a>` : ''}
                         ${(() => {
-                            // Collect all photos from all rounds for this course
                             let allPhotos = [];
                             rounds.forEach(function(r) {
                                 if (Array.isArray(r.photos)) {
@@ -3911,7 +4249,6 @@
                                 }
                             });
                             if (allPhotos.length === 0) return '';
-                            // Shuffle photos randomly then show up to 4
                             let shuffled = allPhotos.slice();
                             for (let i = shuffled.length - 1; i > 0; i--) {
                                 const j = Math.floor(Math.random() * (i + 1));
@@ -3930,7 +4267,18 @@
                         })()}
                     </div>
                 `;
-            }).join('');
+            });
+            
+            if (playedSortMode === 'map' && entries.length === 0 && playedCourses.length > 0) {
+                html += '<div class="card empty-state"><p>No courses match this filter.</p></div>';
+            }
+            
+            listEl.innerHTML = html;
+            
+            // Render map filter after DOM update
+            if (playedSortMode === 'map') {
+                renderMapFilter('playedMapFilter', playedCourses, playedMapFilter, renderPlayedList);
+            }
             
             document.querySelectorAll('#playedList .course-item').forEach(item => {
                 item.addEventListener('click', function() {
