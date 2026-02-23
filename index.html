@@ -2580,13 +2580,14 @@
                             try {
                                 const locationHint = location ? ', ' + location : '';
                                 const nomResponse = await fetch(
-                                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(courseName + locationHint)}&limit=5&addressdetails=1&extratags=1`,
+                                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(courseName + locationHint)}&limit=5&addressdetails=1&extratags=1&countrycodes=${location && location.match(/\b(Alabama|Alaska|Arizona|Arkansas|California|Colorado|Connecticut|Delaware|Florida|Georgia|Hawaii|Idaho|Illinois|Indiana|Iowa|Kansas|Kentucky|Louisiana|Maine|Maryland|Massachusetts|Michigan|Minnesota|Mississippi|Missouri|Montana|Nebraska|Nevada|New Hampshire|New Jersey|New Mexico|New York|North Carolina|North Dakota|Ohio|Oklahoma|Oregon|Pennsylvania|Rhode Island|South Carolina|South Dakota|Tennessee|Texas|Utah|Vermont|Virginia|Washington|West Virginia|Wisconsin|Wyoming)\b/i) ? 'us' : ''}`,
                                     { headers: { 'User-Agent': 'GolfCourseTracker/1.0' } }
                                 );
                                 const nomData = await nomResponse.json();
                                 
                                 const courseNameClean = courseName.toLowerCase().replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
                                 const courseWords = courseNameClean.split(/\s+/).filter(w => w.length > 2);
+                                const locationLower = (location || '').toLowerCase();
                                 
                                 let bestResult = null;
                                 let bestScore = -1;
@@ -2595,12 +2596,31 @@
                                     const rName = (r.name || r.display_name.split(',')[0] || '').toLowerCase()
                                         .replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
                                     const rWords = rName.split(/\s+/).filter(w => w.length > 2);
+                                    const rDisplay = (r.display_name || '').toLowerCase();
                                     
+                                    // Name match
                                     let matchCount = 0;
                                     for (const cw of courseWords) {
                                         if (rWords.some(rw => rw.includes(cw) || cw.includes(rw))) matchCount++;
                                     }
-                                    const score = courseWords.length > 0 ? matchCount / courseWords.length : 0;
+                                    let score = courseWords.length > 0 ? matchCount / courseWords.length : 0;
+                                    
+                                    // Location match bonus
+                                    if (locationLower) {
+                                        const locParts = locationLower.split(',').map(p => p.trim());
+                                        let locMatch = false;
+                                        for (const part of locParts) {
+                                            if (part && part.length > 2 && rDisplay.includes(part)) {
+                                                score += 0.3;
+                                                locMatch = true;
+                                            }
+                                        }
+                                        // Penalize if location was provided but doesn't match at all
+                                        if (!locMatch && locParts.some(p => p.length > 2)) {
+                                            score -= 0.4;
+                                        }
+                                    }
+                                    
                                     if (score > bestScore) {
                                         bestScore = score;
                                         bestResult = r;
@@ -2959,44 +2979,7 @@
                     console.log('Wikipedia lookup failed');
                 }
 
-                // Step 4: Smart domain guessing
-                try {
-                    const cleanName = courseName.toLowerCase()
-                        .replace(/^the\s+/i, '')
-                        .replace(/\s+(golf|club|course|country|resort|links|cc|gc)s?\b/gi, '')
-                        .replace(/[^a-z0-9\s]/g, '')
-                        .trim();
-                    const words = cleanName.split(/\s+/);
-                    const joined = words.join('');
-                    
-                    // Get state abbreviation for location-specific domains
-                    const stateAbbrev = locationStr.match(/\b([A-Z]{2})\b/) ? locationStr.match(/\b([A-Z]{2})\b/)[1].toLowerCase() : '';
-                    
-                    const candidates = [
-                        `https://www.${joined}cc.com`,
-                        `https://www.${joined}golf.com`,
-                        `https://www.${joined}golfclub.com`,
-                        `https://www.${joined}countryclub.com`,
-                        `https://www.${joined}.com`,
-                        `https://www.the${joined}.com`
-                    ];
-                    if (stateAbbrev) {
-                        candidates.push(`https://www.${joined}cc${stateAbbrev}.com`);
-                        candidates.push(`https://www.${joined}${stateAbbrev}.com`);
-                    }
-                    
-                    for (const url of candidates) {
-                        try {
-                            const resp = await fetch(url, { method: 'HEAD', mode: 'no-cors', signal: AbortSignal.timeout(2000) });
-                            websiteInput.value = url;
-                            return;
-                        } catch (e) { }
-                    }
-                } catch (e) {
-                    console.log('Domain guessing failed');
-                }
-
-                // Step 5: Nothing found, leave blank
+                // Step 4: Nothing found, leave blank
                 websiteInput.value = '';
                 
             } catch (error) {
