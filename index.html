@@ -3228,47 +3228,62 @@
             const statusEl = document.getElementById('addressLookupStatus');
             statusEl.innerHTML = '<span class="loading">Looking up address and website...</span>';
             
+            const existingCity = (document.getElementById('city')?.value || '').trim().toLowerCase();
+            const existingState = (document.getElementById('state')?.value || '').trim().toLowerCase();
+            
             // Look up address
             try {
+                const locationHint = existingCity ? ', ' + existingCity : '';
+                const stateHint = existingState ? ', ' + existingState : '';
                 const response = await fetch(
-                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(courseName + ' golf course')}&limit=1`,
-                    {
-                        headers: {
-                            'User-Agent': 'GolfCourseTracker/1.0'
-                        }
-                    }
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(courseName + locationHint + stateHint)}&limit=5&addressdetails=1`,
+                    { headers: { 'User-Agent': 'GolfCourseTracker/1.0' } }
                 );
                 
                 const data = await response.json();
                 
-                if (data && data.length > 0) {
-                    const result = data[0];
+                let addressFound = false;
+                for (const result of data) {
+                    if (!result.address) continue;
+                    const a = result.address;
+                    const nomCity = (a.city || a.town || a.village || '').toLowerCase();
+                    const nomState = (a.state || '').toLowerCase();
                     
-                    // Fill address
-                    document.getElementById('address').value = result.display_name;
+                    // Skip results that conflict with existing city/state
+                    let conflict = false;
+                    if (existingCity && nomCity && !nomCity.includes(existingCity) && !existingCity.includes(nomCity)) conflict = true;
+                    if (existingState && nomState && !nomState.includes(existingState) && !existingState.includes(nomState)) conflict = true;
+                    if (conflict) continue;
                     
-                    // Try to parse city, state, country from the result
-                    if (result.address) {
-                        const city = result.address.city || result.address.town || result.address.village || '';
-                        const state = result.address.state || '';
-                        const country = result.address.country || '';
-                        
-                        if (city) document.getElementById('city').value = city;
-                        if (state) document.getElementById('state').value = state;
-                        if (country) {
-                            // Check if state looks like US state (2 letters)
-                            if (state && state.length === 2) {
-                                document.getElementById('country').value = 'USA';
-                            } else {
-                                document.getElementById('country').value = country;
-                            }
-                        }
+                    const addressParts = [];
+                    if (a.house_number && a.road) addressParts.push(a.house_number + ' ' + a.road);
+                    else if (a.road) addressParts.push(a.road);
+                    if (a.city || a.town || a.village) addressParts.push(a.city || a.town || a.village);
+                    if (a.state) addressParts.push(a.state);
+                    if (a.postcode) addressParts.push(a.postcode);
+                    if (a.country) addressParts.push(a.country);
+                    
+                    if (addressParts.length > 0) {
+                        document.getElementById('address').value = addressParts.join(', ');
+                        statusEl.innerHTML = '✓ Address found';
+                        setTimeout(() => statusEl.textContent = '', 3000);
                     }
                     
-                    statusEl.innerHTML = '✓ Address found';
-                    setTimeout(() => statusEl.textContent = '', 3000);
-                } else {
-                    statusEl.textContent = 'No address found - please enter manually';
+                    if (!existingCity && (a.city || a.town || a.village)) {
+                        document.getElementById('city').value = a.city || a.town || a.village;
+                    }
+                    if (!existingState && a.state) {
+                        document.getElementById('state').value = a.state;
+                    }
+                    if (a.country && !document.getElementById('country').value) {
+                        document.getElementById('country').value = a.country;
+                    }
+                    addressFound = true;
+                    break;
+                }
+                
+                if (!addressFound) {
+                    statusEl.textContent = 'Could not find a matching address';
                     setTimeout(() => statusEl.textContent = '', 3000);
                 }
             } catch (error) {
