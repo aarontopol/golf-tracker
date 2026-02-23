@@ -76,12 +76,95 @@
             margin-bottom: 20px;
         }
 
+        .title-animation-area {
+            display: flex;
+            align-items: flex-end;
+            gap: 0;
+            overflow: hidden;
+        }
+
+        /* Golfer putting animation */
+        .golfer-putt {
+            font-size: 28px;
+            animation: golferSwing 1.8s ease-out forwards;
+            transform-origin: bottom center;
+            margin-right: 2px;
+            flex-shrink: 0;
+        }
+
+        @keyframes golferSwing {
+            0% { transform: rotate(0deg); }
+            15% { transform: rotate(-15deg); }    /* Backswing */
+            30% { transform: rotate(10deg); }     /* Hit! */
+            50% { transform: rotate(5deg); }      /* Follow through */
+            100% { transform: rotate(0deg); }     /* Settle */
+        }
+
         h1 {
             color: white;
             font-size: 22px;
             text-shadow: 0 2px 4px rgba(0,0,0,0.2);
             margin: 0;
             white-space: nowrap;
+            position: relative;
+        }
+
+        .title-text {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Golf ball that rolls under the title */
+        .golf-ball-container {
+            display: inline-block;
+            width: 0;
+            position: relative;
+        }
+
+        .golf-ball {
+            display: inline-block;
+            font-size: 10px;
+            position: absolute;
+            bottom: 1px;
+            left: -210px;
+            opacity: 0;
+            animation: ballRoll 2.5s ease-out 0.5s forwards;
+        }
+
+        @keyframes ballRoll {
+            0% {
+                left: -210px;
+                opacity: 0;
+                transform: rotate(0deg) scale(0.8);
+            }
+            5% {
+                opacity: 1;
+                transform: rotate(0deg) scale(0.8);
+            }
+            /* Ball rolling fast under the text */
+            60% {
+                left: -10px;
+                opacity: 1;
+                transform: rotate(720deg) scale(0.8);
+            }
+            /* Ball slowing down */
+            80% {
+                left: 2px;
+                opacity: 1;
+                transform: rotate(900deg) scale(0.7);
+            }
+            /* Ball stops and shrinks to become a period */
+            95% {
+                left: 3px;
+                opacity: 1;
+                transform: rotate(1080deg) scale(0.5);
+            }
+            100% {
+                left: 3px;
+                opacity: 1;
+                font-size: 10px;
+                transform: rotate(1080deg) scale(0.5);
+            }
         }
 
         .user-bar-right {
@@ -872,7 +955,18 @@
     <div class="container">
         <!-- Top header bar: title on left, user info on right -->
         <div class="top-header">
-            <h1>⛳ Golf Course Tracker</h1>
+            <div class="title-animation-area">
+                <!-- Golfer figure on the left, putting -->
+                <div class="golfer-putt" id="golferPutt">🏌️</div>
+                <!-- The title text -->
+                <h1>
+                    <span class="title-text">Golf Course Tracker</span>
+                    <!-- The ball that rolls under the text and becomes a period -->
+                    <span class="golf-ball-container">
+                        <span class="golf-ball" id="golfBall">⚪</span>
+                    </span>
+                </h1>
+            </div>
             <div id="userBarArea" class="user-bar-right" style="display: none;">
                 <div class="user-bar-email" id="userBarEmail"></div>
                 <button class="btn-logout" id="btnLogout">Sign Out</button>
