@@ -84,42 +84,53 @@
         .putt-animation {
             width: 100%;
             max-width: 380px;
-            height: 55px;
+            height: 62px;
         }
 
-        .title-svg-text {
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-        }
-
-        /* Putter swing - small pendulum motion like a real putt */
+        /* Putter swing - gentle pendulum like a real putt */
         .putter-swing {
-            animation: putterStroke 1.2s ease-in-out forwards;
+            animation: putterStroke 1.0s ease-in-out forwards;
         }
         @keyframes putterStroke {
-            0%   { transform: rotate(8deg); }    /* Small backswing */
-            35%  { transform: rotate(8deg); }    /* Pause at top */
-            55%  { transform: rotate(-4deg); }   /* Strike! */
-            70%  { transform: rotate(-6deg); }   /* Short follow through */
-            100% { transform: rotate(-3deg); }   /* Settle */
+            0%   { transform: rotate(6deg); }
+            30%  { transform: rotate(6deg); }
+            55%  { transform: rotate(-3deg); }
+            75%  { transform: rotate(-5deg); }
+            100% { transform: rotate(-3deg); }
         }
 
-        /* Ball starts still, then rolls right below the text */
+        /* Ball rolls smoothly under text, gradually decelerating, then curves up to period */
         .rolling-ball {
-            animation: ballRollPath 2.8s ease-out 0.65s forwards;
+            animation: ballRollPath 3s linear 0.55s forwards;
         }
         @keyframes ballRollPath {
-            0%   { cx: 30;  opacity: 1; }
-            5%   { cx: 40;  opacity: 1; }
-            40%  { cx: 220; opacity: 1; }    /* Rolling fast */
-            70%  { cx: 310; opacity: 1; }    /* Slowing down */
-            90%  { cx: 333; opacity: 1; }    /* Almost stopped */
-            95%  { cx: 336; opacity: 0.8; }  /* Stopping */
-            100% { cx: 336; opacity: 0; }    /* Disappear as dot appears */
+            0%   { cx: 36;  cy: 42; opacity: 1; }
+            5%   { cx: 58;  cy: 42; opacity: 1; }
+            10%  { cx: 80;  cy: 42; opacity: 1; }
+            15%  { cx: 101; cy: 42; opacity: 1; }
+            20%  { cx: 121; cy: 42; opacity: 1; }
+            25%  { cx: 140; cy: 42; opacity: 1; }
+            30%  { cx: 158; cy: 42; opacity: 1; }
+            35%  { cx: 175; cy: 42; opacity: 1; }
+            40%  { cx: 191; cy: 42; opacity: 1; }
+            45%  { cx: 206; cy: 42; opacity: 1; }
+            50%  { cx: 220; cy: 42; opacity: 1; }
+            55%  { cx: 233; cy: 42; opacity: 1; }
+            60%  { cx: 245; cy: 42; opacity: 1; }
+            65%  { cx: 256; cy: 42; opacity: 1; }
+            70%  { cx: 266; cy: 42; opacity: 1; }
+            75%  { cx: 275; cy: 42; opacity: 1; }
+            80%  { cx: 283; cy: 42; opacity: 1; }
+            85%  { cx: 290; cy: 42; opacity: 1; }
+            90%  { cx: 296; cy: 42; opacity: 1; }
+            93%  { cx: 301; cy: 42; opacity: 1; }
+            96%  { cx: 304; cy: 39; opacity: 1; }
+            100% { cx: 305; cy: 34; opacity: 0; }
         }
 
-        /* The period dot fades in right where the ball stops */
+        /* The period dot fades in exactly where the ball ends */
         .end-dot {
-            animation: dotAppear 0.3s ease-in 3.3s forwards;
+            animation: dotAppear 0.2s ease-in 3.45s forwards;
         }
         @keyframes dotAppear {
             0%   { opacity: 0; }
@@ -923,34 +934,60 @@
         <!-- Top header bar: title on left, user info on right -->
         <div class="top-header">
             <div class="title-animation-area">
-                <svg class="putt-animation" viewBox="0 0 420 55" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Golfer figure -->
-                    <g class="golfer-group" transform="translate(18, 8)">
-                        <!-- Head -->
-                        <circle cx="0" cy="6" r="5" fill="white"/>
-                        <!-- Body -->
-                        <line x1="0" y1="11" x2="0" y2="28" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
-                        <!-- Front leg (bent putting stance) -->
-                        <line x1="0" y1="28" x2="5" y2="40" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                        <line x1="5" y1="40" x2="4" y2="45" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                        <!-- Back leg (bent putting stance) -->
-                        <line x1="0" y1="28" x2="-5" y2="40" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                        <line x1="-5" y1="40" x2="-4" y2="45" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                        <!-- Arms holding putter -->
-                        <line x1="0" y1="16" x2="6" y2="24" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                        <line x1="0" y1="16" x2="8" y2="22" stroke="white" stroke-width="2" stroke-linecap="round"/>
-                        <!-- Putter (the shaft + head that swings) -->
-                        <g class="putter-swing" transform-origin="7 23">
-                            <line x1="7" y1="23" x2="10" y2="44" stroke="rgba(255,255,255,0.8)" stroke-width="1.5" stroke-linecap="round"/>
-                            <rect x="8" y="43" width="6" height="2.5" rx="1" fill="rgba(255,255,255,0.8)"/>
+                <svg class="putt-animation" id="puttSvg" viewBox="0 0 400 62" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Golfer in putting stance — proper bent-over posture -->
+                    <g class="golfer-group" transform="translate(18, -12)">
+                        <!-- Back foot (planted, slightly angled) -->
+                        <polygon points="-6,56 -3,56 -1,58 -7,58" fill="#2c2c2c"/>
+                        <!-- Front foot -->
+                        <polygon points="6,56 9,56 11,58 5,58" fill="#2c2c2c"/>
+                        
+                        <!-- Back leg (pants - khaki) -->
+                        <line x1="0" y1="38" x2="-3" y2="56" stroke="#c4a96a" stroke-width="3.5" stroke-linecap="round"/>
+                        <!-- Front leg -->
+                        <line x1="2" y1="38" x2="7" y2="56" stroke="#c4a96a" stroke-width="3.5" stroke-linecap="round"/>
+                        
+                        <!-- Torso (polo shirt - dark blue) — bent well forward -->
+                        <line x1="1" y1="38" x2="6" y2="22" stroke="#1a3a6b" stroke-width="4.5" stroke-linecap="round"/>
+                        
+                        <!-- Head (skin tone) -->
+                        <circle cx="9" cy="14" r="4" fill="#f0c8a0"/>
+                        
+                        <!-- Hat (red cap) -->
+                        <ellipse cx="10" cy="11.5" rx="5.5" ry="2.5" fill="#cc2222"/>
+                        <!-- Hat brim -->
+                        <line x1="6" y1="12.5" x2="16" y2="11" stroke="#cc2222" stroke-width="1.5" stroke-linecap="round"/>
+                        
+                        <!-- Back arm (upper) -->
+                        <line x1="5" y1="24" x2="9" y2="30" stroke="#1a3a6b" stroke-width="2.5" stroke-linecap="round"/>
+                        <!-- Back arm (forearm - skin) -->
+                        <line x1="9" y1="30" x2="13" y2="36" stroke="#f0c8a0" stroke-width="2.2" stroke-linecap="round"/>
+                        
+                        <!-- Front arm (upper) -->
+                        <line x1="6" y1="23" x2="10" y2="29" stroke="#1a3a6b" stroke-width="2.5" stroke-linecap="round"/>
+                        <!-- Front arm (forearm - skin) -->
+                        <line x1="10" y1="29" x2="13" y2="36" stroke="#f0c8a0" stroke-width="2.2" stroke-linecap="round"/>
+                        
+                        <!-- Hands (gloves) -->
+                        <circle cx="13" cy="36" r="1.8" fill="#eee"/>
+                        
+                        <!-- Putter (swings from hands) -->
+                        <g class="putter-swing" transform-origin="13 36">
+                            <!-- Putter shaft (silver) -->
+                            <line x1="13" y1="36" x2="15" y2="54" stroke="#ccc" stroke-width="1.3" stroke-linecap="round"/>
+                            <!-- Putter head (darker) -->
+                            <rect x="13" y="53" width="6" height="2" rx="0.8" fill="#999"/>
                         </g>
                     </g>
-                    <!-- Golf ball - starts near the putter, rolls right, stops at end -->
-                    <circle class="rolling-ball" cx="30" cy="48" r="3" fill="white"/>
-                    <!-- Title text rendered on top -->
-                    <text x="42" y="38" class="title-svg-text" fill="white" font-family="inherit" font-weight="bold" font-size="24">Golf Course Tracker</text>
-                    <!-- Period/dot at the end (hidden, revealed when ball arrives) -->
-                    <circle class="end-dot" cx="336" cy="48" r="3" fill="white" opacity="0"/>
+
+                    <!-- Title text -->
+                    <text id="titleText" x="46" y="36" fill="white" font-family="inherit" font-weight="bold" font-size="22">Golf Course Tracker</text>
+
+                    <!-- Golf ball — rolls below text then curves up to become period -->
+                    <circle class="rolling-ball" cx="36" cy="42" r="2.2" fill="white"/>
+
+                    <!-- The period dot — positioned by JS right after text ends -->
+                    <circle class="end-dot" id="endDot" cx="280" cy="34" r="2.2" fill="white" opacity="0"/>
                 </svg>
             </div>
             <div id="userBarArea" class="user-bar-right" style="display: none;">
@@ -958,6 +995,66 @@
                 <button class="btn-logout" id="btnLogout">Sign Out</button>
             </div>
         </div>
+
+        <!-- Position the end dot precisely after the text -->
+        <script>
+        (function() {
+            try {
+                var txt = document.getElementById('titleText');
+                var dot = document.getElementById('endDot');
+                if (txt && dot) {
+                    var bbox = txt.getBBox();
+                    var dotX = bbox.x + bbox.width + 4;
+                    var dotY = bbox.y + bbox.height - 4;
+                    dot.setAttribute('cx', dotX);
+                    dot.setAttribute('cy', dotY);
+                    // Update rolling ball end position to match
+                    var style = document.querySelector('.rolling-ball').style;
+                    document.documentElement.style.setProperty('--dot-x', dotX);
+                    document.documentElement.style.setProperty('--dot-y', dotY);
+                    // Update the keyframes dynamically
+                    var sheets = document.styleSheets;
+                    for (var i = 0; i < sheets.length; i++) {
+                        try {
+                            var rules = sheets[i].cssRules;
+                            for (var j = 0; j < rules.length; j++) {
+                                if (rules[j].name === 'ballRollPath') {
+                                    sheets[i].deleteRule(j);
+                                    sheets[i].insertRule(
+                                        '@keyframes ballRollPath {' +
+                                        '0%   { cx: 36;  cy: 42; opacity: 1; }' +
+                                        '5%   { cx: ' + (36 + (dotX - 36) * 0.08) + ';  cy: 42; opacity: 1; }' +
+                                        '10%  { cx: ' + (36 + (dotX - 36) * 0.16) + '; cy: 42; opacity: 1; }' +
+                                        '15%  { cx: ' + (36 + (dotX - 36) * 0.24) + '; cy: 42; opacity: 1; }' +
+                                        '20%  { cx: ' + (36 + (dotX - 36) * 0.32) + '; cy: 42; opacity: 1; }' +
+                                        '25%  { cx: ' + (36 + (dotX - 36) * 0.39) + '; cy: 42; opacity: 1; }' +
+                                        '30%  { cx: ' + (36 + (dotX - 36) * 0.46) + '; cy: 42; opacity: 1; }' +
+                                        '35%  { cx: ' + (36 + (dotX - 36) * 0.52) + '; cy: 42; opacity: 1; }' +
+                                        '40%  { cx: ' + (36 + (dotX - 36) * 0.58) + '; cy: 42; opacity: 1; }' +
+                                        '45%  { cx: ' + (36 + (dotX - 36) * 0.63) + '; cy: 42; opacity: 1; }' +
+                                        '50%  { cx: ' + (36 + (dotX - 36) * 0.68) + '; cy: 42; opacity: 1; }' +
+                                        '55%  { cx: ' + (36 + (dotX - 36) * 0.73) + '; cy: 42; opacity: 1; }' +
+                                        '60%  { cx: ' + (36 + (dotX - 36) * 0.77) + '; cy: 42; opacity: 1; }' +
+                                        '65%  { cx: ' + (36 + (dotX - 36) * 0.81) + '; cy: 42; opacity: 1; }' +
+                                        '70%  { cx: ' + (36 + (dotX - 36) * 0.85) + '; cy: 42; opacity: 1; }' +
+                                        '75%  { cx: ' + (36 + (dotX - 36) * 0.89) + '; cy: 42; opacity: 1; }' +
+                                        '80%  { cx: ' + (36 + (dotX - 36) * 0.92) + '; cy: 42; opacity: 1; }' +
+                                        '85%  { cx: ' + (36 + (dotX - 36) * 0.94) + '; cy: 42; opacity: 1; }' +
+                                        '90%  { cx: ' + (36 + (dotX - 36) * 0.96) + '; cy: 42; opacity: 1; }' +
+                                        '93%  { cx: ' + (36 + (dotX - 36) * 0.98) + '; cy: 42; opacity: 1; }' +
+                                        '96%  { cx: ' + (36 + (dotX - 36) * 0.99) + '; cy: ' + (42 - (42 - dotY) * 0.4) + '; opacity: 1; }' +
+                                        '100% { cx: ' + dotX + '; cy: ' + dotY + '; opacity: 0; }' +
+                                        '}', j
+                                    );
+                                    break;
+                                }
+                            }
+                        } catch(e) {}
+                    }
+                }
+            } catch(e) { console.log('Animation positioning skipped'); }
+        })();
+        </script>
 
         <!-- ============================================
              LOADING SCREEN
