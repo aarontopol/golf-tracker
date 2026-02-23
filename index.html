@@ -2649,51 +2649,120 @@
                         try {
                             const jsonStr = match.replace(/<\/?script[^>]*>/gi, '').trim();
                             const jsonData = JSON.parse(jsonStr);
-                            const items = Array.isArray(jsonData) ? jsonData : [jsonData];
-                            for (const item of items) {
-                                const addr = item.address || (item['@graph'] && item['@graph'].find(g => g.address))?.address;
-                                if (addr) {
+                            // Recursively search for address objects
+                            function findAddress(obj) {
+                                if (!obj || typeof obj !== 'object') return null;
+                                if (obj.streetAddress || obj.addressLocality) {
                                     const parts = [];
-                                    if (addr.streetAddress) parts.push(addr.streetAddress);
-                                    if (addr.addressLocality) parts.push(addr.addressLocality);
-                                    if (addr.addressRegion) parts.push(addr.addressRegion);
-                                    if (addr.postalCode) parts.push(addr.postalCode);
+                                    if (obj.streetAddress) parts.push(obj.streetAddress);
+                                    if (obj.addressLocality) parts.push(obj.addressLocality);
+                                    if (obj.addressRegion) parts.push(obj.addressRegion);
+                                    if (obj.postalCode) parts.push(obj.postalCode);
                                     if (parts.length >= 2) return parts.join(', ');
                                 }
+                                if (obj.address) return findAddress(obj.address);
+                                if (Array.isArray(obj)) {
+                                    for (const item of obj) {
+                                        const found = findAddress(item);
+                                        if (found) return found;
+                                    }
+                                }
+                                if (obj['@graph']) return findAddress(obj['@graph']);
+                                for (const key of Object.keys(obj)) {
+                                    if (typeof obj[key] === 'object') {
+                                        const found = findAddress(obj[key]);
+                                        if (found) return found;
+                                    }
+                                }
+                                return null;
                             }
+                            const addr = findAddress(jsonData);
+                            if (addr) return addr;
                         } catch (e) { /* invalid JSON, skip */ }
                     }
                 }
                 
-                // Strategy 2: Look for common address patterns in the HTML text
-                // Strip HTML tags to get plain text
-                const textContent = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+                // Strategy 2: Look for address in microdata or common HTML patterns
+                // Look for elements with address-like attributes
+                const addressAttrPatterns = [
+                    /itemprop\s*=\s*["']streetAddress["'][^>]*>([^<]+)/gi,
+                    /class\s*=\s*["'][^"']*(?:street|address)[^"']*["'][^>]*>([^<]+)/gi,
+                    /id\s*=\s*["'][^"']*(?:street|address)[^"']*["'][^>]*>([^<]+)/gi
+                ];
                 
-                // US address pattern: number + street, city, state abbreviation + zip
-                const usAddressPattern = /(\d+\s+[A-Z][A-Za-z\s.]+(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Boulevard|Blvd|Lane|Ln|Way|Court|Ct|Circle|Cir|Place|Pl|Parkway|Pkwy)[.,]?\s+[A-Za-z\s]+,\s*[A-Z]{2}\s*\d{5}(?:-\d{4})?)/g;
+                for (const pattern of addressAttrPatterns) {
+                    const attrMatch = pattern.exec(html);
+                    if (attrMatch) {
+                        const streetText = attrMatch[1].trim();
+                        // Look for city/state/zip nearby in the HTML
+                        const afterMatch = html.substring(attrMatch.index, attrMatch.index + 500);
+                        const cityStateZip = afterMatch.match(/(?:>|\s)([A-Z][a-zA-Z\s]+),?\s*(?:,\s*)?([A-Z]{2})\s+(\d{5})/);
+                        if (cityStateZip && streetText.match(/^\d+/)) {
+                            return streetText + ', ' + cityStateZip[1].trim() + ', ' + cityStateZip[2] + ' ' + cityStateZip[3];
+                        }
+                    }
+                }
+                
+                // Strategy 3: Look for common address patterns in the HTML text
+                // Use a separator that preserves line-break boundaries from HTML elements
+                const textContent = html
+                    .replace(/<br\s*\/?>/gi, ', ')
+                    .replace(/<\/(?:div|p|span|li|td|h\d|a|address)[^>]*>/gi, ', ')
+                    .replace(/<[^>]+>/g, ' ')
+                    .replace(/\s*,\s*/g, ', ')
+                    .replace(/\s+/g, ' ');
+                
+                // US address: number + street name with street suffix + city + state + zip
+                const usAddressPattern = /(\d+\s+[A-Za-z\s.]{2,35}(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Boulevard|Blvd|Lane|Ln|Way|Court|Ct|Circle|Cir|Place|Pl|Parkway|Pkwy|Trail|Trl|Terrace|Ter)[.,]?\s*,?\s*[A-Za-z\s]+,?\s*[A-Z]{2}\s*\d{5}(?:-\d{4})?)/gi;
                 const usMatches = textContent.match(usAddressPattern);
                 if (usMatches && usMatches.length > 0) {
-                    return usMatches[0].trim();
+                    // Clean up extra spaces and commas
+                    return usMatches[0].trim().replace(/\s*,\s*/g, ', ').replace(/,\s*,/g, ',');
                 }
                 
-                // Simpler US pattern: number + words + comma + state abbrev + zip
-                const simpleUsPattern = /(\d+\s+[A-Za-z\s.]{3,40},\s*[A-Za-z\s]+,\s*[A-Z]{2}\s+\d{5})/g;
+                // Simpler pattern: number + words + state abbrev + zip (with or without commas)
+                const simpleUsPattern = /(\d+\s+[A-Za-z\s.]{3,40}[,\s]+[A-Za-z\s]+[,\s]+[A-Z]{2}\s+\d{5})/g;
                 const simpleMatches = textContent.match(simpleUsPattern);
                 if (simpleMatches && simpleMatches.length > 0) {
-                    return simpleMatches[0].trim();
+                    return simpleMatches[0].trim().replace(/\s*,\s*/g, ', ').replace(/,\s*,/g, ',');
                 }
 
-                // Strategy 3: Look for address in meta tags
-                const metaAddress = html.match(/content\s*=\s*["'](\d+[^"']*(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Boulevard|Blvd|Lane|Ln|Way)[^"']*\d{5}[^"']*)["']/i);
-                if (metaAddress) {
-                    return metaAddress[1].trim();
+                // Strategy 4: Look for zip code and work backwards to find a street number
+                const zipPattern = /(\d+\s+[A-Za-z\s.]{3,50}?\s*,?\s*[A-Za-z\s]+?\s*,?\s*[A-Za-z]+\s+\d{5})/g;
+                const zipMatches = textContent.match(zipPattern);
+                if (zipMatches) {
+                    // Find the one most likely to be an address (starts with a street number, has state + zip)
+                    for (const m of zipMatches) {
+                        if (m.match(/^\d+\s+[A-Za-z]/) && m.match(/[A-Z]{2}\s+\d{5}/)) {
+                            return m.trim().replace(/\s*,\s*/g, ', ').replace(/,\s*,/g, ',');
+                        }
+                    }
                 }
                 
-                // Strategy 4: Look for "address" near text with a zip code
-                const addressBlockPattern = /[Aa]ddress[:\s]*([^<\n]{10,80}\d{5})/;
+                // Strategy 5: Look for address in meta tags
+                const metaPatterns = [
+                    /content\s*=\s*["'](\d+[^"']*(?:Street|St|Avenue|Ave|Road|Rd|Drive|Dr|Boulevard|Blvd|Lane|Ln|Way|Court|Ct)[^"']*\d{5}[^"']*)["']/i,
+                    /content\s*=\s*["'](\d+[^"']{5,60}\d{5}[^"']*)["']/i,
+                    /"(?:street[_-]?address|address)"[:\s]*"([^"]+\d{5}[^"]*)"/i
+                ];
+                for (const mp of metaPatterns) {
+                    const metaMatch = html.match(mp);
+                    if (metaMatch) {
+                        return metaMatch[1].trim();
+                    }
+                }
+                
+                // Strategy 6: Look for "address" label near text with a zip code
+                const addressBlockPattern = /[Aa]ddress[:\s]*,?\s*([^<\n]{5,100}\d{5})/;
                 const addressBlock = textContent.match(addressBlockPattern);
                 if (addressBlock) {
-                    return addressBlock[1].trim().replace(/^\s*[:|-]\s*/, '');
+                    return addressBlock[1].trim().replace(/^\s*[:|-]\s*/, '').replace(/\s*,\s*/g, ', ');
+                }
+                
+                // Strategy 7: Just find any 5-digit zip with a street number before it
+                const lastResort = textContent.match(/(\d+\s+\w[\w\s.]{2,30}\w\s*,?\s*\w[\w\s]*\w\s*,?\s*[A-Z]{2}\s+\d{5})/);
+                if (lastResort) {
+                    return lastResort[1].trim().replace(/\s*,\s*/g, ', ').replace(/,\s*,/g, ',');
                 }
                 
                 return null;
