@@ -2335,7 +2335,24 @@
                                     statusEl.innerHTML = '✓ Details found';
                                     setTimeout(() => statusEl.textContent = '', 3000);
                                 } else {
-                                // Fallback to Nominatim
+                                    // No good match from Photon, fallback to Nominatim
+                                    try {
+                                        const nomResponse = await fetch(
+                                            `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(courseName + ' golf course')}&limit=1`,
+                                            { headers: { 'User-Agent': 'GolfCourseTracker/1.0' } }
+                                        );
+                                        const nomData = await nomResponse.json();
+                                        if (nomData && nomData.length > 0) {
+                                            document.getElementById('address').value = nomData[0].display_name;
+                                            statusEl.innerHTML = '✓ Address found';
+                                            setTimeout(() => statusEl.textContent = '', 3000);
+                                        } else {
+                                            statusEl.textContent = '';
+                                        }
+                                    } catch (e) { statusEl.textContent = ''; }
+                                }
+                            } else {
+                                // No Photon results at all, fallback to Nominatim
                                 try {
                                     const nomResponse = await fetch(
                                         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(courseName + ' golf course')}&limit=1`,
