@@ -2156,6 +2156,8 @@
             { name: 'Meadow Brook Golf Course', location: 'Rapid City, South Dakota' },
             { name: 'The Honors Course', location: 'Ooltewah, Tennessee' },
             { name: 'TPC Southwind', location: 'Memphis, Tennessee' },
+            { name: 'Ridgeway Country Club', location: 'Memphis, Tennessee' },
+            { name: 'Ridgeway Country Club', location: 'Neenah, Wisconsin' },
             { name: 'The Lookout Mountain Club', location: 'Lookout Mountain, Tennessee' },
             { name: 'Sweetens Cove Golf Club', location: 'South Pittsburg, Tennessee' },
             { name: 'Hermitage Golf Course', location: 'Old Hickory, Tennessee' },
@@ -2488,16 +2490,30 @@
 
         // Display search results
         function displayResults(results, stillSearching) {
+            const currentQuery = courseNameInput.value.trim();
             if (results.length === 0) {
-                autocompleteDropdown.innerHTML = '<div class="autocomplete-no-results">No courses found. Please try a different search.</div>';
+                autocompleteDropdown.classList.add('active');
+                autocompleteDropdown.innerHTML = 
+                    '<div class="autocomplete-no-results">No courses found in database.</div>' +
+                    (currentQuery.length >= 3 ? '<div class="autocomplete-item autocomplete-use-custom" data-name="' + escapeHtml(currentQuery) + '" data-location="" style="border-top: 1px solid #eee; color: #2c5f2d; font-style: italic;">' +
+                    '<div class="autocomplete-item-name">✏️ Use "' + escapeHtml(currentQuery) + '"</div>' +
+                    '<div class="autocomplete-item-location">Enter this course name manually</div></div>' : '');
             } else {
                 autocompleteDropdown.classList.add('active');
+                // Check if query exactly matches any result
+                const queryLower = currentQuery.toLowerCase();
+                const exactMatch = results.some(c => c.name.toLowerCase() === queryLower);
+                
                 autocompleteDropdown.innerHTML = results.map(course => `
                     <div class="autocomplete-item" data-name="${escapeHtml(course.name)}" data-location="${escapeHtml(course.location)}">
                         <div class="autocomplete-item-name">${escapeHtml(course.name)}</div>
                         <div class="autocomplete-item-location">${escapeHtml(course.location)}</div>
                     </div>
-                `).join('') + (stillSearching ? '<div class="autocomplete-loading" style="font-size:11px; padding:6px 12px;">Searching for more courses...</div>' : '');
+                `).join('') + 
+                (stillSearching ? '<div class="autocomplete-loading" style="font-size:11px; padding:6px 12px;">Searching for more courses...</div>' : '') +
+                (!exactMatch && currentQuery.length >= 3 ? '<div class="autocomplete-item autocomplete-use-custom" data-name="' + escapeHtml(currentQuery) + '" data-location="" style="border-top: 1px solid #eee; color: #2c5f2d; font-style: italic;">' +
+                '<div class="autocomplete-item-name">✏️ Don\'t see your course? Use "' + escapeHtml(currentQuery) + '"</div>' +
+                '<div class="autocomplete-item-location">Enter manually and fill in details</div></div>' : '');
 
                 // Add click handlers to each result
                 document.querySelectorAll('.autocomplete-item').forEach(item => {
@@ -2633,9 +2649,31 @@
 
         // Function to scrape address from a golf course website using a CORS proxy
         async function scrapeAddressFromWebsite(websiteUrl, courseName) {
+            // Try main URL first, then common subpages like /contact
+            const urlsToTry = [websiteUrl];
+            try {
+                const baseUrl = new URL(websiteUrl);
+                const base = baseUrl.origin;
+                urlsToTry.push(base + '/contact');
+                urlsToTry.push(base + '/contact-us');
+                urlsToTry.push(base + '/about');
+                urlsToTry.push(base + '/location');
+                urlsToTry.push(base + '/directions');
+            } catch(e) {}
+            
+            for (const url of urlsToTry) {
+                try {
+                    const result = await scrapeAddressFromSinglePage(url);
+                    if (result) return result;
+                } catch(e) {}
+            }
+            return null;
+        }
+        
+        async function scrapeAddressFromSinglePage(pageUrl) {
             try {
                 // Use allorigins.win as a free CORS proxy
-                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(websiteUrl);
+                const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(pageUrl);
                 const response = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
                 
                 if (!response.ok) return null;
@@ -2752,11 +2790,17 @@
                     }
                 }
                 
-                // Strategy 6: Look for "address" label near text with a zip code
-                const addressBlockPattern = /[Aa]ddress[:\s]*,?\s*([^<\n]{5,100}\d{5})/;
-                const addressBlock = textContent.match(addressBlockPattern);
-                if (addressBlock) {
-                    return addressBlock[1].trim().replace(/^\s*[:|-]\s*/, '').replace(/\s*,\s*/g, ', ');
+                // Strategy 6: Look for "address" or "located at" label near text with a zip code
+                const addressLabelPatterns = [
+                    /ADDRESS\s*[:\s·|]*\s*(\d+[^<\n·|]{5,100}\d{5}(?:-\d{4})?)/i,
+                    /(?:located|location|find us)\s+(?:at|:)\s*(\d+[^<\n]{5,100}\d{5}(?:-\d{4})?)/i,
+                    /[Aa]ddress[:\s]*,?\s*(\d+[^<\n]{5,100}\d{5}(?:-\d{4})?)/
+                ];
+                for (const alp of addressLabelPatterns) {
+                    const addressBlock = textContent.match(alp);
+                    if (addressBlock) {
+                        return addressBlock[1].trim().replace(/^\s*[:|-]\s*/, '').replace(/\s*,\s*/g, ', ');
+                    }
                 }
                 
                 // Strategy 7: Just find any 5-digit zip with a street number before it
