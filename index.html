@@ -1906,6 +1906,9 @@
             { name: 'Hawks Ridge Golf Club', location: 'Ball Ground, Georgia' },
             { name: 'Château Élan Golf Club', location: 'Braselton, Georgia' },
             { name: 'The Landings Club', location: 'Savannah, Georgia' },
+            { name: 'McLemore Resort', location: 'Rising Fawn, Georgia' },
+            { name: 'The Keep at McLemore Resort', location: 'Rising Fawn, Georgia' },
+            { name: 'The Highlands at McLemore Resort', location: 'Rising Fawn, Georgia' },
             { name: 'Kapalua Golf Club', location: 'Lahaina, Hawaii' },
             { name: 'Mauna Kea Golf Course', location: 'Kohala Coast, Hawaii' },
             { name: 'Mauna Lani Golf Course', location: 'Kohala Coast, Hawaii' },
@@ -2327,9 +2330,13 @@
                     .filter(f => {
                         const name = (f.properties.name || '').toLowerCase();
                         const type = (f.properties.osm_value || '').toLowerCase();
-                        // Keep results that are golf-related
+                        const queryLower = query.toLowerCase();
+                        const queryWords = queryLower.split(/\s+/).filter(w => w.length > 2);
+                        // Keep results that are golf-related OR match the query well
                         return name.includes('golf') || type.includes('golf') || 
-                               name.includes(query.toLowerCase().split(' ')[0]);
+                               type.includes('resort') || type.includes('leisure') ||
+                               name.includes('resort') || name.includes('club') || name.includes('links') ||
+                               queryWords.some(w => name.includes(w));
                     })
                     .map(f => {
                         const p = f.properties;
