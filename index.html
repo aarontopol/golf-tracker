@@ -490,6 +490,77 @@
             font-size: 13px;
             cursor: pointer;
         }
+        .map-view-container {
+            background: white;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+        }
+        .map-breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 12px;
+            font-size: 13px;
+            flex-wrap: wrap;
+        }
+        .map-breadcrumb-item {
+            color: #2c5f2d;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .map-breadcrumb-item:hover {
+            color: #1a3d1a;
+        }
+        .map-breadcrumb-separator {
+            color: #999;
+        }
+        .map-breadcrumb-current {
+            color: #333;
+            font-weight: 600;
+        }
+        .map-globe-container {
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .map-globe-container svg {
+            max-width: 100%;
+            height: auto;
+        }
+        .map-region-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 8px;
+        }
+        .map-region-card {
+            background: #f5f9f5;
+            border: 1px solid #e0e8e0;
+            border-radius: 10px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .map-region-card:hover {
+            background: #e8f5e8;
+            border-color: #2c5f2d;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .map-region-name {
+            font-weight: 600;
+            font-size: 14px;
+            color: #1e3c72;
+        }
+        .map-region-count {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
+        .map-region-flag {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
 
         /* Individual course item in the list */
         .course-item {
@@ -1441,14 +1512,15 @@
              ============================================ -->
         <div id="wishListContainer" class="course-list active">
             <div class="sort-controls" id="wishListSortControls" style="display:none;">
-                <div class="sort-label">Sort by:</div>
+                <div class="sort-label">View:</div>
                 <div class="sort-buttons">
                     <button class="sort-btn active" data-sort="alpha" data-list="wish">A–Z</button>
-                    <button class="sort-btn" data-sort="state" data-list="wish">State</button>
-                    <button class="sort-btn" data-sort="rating" data-list="wish">Rating</button>
-                    <button class="sort-btn" data-sort="map" data-list="wish">🗺️ Map</button>
+                    <button class="sort-btn" data-sort="state" data-list="wish">📍 Location</button>
+                    <button class="sort-btn" data-sort="rating" data-list="wish">⭐ Rating</button>
+                    <button class="sort-btn" data-sort="map" data-list="wish">🌍 Map</button>
                 </div>
             </div>
+            <div id="wishMapView" class="map-view-container" style="display:none;"></div>
             <div id="wishList">
             </div>
         </div>
@@ -1459,14 +1531,15 @@
              ============================================ -->
         <div id="playedListContainer" class="course-list">
             <div class="sort-controls" id="playedListSortControls" style="display:none;">
-                <div class="sort-label">Sort by:</div>
+                <div class="sort-label">View:</div>
                 <div class="sort-buttons">
-                    <button class="sort-btn active" data-sort="date" data-list="played">Date</button>
-                    <button class="sort-btn" data-sort="alpha" data-list="played">A–Z</button>
-                    <button class="sort-btn" data-sort="state" data-list="played">State</button>
-                    <button class="sort-btn" data-sort="map" data-list="played">🗺️ Map</button>
+                    <button class="sort-btn active" data-sort="alpha" data-list="played">A–Z</button>
+                    <button class="sort-btn" data-sort="state" data-list="played">📍 Location</button>
+                    <button class="sort-btn" data-sort="score" data-list="played">🏌️ Score</button>
+                    <button class="sort-btn" data-sort="map" data-list="played">🌍 Map</button>
                 </div>
             </div>
+            <div id="playedMapView" class="map-view-container" style="display:none;"></div>
             <div id="playedList">
             </div>
         </div>
@@ -3890,9 +3963,27 @@
         // SORT & FILTER STATE
         // ==========================================
         let wishSortMode = 'alpha';
-        let playedSortMode = 'date';
-        let wishMapFilter = { country: '', state: '', city: '' };
-        let playedMapFilter = { country: '', state: '', city: '' };
+        let playedSortMode = 'alpha';
+        let wishMapLevel = 'country'; // country, state, city
+        let playedMapLevel = 'country';
+        let wishMapSelection = { country: '', state: '' };
+        let playedMapSelection = { country: '', state: '' };
+
+        // Country flag emoji lookup
+        const countryFlags = {
+            'USA': '🇺🇸', 'United States': '🇺🇸', 'United States of America': '🇺🇸',
+            'Canada': '🇨🇦', 'Scotland': '🏴󠁧󠁢󠁳󠁣󠁴󠁿', 'England': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+            'Ireland': '🇮🇪', 'Northern Ireland': '🇬🇧', 'UK': '🇬🇧', 'United Kingdom': '🇬🇧',
+            'UAE': '🇦🇪', 'Australia': '🇦🇺', 'New Zealand': '🇳🇿', 'Japan': '🇯🇵',
+            'Mexico': '🇲🇽', 'Spain': '🇪🇸', 'France': '🇫🇷', 'Portugal': '🇵🇹',
+            'Germany': '🇩🇪', 'Italy': '🇮🇹', 'South Korea': '🇰🇷', 'Thailand': '🇹🇭',
+            'Dominican Republic': '🇩🇴', 'Bahamas': '🇧🇸', 'Bermuda': '🇧🇲',
+            'South Africa': '🇿🇦', 'Saint Lucia': '🇱🇨'
+        };
+
+        function getFlag(country) {
+            return countryFlags[country] || '🌍';
+        }
 
         // Sort button click handlers
         document.addEventListener('click', function(e) {
@@ -3900,107 +3991,205 @@
             const list = e.target.dataset.list;
             const sort = e.target.dataset.sort;
             
-            // Update active button
             e.target.closest('.sort-buttons').querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
             e.target.classList.add('active');
             
             if (list === 'wish') {
                 wishSortMode = sort;
+                wishMapLevel = 'country';
+                wishMapSelection = { country: '', state: '' };
+                document.getElementById('wishMapView').style.display = sort === 'map' ? 'block' : 'none';
                 renderWishList();
+                if (sort === 'map') renderMapView('wish');
             } else {
                 playedSortMode = sort;
+                playedMapLevel = 'country';
+                playedMapSelection = { country: '', state: '' };
+                document.getElementById('playedMapView').style.display = sort === 'map' ? 'block' : 'none';
                 renderPlayedList();
+                if (sort === 'map') renderMapView('played');
             }
         });
 
-        function getLocationParts(course) {
-            return {
-                country: (course.country || '').trim(),
-                state: (course.state || '').trim(),
-                city: (course.city || '').trim()
+        function getCoursesForList(listType) {
+            if (listType === 'wish') return wishlistCourses;
+            // For played, return one entry per unique course name (using most recent round)
+            const groups = {};
+            playedCourses.forEach(r => {
+                if (!groups[r.name]) groups[r.name] = [];
+                groups[r.name].push(r);
+            });
+            return Object.values(groups).map(rounds => {
+                rounds.sort((a, b) => new Date(b.datePlayed) - new Date(a.datePlayed));
+                return rounds[0];
+            });
+        }
+
+        function renderMapView(listType) {
+            const mapEl = document.getElementById(listType + 'MapView');
+            const courses = getCoursesForList(listType);
+            const level = listType === 'wish' ? wishMapLevel : playedMapLevel;
+            const selection = listType === 'wish' ? wishMapSelection : playedMapSelection;
+            
+            if (courses.length === 0) {
+                mapEl.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            
+            // Breadcrumb navigation
+            html += '<div class="map-breadcrumb">';
+            html += `<span class="map-breadcrumb-item" onclick="mapNavigate('${listType}', 'country', '', '')">🌍 World</span>`;
+            if (selection.country) {
+                html += '<span class="map-breadcrumb-separator">›</span>';
+                if (level === 'state' || level === 'city') {
+                    html += `<span class="map-breadcrumb-item" onclick="mapNavigate('${listType}', 'state', '${escapeHtml(selection.country)}', '')">${getFlag(selection.country)} ${escapeHtml(selection.country)}</span>`;
+                }
+                if (selection.state && level === 'city') {
+                    html += '<span class="map-breadcrumb-separator">›</span>';
+                    html += `<span class="map-breadcrumb-current">📍 ${escapeHtml(selection.state)}</span>`;
+                }
+            }
+            html += '</div>';
+
+            if (level === 'country') {
+                // Show countries as cards with globe
+                const countryCounts = {};
+                courses.forEach(c => {
+                    const country = (c.country || 'Unknown').trim();
+                    countryCounts[country] = (countryCounts[country] || 0) + 1;
+                });
+                
+                // Globe SVG
+                html += '<div class="map-globe-container">';
+                html += buildGlobeSVG(Object.keys(countryCounts));
+                html += '</div>';
+                
+                html += '<div class="map-region-grid">';
+                Object.keys(countryCounts).sort().forEach(country => {
+                    html += `
+                        <div class="map-region-card" onclick="mapNavigate('${listType}', 'state', '${escapeHtml(country)}', '')">
+                            <div class="map-region-flag">${getFlag(country)}</div>
+                            <div class="map-region-name">${escapeHtml(country)}</div>
+                            <div class="map-region-count">${countryCounts[country]} course${countryCounts[country] > 1 ? 's' : ''}</div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                
+            } else if (level === 'state') {
+                // Show states/provinces for selected country
+                const filtered = courses.filter(c => (c.country || '').trim() === selection.country);
+                const stateCounts = {};
+                filtered.forEach(c => {
+                    const state = (c.state || 'Unknown').trim();
+                    stateCounts[state] = (stateCounts[state] || 0) + 1;
+                });
+                
+                html += '<div class="map-region-grid">';
+                Object.keys(stateCounts).sort().forEach(state => {
+                    html += `
+                        <div class="map-region-card" onclick="mapNavigate('${listType}', 'city', '${escapeHtml(selection.country)}', '${escapeHtml(state)}')">
+                            <div class="map-region-flag">📍</div>
+                            <div class="map-region-name">${escapeHtml(state)}</div>
+                            <div class="map-region-count">${stateCounts[state]} course${stateCounts[state] > 1 ? 's' : ''}</div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                
+            } else if (level === 'city') {
+                // Show cities for selected state — these just filter the list below
+                const filtered = courses.filter(c => 
+                    (c.country || '').trim() === selection.country && 
+                    (c.state || '').trim() === selection.state
+                );
+                const cityCounts = {};
+                filtered.forEach(c => {
+                    const city = (c.city || 'Unknown').trim();
+                    cityCounts[city] = (cityCounts[city] || 0) + 1;
+                });
+                
+                if (Object.keys(cityCounts).length > 1) {
+                    html += '<div class="map-region-grid">';
+                    Object.keys(cityCounts).sort().forEach(city => {
+                        html += `
+                            <div class="map-region-card" style="padding: 8px;">
+                                <div class="map-region-name" style="font-size: 13px;">${escapeHtml(city)}</div>
+                                <div class="map-region-count">${cityCounts[city]} course${cityCounts[city] > 1 ? 's' : ''}</div>
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                }
+            }
+            
+            mapEl.innerHTML = html;
+        }
+
+        // Globe SVG with highlighted countries
+        function buildGlobeSVG(activeCountries) {
+            // Simple world regions as approximate SVG paths
+            // Each region represents a rough continental/country area
+            const regions = {
+                'North America': { cx: 120, cy: 100, r: 40, countries: ['USA', 'United States', 'United States of America', 'Canada', 'Mexico', 'Bahamas', 'Bermuda', 'Dominican Republic'] },
+                'Europe': { cx: 280, cy: 80, r: 30, countries: ['England', 'Scotland', 'Ireland', 'Northern Ireland', 'UK', 'United Kingdom', 'France', 'Spain', 'Portugal', 'Germany', 'Italy'] },
+                'Africa': { cx: 280, cy: 160, r: 35, countries: ['South Africa'] },
+                'Middle East': { cx: 320, cy: 110, r: 18, countries: ['UAE'] },
+                'Asia': { cx: 380, cy: 95, r: 35, countries: ['Japan', 'South Korea', 'Thailand', 'China', 'India'] },
+                'Oceania': { cx: 420, cy: 180, r: 25, countries: ['Australia', 'New Zealand'] },
+                'Caribbean': { cx: 150, cy: 140, r: 15, countries: ['Saint Lucia', 'Dominican Republic', 'Bahamas'] }
             };
-        }
-
-        function getUniqueValues(courses, field) {
-            const vals = new Set();
-            courses.forEach(c => {
-                const v = (c[field] || '').trim();
-                if (v) vals.add(v);
-            });
-            return Array.from(vals).sort();
-        }
-
-        function renderMapFilter(containerId, courses, filter, onChangeCallback) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
             
-            const countries = getUniqueValues(courses, 'country');
-            const states = filter.country 
-                ? getUniqueValues(courses.filter(c => (c.country || '').trim() === filter.country), 'state')
-                : getUniqueValues(courses, 'state');
-            const cities = filter.state
-                ? getUniqueValues(courses.filter(c => (c.state || '').trim() === filter.state), 'city')
-                : filter.country
-                    ? getUniqueValues(courses.filter(c => (c.country || '').trim() === filter.country), 'city')
-                    : getUniqueValues(courses, 'city');
-
-            container.innerHTML = `
-                <div class="map-filter-container">
-                    <div class="map-filter-row">
-                        <select class="map-filter-select" id="${containerId}Country">
-                            <option value="">All Countries</option>
-                            ${countries.map(c => `<option value="${escapeHtml(c)}" ${filter.country === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}
-                        </select>
-                        <select class="map-filter-select" id="${containerId}State">
-                            <option value="">All States</option>
-                            ${states.map(s => `<option value="${escapeHtml(s)}" ${filter.state === s ? 'selected' : ''}>${escapeHtml(s)}</option>`).join('')}
-                        </select>
-                        <select class="map-filter-select" id="${containerId}City">
-                            <option value="">All Cities</option>
-                            ${cities.map(c => `<option value="${escapeHtml(c)}" ${filter.city === c ? 'selected' : ''}>${escapeHtml(c)}</option>`).join('')}
-                        </select>
-                        <button class="map-filter-clear" onclick="clearMapFilter('${containerId}')">Clear</button>
-                    </div>
-                </div>
-            `;
+            const activeSet = new Set(activeCountries);
             
-            // Wire up change handlers
-            document.getElementById(containerId + 'Country').addEventListener('change', function() {
-                filter.country = this.value;
-                filter.state = '';
-                filter.city = '';
-                onChangeCallback();
+            let svg = `<svg viewBox="0 0 500 240" style="max-width: 400px; width: 100%;">`;
+            // Ocean background
+            svg += `<rect x="0" y="0" width="500" height="240" rx="12" fill="#e8f0fe" />`;
+            // Grid lines
+            for (let x = 50; x < 500; x += 50) {
+                svg += `<line x1="${x}" y1="0" x2="${x}" y2="240" stroke="#d0dff0" stroke-width="0.5" />`;
+            }
+            for (let y = 40; y < 240; y += 40) {
+                svg += `<line x1="0" y1="${y}" x2="500" y2="${y}" stroke="#d0dff0" stroke-width="0.5" />`;
+            }
+            
+            // Draw each region
+            Object.entries(regions).forEach(([name, region]) => {
+                const hasActive = region.countries.some(c => activeSet.has(c));
+                const fill = hasActive ? '#2c5f2d' : '#c8d8c8';
+                const opacity = hasActive ? '0.85' : '0.4';
+                // Use ellipses for continent shapes
+                const rx = region.r * 1.3;
+                const ry = region.r * 0.9;
+                svg += `<ellipse cx="${region.cx}" cy="${region.cy}" rx="${rx}" ry="${ry}" fill="${fill}" opacity="${opacity}" />`;
+                if (hasActive) {
+                    // Count courses
+                    const count = activeCountries.filter(c => region.countries.includes(c)).length;
+                    svg += `<text x="${region.cx}" y="${region.cy - 2}" text-anchor="middle" fill="white" font-size="9" font-weight="bold">${name}</text>`;
+                    svg += `<text x="${region.cx}" y="${region.cy + 10}" text-anchor="middle" fill="white" font-size="8">${count} ${count === 1 ? 'country' : 'countries'}</text>`;
+                }
             });
-            document.getElementById(containerId + 'State').addEventListener('change', function() {
-                filter.state = this.value;
-                filter.city = '';
-                onChangeCallback();
-            });
-            document.getElementById(containerId + 'City').addEventListener('change', function() {
-                filter.city = this.value;
-                onChangeCallback();
-            });
+            
+            svg += `</svg>`;
+            return svg;
         }
 
-        // Called from the Clear button
-        window.clearMapFilter = function(containerId) {
-            if (containerId === 'wishMapFilter') {
-                wishMapFilter = { country: '', state: '', city: '' };
+        // Map navigation handler
+        window.mapNavigate = function(listType, level, country, state) {
+            if (listType === 'wish') {
+                wishMapLevel = level;
+                wishMapSelection = { country, state };
+                renderMapView('wish');
                 renderWishList();
             } else {
-                playedMapFilter = { country: '', state: '', city: '' };
+                playedMapLevel = level;
+                playedMapSelection = { country, state };
+                renderMapView('played');
                 renderPlayedList();
             }
         };
-
-        function applyMapFilter(courses, filter) {
-            return courses.filter(c => {
-                if (filter.country && (c.country || '').trim() !== filter.country) return false;
-                if (filter.state && (c.state || '').trim() !== filter.state) return false;
-                if (filter.city && (c.city || '').trim() !== filter.city) return false;
-                return true;
-            });
-        }
 
         // ==========================================
         // DISPLAY WISH LIST
@@ -4011,6 +4200,7 @@
             
             if (wishlistCourses.length === 0) {
                 sortControls.style.display = 'none';
+                document.getElementById('wishMapView').style.display = 'none';
                 listEl.innerHTML = `
                     <div class="card empty-state">
                         <div class="empty-state-icon">⛳</div>
@@ -4021,7 +4211,6 @@
                 return;
             }
             
-            // Show sort controls when there are courses
             if (document.getElementById('wishListContainer').classList.contains('active')) {
                 sortControls.style.display = 'flex';
             }
@@ -4032,9 +4221,14 @@
             
             let courses = [...wishlistCourses];
             
-            // Apply map filter if active
+            // Apply map filter if in map mode
             if (wishSortMode === 'map') {
-                courses = applyMapFilter(courses, wishMapFilter);
+                if (wishMapSelection.country) {
+                    courses = courses.filter(c => (c.country || '').trim() === wishMapSelection.country);
+                }
+                if (wishMapSelection.state) {
+                    courses = courses.filter(c => (c.state || '').trim() === wishMapSelection.state);
+                }
             }
             
             // Sort
@@ -4042,8 +4236,11 @@
                 courses.sort((a, b) => a.name.localeCompare(b.name));
             } else if (wishSortMode === 'state') {
                 courses.sort((a, b) => {
-                    const sa = (a.state || a.country || 'ZZZ').trim();
-                    const sb = (b.state || b.country || 'ZZZ').trim();
+                    const ca = (a.country || 'ZZZ').trim();
+                    const cb = (b.country || 'ZZZ').trim();
+                    if (ca !== cb) return ca.localeCompare(cb);
+                    const sa = (a.state || 'ZZZ').trim();
+                    const sb = (b.state || 'ZZZ').trim();
                     if (sa !== sb) return sa.localeCompare(sb);
                     return a.name.localeCompare(b.name);
                 });
@@ -4056,27 +4253,18 @@
                 });
             }
             
-            // Build HTML
             let html = '';
-            
-            // Map filter dropdowns
-            if (wishSortMode === 'map') {
-                html += '<div id="wishMapFilter"></div>';
-            }
-            
-            // Group by state
             let currentGroup = null;
             
             courses.forEach(course => {
-                // State group headers
                 if (wishSortMode === 'state') {
-                    const group = (course.state || course.country || 'Unknown').trim();
+                    const group = [(course.country || '').trim(), (course.state || '').trim()].filter(Boolean).join(' › ') || 'Unknown';
                     if (group !== currentGroup) {
                         currentGroup = group;
-                        html += `<div class="state-group-header">📍 ${escapeHtml(group)}</div>`;
+                        const flag = getFlag((course.country || '').trim());
+                        html += `<div class="state-group-header">${flag} ${escapeHtml(group)}</div>`;
                     }
                 }
-                // Rating group headers
                 if (wishSortMode === 'rating') {
                     const group = course.rating || '';
                     if (group !== currentGroup) {
@@ -4119,15 +4307,10 @@
             });
             
             if (wishSortMode === 'map' && courses.length === 0 && wishlistCourses.length > 0) {
-                html += '<div class="card empty-state"><p>No courses match this filter.</p></div>';
+                html += '<div class="card empty-state" style="padding:16px; text-align:center;"><p>No courses in this location. Select a region above.</p></div>';
             }
             
             listEl.innerHTML = html;
-            
-            // Render map filter after DOM update
-            if (wishSortMode === 'map') {
-                renderMapFilter('wishMapFilter', wishlistCourses, wishMapFilter, renderWishList);
-            }
             
             document.querySelectorAll('#wishList .course-item').forEach(item => {
                 item.addEventListener('click', function() {
@@ -4138,8 +4321,6 @@
 
         // ==========================================
         // DISPLAY PLAYED LIST
-        // Shows all courses you've played with stats
-        // Groups by course name and counts times played
         // ==========================================
         function renderPlayedList() {
             const listEl = document.getElementById('playedList');
@@ -4147,6 +4328,7 @@
             
             if (playedCourses.length === 0) {
                 sortControls.style.display = 'none';
+                document.getElementById('playedMapView').style.display = 'none';
                 listEl.innerHTML = `
                     <div class="card empty-state">
                         <div class="empty-state-icon">✅</div>
@@ -4157,7 +4339,6 @@
                 return;
             }
             
-            // Show sort controls when there are courses
             if (document.getElementById('playedListContainer').classList.contains('active')) {
                 sortControls.style.display = 'flex';
             }
@@ -4165,69 +4346,68 @@
             // Group rounds by course name
             const courseGroups = {};
             playedCourses.forEach(round => {
-                if (!courseGroups[round.name]) {
-                    courseGroups[round.name] = [];
-                }
+                if (!courseGroups[round.name]) courseGroups[round.name] = [];
                 courseGroups[round.name].push(round);
             });
             
-            // Sort rounds within each group by date (most recent first)
-            Object.keys(courseGroups).forEach(courseName => {
-                courseGroups[courseName].sort((a, b) => new Date(b.datePlayed) - new Date(a.datePlayed));
+            Object.keys(courseGroups).forEach(name => {
+                courseGroups[name].sort((a, b) => new Date(b.datePlayed) - new Date(a.datePlayed));
             });
             
-            // Build grouped entries array
             let entries = Object.keys(courseGroups).map(courseName => {
                 const rounds = courseGroups[courseName];
-                const mostRecent = rounds[0];
-                return { courseName, rounds, mostRecent };
+                return { courseName, rounds, mostRecent: rounds[0] };
             });
             
-            // Apply map filter if active
+            // Apply map filter
             if (playedSortMode === 'map') {
-                entries = entries.filter(e => {
-                    const c = e.mostRecent;
-                    if (playedMapFilter.country && (c.country || '').trim() !== playedMapFilter.country) return false;
-                    if (playedMapFilter.state && (c.state || '').trim() !== playedMapFilter.state) return false;
-                    if (playedMapFilter.city && (c.city || '').trim() !== playedMapFilter.city) return false;
-                    return true;
-                });
+                if (playedMapSelection.country) {
+                    entries = entries.filter(e => (e.mostRecent.country || '').trim() === playedMapSelection.country);
+                }
+                if (playedMapSelection.state) {
+                    entries = entries.filter(e => (e.mostRecent.state || '').trim() === playedMapSelection.state);
+                }
             }
             
-            // Sort entries
-            if (playedSortMode === 'date') {
-                entries.sort((a, b) => new Date(b.mostRecent.datePlayed) - new Date(a.mostRecent.datePlayed));
-            } else if (playedSortMode === 'alpha' || playedSortMode === 'map') {
+            // Sort
+            if (playedSortMode === 'alpha' || playedSortMode === 'map') {
                 entries.sort((a, b) => a.courseName.localeCompare(b.courseName));
             } else if (playedSortMode === 'state') {
                 entries.sort((a, b) => {
-                    const sa = (a.mostRecent.state || a.mostRecent.country || 'ZZZ').trim();
-                    const sb = (b.mostRecent.state || b.mostRecent.country || 'ZZZ').trim();
+                    const ca = (a.mostRecent.country || 'ZZZ').trim();
+                    const cb = (b.mostRecent.country || 'ZZZ').trim();
+                    if (ca !== cb) return ca.localeCompare(cb);
+                    const sa = (a.mostRecent.state || 'ZZZ').trim();
+                    const sb = (b.mostRecent.state || 'ZZZ').trim();
                     if (sa !== sb) return sa.localeCompare(sb);
+                    return a.courseName.localeCompare(b.courseName);
+                });
+            } else if (playedSortMode === 'score') {
+                entries.sort((a, b) => {
+                    const sa = parseInt(a.mostRecent.score) || 999;
+                    const sb = parseInt(b.mostRecent.score) || 999;
+                    if (sa !== sb) return sa - sb;
                     return a.courseName.localeCompare(b.courseName);
                 });
             }
             
-            // Build HTML
             let html = '';
-            
-            // Map filter dropdowns
-            if (playedSortMode === 'map') {
-                html += '<div id="playedMapFilter"></div>';
-            }
-            
             let currentGroup = null;
             
             entries.forEach(({ courseName, rounds, mostRecent }) => {
                 const timesPlayed = rounds.length;
                 
-                // State group header
                 if (playedSortMode === 'state') {
-                    const group = (mostRecent.state || mostRecent.country || 'Unknown').trim();
+                    const group = [(mostRecent.country || '').trim(), (mostRecent.state || '').trim()].filter(Boolean).join(' › ') || 'Unknown';
                     if (group !== currentGroup) {
                         currentGroup = group;
-                        html += `<div class="state-group-header">📍 ${escapeHtml(group)}</div>`;
+                        const flag = getFlag((mostRecent.country || '').trim());
+                        html += `<div class="state-group-header">${flag} ${escapeHtml(group)}</div>`;
                     }
+                }
+                if (playedSortMode === 'score') {
+                    const scoreGroup = mostRecent.score ? 'Score: ' + mostRecent.score : 'No Score Recorded';
+                    // Don't group by individual scores — just sort
                 }
                 
                 let locationStr = '';
@@ -4244,10 +4424,10 @@
                         <div class="course-header">
                             <div class="course-name">${escapeHtml(courseName)} <span style="font-size: 13px; font-weight: 400; color: #666;">📅 ${new Date(mostRecent.datePlayed).toLocaleDateString()}</span></div>
                             <div style="display: flex; gap: 6px;">
-                                ${timesPlayed > 1 ? `<div class="times-played-badge">${timesPlayed}x played</div>` : ''}
+                                ${mostRecent.score ? `<div class="times-played-badge">🏌️ ${mostRecent.score}</div>` : ''}
+                                ${timesPlayed > 1 ? `<div class="times-played-badge">${timesPlayed}x</div>` : ''}
                             </div>
                         </div>
-                        ${mostRecent.score ? `<div class="course-location">🏌️ Score: ${mostRecent.score}</div>` : ''}
                         ${(() => {
                             let playedWithStr = '';
                             if (Array.isArray(mostRecent.playedWith) && mostRecent.playedWith.length > 0) {
@@ -4261,24 +4441,18 @@
                         ${(() => {
                             let allPhotos = [];
                             rounds.forEach(function(r) {
-                                if (Array.isArray(r.photos)) {
-                                    allPhotos = allPhotos.concat(r.photos);
-                                }
+                                if (Array.isArray(r.photos)) allPhotos = allPhotos.concat(r.photos);
                             });
                             if (allPhotos.length === 0) return '';
                             let shuffled = allPhotos.slice();
                             for (let i = shuffled.length - 1; i > 0; i--) {
                                 const j = Math.floor(Math.random() * (i + 1));
-                                const temp = shuffled[i];
-                                shuffled[i] = shuffled[j];
-                                shuffled[j] = temp;
+                                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
                             }
                             const shown = shuffled.slice(0, 4);
                             const extra = allPhotos.length - shown.length;
                             return '<div class="list-photo-strip">' +
-                                shown.map(function(p) {
-                                    return '<img class="list-photo-thumb" src="' + p + '" />';
-                                }).join('') +
+                                shown.map(p => '<img class="list-photo-thumb" src="' + p + '" />').join('') +
                                 (extra > 0 ? '<div class="list-photo-more">+' + extra + '</div>' : '') +
                             '</div>';
                         })()}
@@ -4287,15 +4461,10 @@
             });
             
             if (playedSortMode === 'map' && entries.length === 0 && playedCourses.length > 0) {
-                html += '<div class="card empty-state"><p>No courses match this filter.</p></div>';
+                html += '<div class="card empty-state" style="padding:16px; text-align:center;"><p>No courses in this location. Select a region above.</p></div>';
             }
             
             listEl.innerHTML = html;
-            
-            // Render map filter after DOM update
-            if (playedSortMode === 'map') {
-                renderMapFilter('playedMapFilter', playedCourses, playedMapFilter, renderPlayedList);
-            }
             
             document.querySelectorAll('#playedList .course-item').forEach(item => {
                 item.addEventListener('click', function() {
@@ -4303,6 +4472,7 @@
                 });
             });
         }
+
 
         // ==========================================
         // SHOW WISH LIST COURSE DETAIL POPUP
