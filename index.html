@@ -2250,29 +2250,73 @@
                             }
                         }
                         
-                        // Auto-fill address by looking up the selected course
+                        // Auto-fill address and website by looking up the selected course
                         const statusEl = document.getElementById('addressLookupStatus');
-                        statusEl.innerHTML = '<span class="loading">Looking up address and website...</span>';
+                        statusEl.innerHTML = '<span class="loading">Looking up details...</span>';
                         
                         try {
+                            // Use Photon API for structured address data
                             const response = await fetch(
-                                `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(courseName + ' golf course')}&limit=1`,
-                                {
-                                    headers: {
-                                        'User-Agent': 'GolfCourseTracker/1.0'
-                                    }
-                                }
+                                `https://photon.komoot.io/api/?q=${encodeURIComponent(courseName + ' golf')}&limit=3&lang=en`
                             );
                             
                             const data = await response.json();
                             
-                            if (data && data.length > 0) {
-                                const result = data[0];
-                                document.getElementById('address').value = result.display_name;
-                                statusEl.innerHTML = '✓ Address found';
+                            if (data && data.features && data.features.length > 0) {
+                                // Find the best match
+                                const best = data.features.find(f => {
+                                    const n = (f.properties.name || '').toLowerCase();
+                                    return n.includes('golf') || n.includes(courseName.toLowerCase().split(' ')[0].toLowerCase());
+                                }) || data.features[0];
+                                
+                                const p = best.properties;
+                                const addressParts = [];
+                                if (p.name) addressParts.push(p.name);
+                                if (p.housenumber && p.street) addressParts.push(p.housenumber + ' ' + p.street);
+                                else if (p.street) addressParts.push(p.street);
+                                if (p.city || p.town || p.village) addressParts.push(p.city || p.town || p.village);
+                                if (p.county) addressParts.push(p.county);
+                                if (p.state) addressParts.push(p.state);
+                                if (p.postcode) addressParts.push(p.postcode);
+                                if (p.country) addressParts.push(p.country);
+                                
+                                const addressStr = addressParts.join(', ');
+                                if (addressStr) {
+                                    document.getElementById('address').value = addressStr;
+                                }
+                                
+                                // Also fill city/state/country from Photon data if not already set
+                                const cityInput = document.getElementById('city');
+                                const stateInput = document.getElementById('state');
+                                const countryInput = document.getElementById('country');
+                                if (cityInput && !cityInput.value && (p.city || p.town || p.village)) {
+                                    cityInput.value = p.city || p.town || p.village;
+                                }
+                                if (stateInput && !stateInput.value && p.state) {
+                                    stateInput.value = p.state;
+                                }
+                                if (countryInput && !countryInput.value && p.country) {
+                                    countryInput.value = p.country;
+                                }
+                                
+                                statusEl.innerHTML = '✓ Details found';
                                 setTimeout(() => statusEl.textContent = '', 3000);
                             } else {
-                                statusEl.textContent = '';
+                                // Fallback to Nominatim
+                                try {
+                                    const nomResponse = await fetch(
+                                        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(courseName + ' golf course')}&limit=1`,
+                                        { headers: { 'User-Agent': 'GolfCourseTracker/1.0' } }
+                                    );
+                                    const nomData = await nomResponse.json();
+                                    if (nomData && nomData.length > 0) {
+                                        document.getElementById('address').value = nomData[0].display_name;
+                                        statusEl.innerHTML = '✓ Address found';
+                                        setTimeout(() => statusEl.textContent = '', 3000);
+                                    } else {
+                                        statusEl.textContent = '';
+                                    }
+                                } catch (e) { statusEl.textContent = ''; }
                             }
                         } catch (error) {
                             statusEl.textContent = '';
@@ -2292,21 +2336,20 @@
 
         // Function to intelligently find course website
         // Strategy: 
-        //   1. Try DuckDuckGo instant answer API (often has the official website)
+        //   1. Try DuckDuckGo instant answer API
         //   2. Try Wikipedia for official website link
-        //   3. Try smart domain guessing with many common patterns
-        //   4. If nothing works, leave blank for manual entry
+        //   3. Try Nominatim with extratags (has website data for some courses)
+        //   4. Try smart domain guessing with common golf club URL patterns
+        //   5. If nothing works, leave blank for manual entry
         async function findCourseWebsite(courseName, websiteInput) {
             try {
                 // Step 1: DuckDuckGo Instant Answer API
-                // This is free, no API key needed, and often returns the official website
                 try {
                     const ddgResponse = await fetch(
-                        'https://api.duckduckgo.com/?q=' + encodeURIComponent(courseName + ' golf') + '&format=json&no_redirect=1'
+                        'https://api.duckduckgo.com/?q=' + encodeURIComponent(courseName + ' golf club official site') + '&format=json&no_redirect=1'
                     );
                     const ddgData = await ddgResponse.json();
                     
-                    // Check the "official website" field
                     if (ddgData.Results && ddgData.Results.length > 0) {
                         const firstUrl = ddgData.Results[0].FirstURL;
                         if (firstUrl && !firstUrl.includes('duckduckgo.com') && !firstUrl.includes('wikipedia.org')) {
@@ -2315,7 +2358,6 @@
                         }
                     }
                     
-                    // Check the Infobox for a website URL
                     if (ddgData.Infobox && ddgData.Infobox.content) {
                         for (const item of ddgData.Infobox.content) {
                             if (item.label && item.label.toLowerCase() === 'website' && item.value) {
@@ -2327,13 +2369,12 @@
                         }
                     }
                     
-                    // Check the AbstractURL (often points to Wikipedia, but sometimes official site)
                     if (ddgData.AbstractURL && !ddgData.AbstractURL.includes('wikipedia.org')) {
                         websiteInput.value = ddgData.AbstractURL;
                         return;
                     }
                 } catch (e) {
-                    console.log('DuckDuckGo lookup failed, trying Wikipedia...');
+                    console.log('DuckDuckGo lookup failed');
                 }
 
                 // Step 2: Wikipedia lookup for official website
@@ -2367,18 +2408,73 @@
                                     }
                                 }
                             }
-                            // If Wikipedia page exists but no website found, use Wikipedia URL
-                            websiteInput.value = page.fullurl;
+                        }
+                    }
+                } catch (e) {
+                    console.log('Wikipedia lookup failed');
+                }
+
+                // Step 3: Try Nominatim with extratags (OSM sometimes has website info)
+                try {
+                    const nomResponse = await fetch(
+                        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(courseName + ' golf')}&limit=3&extratags=1`,
+                        { headers: { 'User-Agent': 'GolfCourseTracker/1.0' } }
+                    );
+                    const nomData = await nomResponse.json();
+                    for (const result of nomData) {
+                        if (result.extratags && result.extratags.website) {
+                            let url = result.extratags.website;
+                            if (!url.startsWith('http')) url = 'https://' + url;
+                            websiteInput.value = url;
+                            return;
+                        }
+                        if (result.extratags && result.extratags.url) {
+                            let url = result.extratags.url;
+                            if (!url.startsWith('http')) url = 'https://' + url;
+                            websiteInput.value = url;
                             return;
                         }
                     }
                 } catch (e) {
-                    console.log('Wikipedia lookup failed, trying domain guessing...');
+                    console.log('Nominatim extratags lookup failed');
                 }
 
-                // Step 3: If DuckDuckGo and Wikipedia both failed, leave blank
-                // It's better to have an empty field you fill in yourself
-                // than a wrong URL you might not notice
+                // Step 4: Smart domain guessing
+                try {
+                    // Build candidate URLs from the course name
+                    const cleanName = courseName.toLowerCase()
+                        .replace(/^the\s+/i, '')
+                        .replace(/\s+(golf|club|course|country|resort|links|cc|gc)s?\b/gi, '')
+                        .replace(/[^a-z0-9\s]/g, '')
+                        .trim();
+                    const words = cleanName.split(/\s+/);
+                    const joined = words.join('');
+                    
+                    const candidates = [
+                        `https://www.${joined}cc.com`,
+                        `https://www.${joined}golf.com`,
+                        `https://www.${joined}golfclub.com`,
+                        `https://www.${joined}countryclub.com`,
+                        `https://www.${joined}.com`,
+                        `https://www.the${joined}.com`
+                    ];
+                    
+                    // Try each candidate with a HEAD request
+                    for (const url of candidates) {
+                        try {
+                            const resp = await fetch(url, { method: 'HEAD', mode: 'no-cors', signal: AbortSignal.timeout(2000) });
+                            // no-cors always returns opaque, but if it doesn't throw, the domain likely exists
+                            websiteInput.value = url;
+                            return;
+                        } catch (e) {
+                            // Domain doesn't exist, try next
+                        }
+                    }
+                } catch (e) {
+                    console.log('Domain guessing failed');
+                }
+
+                // Step 5: Nothing found, leave blank
                 websiteInput.value = '';
                 
             } catch (error) {
