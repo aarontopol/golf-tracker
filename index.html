@@ -2688,46 +2688,59 @@
                                 const courseWords = courseNameClean.split(/\s+/).filter(w => w.length > 2);
                                 const locationLower = (location || '').toLowerCase();
                                 
-                                let bestResult = null;
-                                let bestScore = -1;
+                                // Score and rank all results
+                                const existingCity = (document.getElementById('city')?.value || '').trim().toLowerCase();
+                                const existingState = (document.getElementById('state')?.value || '').trim().toLowerCase();
                                 
-                                for (const r of nomData) {
-                                    const rName = (r.name || r.display_name.split(',')[0] || '').toLowerCase()
-                                        .replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
-                                    const rWords = rName.split(/\s+/).filter(w => w.length > 2);
-                                    const rDisplay = (r.display_name || '').toLowerCase();
-                                    
-                                    // Name match
-                                    let matchCount = 0;
-                                    for (const cw of courseWords) {
-                                        if (rWords.some(rw => rw.includes(cw) || cw.includes(rw))) matchCount++;
-                                    }
-                                    let score = courseWords.length > 0 ? matchCount / courseWords.length : 0;
-                                    
-                                    // Location match bonus
-                                    if (locationLower) {
-                                        const locParts = locationLower.split(',').map(p => p.trim());
-                                        let locMatch = false;
-                                        for (const part of locParts) {
-                                            if (part && part.length > 2 && rDisplay.includes(part)) {
-                                                score += 0.3;
-                                                locMatch = true;
+                                const scoredResults = nomData
+                                    .filter(r => r.address)
+                                    .map(r => {
+                                        const rName = (r.name || r.display_name.split(',')[0] || '').toLowerCase()
+                                            .replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
+                                        const rWords = rName.split(/\s+/).filter(w => w.length > 2);
+                                        const rDisplay = (r.display_name || '').toLowerCase();
+                                        
+                                        let matchCount = 0;
+                                        for (const cw of courseWords) {
+                                            if (rWords.some(rw => rw.includes(cw) || cw.includes(rw))) matchCount++;
+                                        }
+                                        let score = courseWords.length > 0 ? matchCount / courseWords.length : 0;
+                                        
+                                        if (locationLower) {
+                                            const locParts = locationLower.split(',').map(p => p.trim());
+                                            let locMatch = false;
+                                            for (const part of locParts) {
+                                                if (part && part.length > 2 && rDisplay.includes(part)) {
+                                                    score += 0.3;
+                                                    locMatch = true;
+                                                }
+                                            }
+                                            if (!locMatch && locParts.some(p => p.length > 2)) {
+                                                score -= 0.4;
                                             }
                                         }
-                                        // Penalize if location was provided but doesn't match at all
-                                        if (!locMatch && locParts.some(p => p.length > 2)) {
-                                            score -= 0.4;
-                                        }
+                                        return { result: r, score };
+                                    })
+                                    .filter(s => s.score >= 0.5)
+                                    .sort((a, b) => b.score - a.score);
+                                
+                                // Iterate ranked results, skip any with city/state conflict
+                                let addressFound = false;
+                                for (const { result } of scoredResults) {
+                                    const a = result.address;
+                                    const nomCity = (a.city || a.town || a.village || '').toLowerCase();
+                                    const nomState = (a.state || '').toLowerCase();
+                                    
+                                    let locationConflict = false;
+                                    if (existingCity && nomCity && !nomCity.includes(existingCity) && !existingCity.includes(nomCity)) {
+                                        locationConflict = true;
+                                    }
+                                    if (existingState && nomState && !nomState.includes(existingState) && !existingState.includes(nomState)) {
+                                        locationConflict = true;
                                     }
                                     
-                                    if (score > bestScore) {
-                                        bestScore = score;
-                                        bestResult = r;
-                                    }
-                                }
-                                
-                                if (bestResult && bestScore >= 0.5 && bestResult.address) {
-                                    const a = bestResult.address;
+                                    if (locationConflict) continue; // Try next result
+                                    
                                     const addressParts = [];
                                     if (a.house_number && a.road) addressParts.push(a.house_number + ' ' + a.road);
                                     else if (a.road) addressParts.push(a.road);
@@ -2748,7 +2761,11 @@
                                     if (cityInput && !cityInput.value) cityInput.value = a.city || a.town || a.village || '';
                                     if (stateInput && !stateInput.value) stateInput.value = a.state || '';
                                     if (countryInput && !countryInput.value) countryInput.value = a.country || '';
-                                } else {
+                                    addressFound = true;
+                                    break;
+                                }
+                                
+                                if (!addressFound) {
                                     statusEl.textContent = '';
                                 }
                             } catch (error) {
