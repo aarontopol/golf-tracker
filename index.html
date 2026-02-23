@@ -104,28 +104,28 @@
             animation: ballRollPath 3s linear 0.55s forwards;
         }
         @keyframes ballRollPath {
-            0%   { cx: 36;  cy: 42; opacity: 1; }
-            5%   { cx: 58;  cy: 42; opacity: 1; }
-            10%  { cx: 80;  cy: 42; opacity: 1; }
-            15%  { cx: 101; cy: 42; opacity: 1; }
-            20%  { cx: 121; cy: 42; opacity: 1; }
-            25%  { cx: 140; cy: 42; opacity: 1; }
-            30%  { cx: 158; cy: 42; opacity: 1; }
-            35%  { cx: 175; cy: 42; opacity: 1; }
-            40%  { cx: 191; cy: 42; opacity: 1; }
-            45%  { cx: 206; cy: 42; opacity: 1; }
-            50%  { cx: 220; cy: 42; opacity: 1; }
-            55%  { cx: 233; cy: 42; opacity: 1; }
-            60%  { cx: 245; cy: 42; opacity: 1; }
-            65%  { cx: 256; cy: 42; opacity: 1; }
-            70%  { cx: 266; cy: 42; opacity: 1; }
-            75%  { cx: 275; cy: 42; opacity: 1; }
-            80%  { cx: 283; cy: 42; opacity: 1; }
-            85%  { cx: 290; cy: 42; opacity: 1; }
-            90%  { cx: 296; cy: 42; opacity: 1; }
-            93%  { cx: 301; cy: 42; opacity: 1; }
-            96%  { cx: 304; cy: 39; opacity: 1; }
-            100% { cx: 305; cy: 34; opacity: 0; }
+            0%   { transform: translate(0px, 0px); opacity: 1; }
+            5%   { transform: translate(22px, 0px); opacity: 1; }
+            10%  { transform: translate(44px, 0px); opacity: 1; }
+            15%  { transform: translate(65px, 0px); opacity: 1; }
+            20%  { transform: translate(85px, 0px); opacity: 1; }
+            25%  { transform: translate(104px, 0px); opacity: 1; }
+            30%  { transform: translate(122px, 0px); opacity: 1; }
+            35%  { transform: translate(139px, 0px); opacity: 1; }
+            40%  { transform: translate(155px, 0px); opacity: 1; }
+            45%  { transform: translate(170px, 0px); opacity: 1; }
+            50%  { transform: translate(184px, 0px); opacity: 1; }
+            55%  { transform: translate(197px, 0px); opacity: 1; }
+            60%  { transform: translate(209px, 0px); opacity: 1; }
+            65%  { transform: translate(220px, 0px); opacity: 1; }
+            70%  { transform: translate(230px, 0px); opacity: 1; }
+            75%  { transform: translate(239px, 0px); opacity: 1; }
+            80%  { transform: translate(247px, 0px); opacity: 1; }
+            85%  { transform: translate(254px, 0px); opacity: 1; }
+            90%  { transform: translate(260px, 0px); opacity: 1; }
+            93%  { transform: translate(265px, 0px); opacity: 1; }
+            96%  { transform: translate(268px, -3px); opacity: 1; }
+            100% { transform: translate(269px, -8px); opacity: 0; }
         }
 
         /* The period dot fades in exactly where the ball ends */
@@ -762,8 +762,8 @@
             font-style: italic;
             font-size: 14px;
             text-align: center;
-            padding: 12px 16px;
-            margin-bottom: 16px;
+            padding: 4px 16px;
+            margin-bottom: 10px;
             line-height: 1.5;
         }
         .golf-quote-author {
@@ -1008,11 +1008,10 @@
                     var dotY = bbox.y + bbox.height - 4;
                     dot.setAttribute('cx', dotX);
                     dot.setAttribute('cy', dotY);
-                    // Update rolling ball end position to match
-                    var style = document.querySelector('.rolling-ball').style;
-                    document.documentElement.style.setProperty('--dot-x', dotX);
-                    document.documentElement.style.setProperty('--dot-y', dotY);
-                    // Update the keyframes dynamically
+                    // Calculate ball travel distance (ball starts at cx=36, cy=42)
+                    var totalX = dotX - 36;
+                    var totalY = -(42 - dotY);
+                    // Update the keyframes dynamically using transform
                     var sheets = document.styleSheets;
                     for (var i = 0; i < sheets.length; i++) {
                         try {
@@ -1022,28 +1021,28 @@
                                     sheets[i].deleteRule(j);
                                     sheets[i].insertRule(
                                         '@keyframes ballRollPath {' +
-                                        '0%   { cx: 36;  cy: 42; opacity: 1; }' +
-                                        '5%   { cx: ' + (36 + (dotX - 36) * 0.08) + ';  cy: 42; opacity: 1; }' +
-                                        '10%  { cx: ' + (36 + (dotX - 36) * 0.16) + '; cy: 42; opacity: 1; }' +
-                                        '15%  { cx: ' + (36 + (dotX - 36) * 0.24) + '; cy: 42; opacity: 1; }' +
-                                        '20%  { cx: ' + (36 + (dotX - 36) * 0.32) + '; cy: 42; opacity: 1; }' +
-                                        '25%  { cx: ' + (36 + (dotX - 36) * 0.39) + '; cy: 42; opacity: 1; }' +
-                                        '30%  { cx: ' + (36 + (dotX - 36) * 0.46) + '; cy: 42; opacity: 1; }' +
-                                        '35%  { cx: ' + (36 + (dotX - 36) * 0.52) + '; cy: 42; opacity: 1; }' +
-                                        '40%  { cx: ' + (36 + (dotX - 36) * 0.58) + '; cy: 42; opacity: 1; }' +
-                                        '45%  { cx: ' + (36 + (dotX - 36) * 0.63) + '; cy: 42; opacity: 1; }' +
-                                        '50%  { cx: ' + (36 + (dotX - 36) * 0.68) + '; cy: 42; opacity: 1; }' +
-                                        '55%  { cx: ' + (36 + (dotX - 36) * 0.73) + '; cy: 42; opacity: 1; }' +
-                                        '60%  { cx: ' + (36 + (dotX - 36) * 0.77) + '; cy: 42; opacity: 1; }' +
-                                        '65%  { cx: ' + (36 + (dotX - 36) * 0.81) + '; cy: 42; opacity: 1; }' +
-                                        '70%  { cx: ' + (36 + (dotX - 36) * 0.85) + '; cy: 42; opacity: 1; }' +
-                                        '75%  { cx: ' + (36 + (dotX - 36) * 0.89) + '; cy: 42; opacity: 1; }' +
-                                        '80%  { cx: ' + (36 + (dotX - 36) * 0.92) + '; cy: 42; opacity: 1; }' +
-                                        '85%  { cx: ' + (36 + (dotX - 36) * 0.94) + '; cy: 42; opacity: 1; }' +
-                                        '90%  { cx: ' + (36 + (dotX - 36) * 0.96) + '; cy: 42; opacity: 1; }' +
-                                        '93%  { cx: ' + (36 + (dotX - 36) * 0.98) + '; cy: 42; opacity: 1; }' +
-                                        '96%  { cx: ' + (36 + (dotX - 36) * 0.99) + '; cy: ' + (42 - (42 - dotY) * 0.4) + '; opacity: 1; }' +
-                                        '100% { cx: ' + dotX + '; cy: ' + dotY + '; opacity: 0; }' +
+                                        '0%   { transform: translate(0px, 0px); opacity: 1; }' +
+                                        '5%   { transform: translate(' + (totalX * 0.08) + 'px, 0px); opacity: 1; }' +
+                                        '10%  { transform: translate(' + (totalX * 0.16) + 'px, 0px); opacity: 1; }' +
+                                        '15%  { transform: translate(' + (totalX * 0.24) + 'px, 0px); opacity: 1; }' +
+                                        '20%  { transform: translate(' + (totalX * 0.32) + 'px, 0px); opacity: 1; }' +
+                                        '25%  { transform: translate(' + (totalX * 0.39) + 'px, 0px); opacity: 1; }' +
+                                        '30%  { transform: translate(' + (totalX * 0.46) + 'px, 0px); opacity: 1; }' +
+                                        '35%  { transform: translate(' + (totalX * 0.52) + 'px, 0px); opacity: 1; }' +
+                                        '40%  { transform: translate(' + (totalX * 0.58) + 'px, 0px); opacity: 1; }' +
+                                        '45%  { transform: translate(' + (totalX * 0.63) + 'px, 0px); opacity: 1; }' +
+                                        '50%  { transform: translate(' + (totalX * 0.68) + 'px, 0px); opacity: 1; }' +
+                                        '55%  { transform: translate(' + (totalX * 0.73) + 'px, 0px); opacity: 1; }' +
+                                        '60%  { transform: translate(' + (totalX * 0.77) + 'px, 0px); opacity: 1; }' +
+                                        '65%  { transform: translate(' + (totalX * 0.81) + 'px, 0px); opacity: 1; }' +
+                                        '70%  { transform: translate(' + (totalX * 0.85) + 'px, 0px); opacity: 1; }' +
+                                        '75%  { transform: translate(' + (totalX * 0.89) + 'px, 0px); opacity: 1; }' +
+                                        '80%  { transform: translate(' + (totalX * 0.92) + 'px, 0px); opacity: 1; }' +
+                                        '85%  { transform: translate(' + (totalX * 0.94) + 'px, 0px); opacity: 1; }' +
+                                        '90%  { transform: translate(' + (totalX * 0.96) + 'px, 0px); opacity: 1; }' +
+                                        '93%  { transform: translate(' + (totalX * 0.98) + 'px, 0px); opacity: 1; }' +
+                                        '96%  { transform: translate(' + (totalX * 0.99) + 'px, ' + (totalY * 0.4) + 'px); opacity: 1; }' +
+                                        '100% { transform: translate(' + totalX + 'px, ' + totalY + 'px); opacity: 0; }' +
                                         '}', j
                                     );
                                     break;
