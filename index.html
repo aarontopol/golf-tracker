@@ -2732,6 +2732,15 @@
                         
                         courseNameInput.value = courseName;
                         
+                        // Clear all auto-filled fields first so stale data doesn't persist
+                        const fieldsToClear = ['address', 'website', 'city', 'state', 'country'];
+                        fieldsToClear.forEach(id => {
+                            const el = document.getElementById(id);
+                            if (el) el.value = '';
+                        });
+                        const statusEl = document.getElementById('addressLookupStatus');
+                        if (statusEl) statusEl.textContent = '';
+                        
                         // Parse location string into city, state, country
                         // Location format is typically "City, State" or "City, Country"
                         if (location) {
@@ -2763,129 +2772,132 @@
                             }
                         }
                         
-                        // Auto-fill website FIRST, then try to get address FROM the website
-                        const statusEl = document.getElementById('addressLookupStatus');
+                        // Auto-fill website AND address in PARALLEL for speed
                         statusEl.innerHTML = '<span class="loading">Looking up details...</span>';
                         
-                        // Step 1: Find the website
                         const websiteInput = document.getElementById('website');
-                        if (websiteInput && !websiteInput.value) {
-                            await findCourseWebsite(courseName, location, websiteInput);
-                        }
-                        
-                        // Step 2: Try to get address from the website (if found)
                         const addressInput = document.getElementById('address');
-                        if (websiteInput.value && addressInput && !addressInput.value) {
-                            const foundAddress = await scrapeAddressFromWebsite(websiteInput.value, courseName);
-                            if (foundAddress) {
-                                addressInput.value = foundAddress;
-                                statusEl.innerHTML = '✓ Address found from website';
-                                setTimeout(() => statusEl.textContent = '', 3000);
-                            }
-                        }
                         
-                        // Step 3: If no address from website, try Nominatim
-                        if (addressInput && !addressInput.value) {
-                            try {
-                                const locationHint = location ? ', ' + location : '';
-                                const nomResponse = await fetch(
-                                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(courseName + locationHint)}&limit=5&addressdetails=1&extratags=1&countrycodes=${location && location.match(/\b(Alabama|Alaska|Arizona|Arkansas|California|Colorado|Connecticut|Delaware|Florida|Georgia|Hawaii|Idaho|Illinois|Indiana|Iowa|Kansas|Kentucky|Louisiana|Maine|Maryland|Massachusetts|Michigan|Minnesota|Mississippi|Missouri|Montana|Nebraska|Nevada|New Hampshire|New Jersey|New Mexico|New York|North Carolina|North Dakota|Ohio|Oklahoma|Oregon|Pennsylvania|Rhode Island|South Carolina|South Dakota|Tennessee|Texas|Utah|Vermont|Virginia|Washington|West Virginia|Wisconsin|Wyoming)\b/i) ? 'us' : ''}`,
-                                    { headers: { 'User-Agent': 'GolfCourseTracker/1.0' } }
-                                );
-                                const nomData = await nomResponse.json();
-                                
-                                const courseNameClean = courseName.toLowerCase().replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
-                                const courseWords = courseNameClean.split(/\s+/).filter(w => w.length > 2);
-                                const locationLower = (location || '').toLowerCase();
-                                
-                                // Score and rank all results
-                                const existingCity = (document.getElementById('city')?.value || '').trim().toLowerCase();
-                                const existingState = (document.getElementById('state')?.value || '').trim().toLowerCase();
-                                
-                                const scoredResults = nomData
-                                    .filter(r => r.address)
-                                    .map(r => {
-                                        const rName = (r.name || r.display_name.split(',')[0] || '').toLowerCase()
-                                            .replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
-                                        const rWords = rName.split(/\s+/).filter(w => w.length > 2);
-                                        const rDisplay = (r.display_name || '').toLowerCase();
-                                        
-                                        let matchCount = 0;
-                                        for (const cw of courseWords) {
-                                            if (rWords.some(rw => rw.includes(cw) || cw.includes(rw))) matchCount++;
-                                        }
-                                        let score = courseWords.length > 0 ? matchCount / courseWords.length : 0;
-                                        
-                                        if (locationLower) {
-                                            const locParts = locationLower.split(',').map(p => p.trim());
-                                            let locMatch = false;
-                                            for (const part of locParts) {
-                                                if (part && part.length > 2 && rDisplay.includes(part)) {
-                                                    score += 0.3;
-                                                    locMatch = true;
+                        // Launch all lookups simultaneously
+                        const websitePromise = (async () => {
+                            if (websiteInput && !websiteInput.value) {
+                                await findCourseWebsite(courseName, location, websiteInput);
+                            }
+                            // After website found, try scraping address from it
+                            // Website address is highest quality — always overwrites Nominatim
+                            if (websiteInput.value && addressInput) {
+                                const foundAddress = await scrapeAddressFromWebsite(websiteInput.value, courseName);
+                                if (foundAddress) {
+                                    addressInput.value = foundAddress;
+                                }
+                            }
+                        })();
+                        
+                        const addressPromise = (async () => {
+                            // Nominatim address runs in parallel as fallback
+                            if (addressInput && !addressInput.value) {
+                                try {
+                                    const locationHint = location ? ', ' + location : '';
+                                    const nomResponse = await fetch(
+                                        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(courseName + locationHint)}&limit=5&addressdetails=1&extratags=1&countrycodes=${location && location.match(/\b(Alabama|Alaska|Arizona|Arkansas|California|Colorado|Connecticut|Delaware|Florida|Georgia|Hawaii|Idaho|Illinois|Indiana|Iowa|Kansas|Kentucky|Louisiana|Maine|Maryland|Massachusetts|Michigan|Minnesota|Mississippi|Missouri|Montana|Nebraska|Nevada|New Hampshire|New Jersey|New Mexico|New York|North Carolina|North Dakota|Ohio|Oklahoma|Oregon|Pennsylvania|Rhode Island|South Carolina|South Dakota|Tennessee|Texas|Utah|Vermont|Virginia|Washington|West Virginia|Wisconsin|Wyoming)\b/i) ? 'us' : ''}`,
+                                        { headers: { 'User-Agent': 'GolfCourseTracker/1.0' } }
+                                    );
+                                    const nomData = await nomResponse.json();
+                                    
+                                    // Don't overwrite if address was already found by website scraper
+                                    if (addressInput.value) return;
+                                    
+                                    const courseNameClean = courseName.toLowerCase().replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
+                                    const courseWords = courseNameClean.split(/\s+/).filter(w => w.length > 2);
+                                    const locationLower = (location || '').toLowerCase();
+                                    
+                                    const existingCity = (document.getElementById('city')?.value || '').trim().toLowerCase();
+                                    const existingState = (document.getElementById('state')?.value || '').trim().toLowerCase();
+                                    
+                                    const scoredResults = nomData
+                                        .filter(r => r.address)
+                                        .map(r => {
+                                            const rName = (r.name || r.display_name.split(',')[0] || '').toLowerCase()
+                                                .replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
+                                            const rWords = rName.split(/\s+/).filter(w => w.length > 2);
+                                            const rDisplay = (r.display_name || '').toLowerCase();
+                                            
+                                            let matchCount = 0;
+                                            for (const cw of courseWords) {
+                                                if (rWords.some(rw => rw.includes(cw) || cw.includes(rw))) matchCount++;
+                                            }
+                                            let score = courseWords.length > 0 ? matchCount / courseWords.length : 0;
+                                            
+                                            if (locationLower) {
+                                                const locParts = locationLower.split(',').map(p => p.trim());
+                                                let locMatch = false;
+                                                for (const part of locParts) {
+                                                    if (part && part.length > 2 && rDisplay.includes(part)) {
+                                                        score += 0.3;
+                                                        locMatch = true;
+                                                    }
+                                                }
+                                                if (!locMatch && locParts.some(p => p.length > 2)) {
+                                                    score -= 0.4;
                                                 }
                                             }
-                                            if (!locMatch && locParts.some(p => p.length > 2)) {
-                                                score -= 0.4;
-                                            }
+                                            return { result: r, score };
+                                        })
+                                        .filter(s => s.score >= 0.5)
+                                        .sort((a, b) => b.score - a.score);
+                                    
+                                    for (const { result } of scoredResults) {
+                                        if (addressInput.value) break; // Website scraper filled it
+                                        const a = result.address;
+                                        const nomCity = (a.city || a.town || a.village || '').toLowerCase();
+                                        const nomState = (a.state || '').toLowerCase();
+                                        
+                                        let locationConflict = false;
+                                        if (existingCity && nomCity && !nomCity.includes(existingCity) && !existingCity.includes(nomCity)) {
+                                            locationConflict = true;
                                         }
-                                        return { result: r, score };
-                                    })
-                                    .filter(s => s.score >= 0.5)
-                                    .sort((a, b) => b.score - a.score);
-                                
-                                // Iterate ranked results, skip any with city/state conflict
-                                let addressFound = false;
-                                for (const { result } of scoredResults) {
-                                    const a = result.address;
-                                    const nomCity = (a.city || a.town || a.village || '').toLowerCase();
-                                    const nomState = (a.state || '').toLowerCase();
-                                    
-                                    let locationConflict = false;
-                                    if (existingCity && nomCity && !nomCity.includes(existingCity) && !existingCity.includes(nomCity)) {
-                                        locationConflict = true;
+                                        if (existingState && nomState && !nomState.includes(existingState) && !existingState.includes(nomState)) {
+                                            locationConflict = true;
+                                        }
+                                        
+                                        if (locationConflict) continue;
+                                        
+                                        const addressParts = [];
+                                        if (a.house_number && a.road) addressParts.push(a.house_number + ' ' + a.road);
+                                        else if (a.road) addressParts.push(a.road);
+                                        if (a.city || a.town || a.village) addressParts.push(a.city || a.town || a.village);
+                                        if (a.state) addressParts.push(a.state);
+                                        if (a.postcode) addressParts.push(a.postcode);
+                                        if (a.country) addressParts.push(a.country);
+                                        
+                                        if (addressParts.length > 0) {
+                                            addressInput.value = addressParts.join(', ');
+                                        }
+                                        
+                                        const cityInput = document.getElementById('city');
+                                        const stateInput = document.getElementById('state');
+                                        const countryInput = document.getElementById('country');
+                                        if (cityInput && !cityInput.value) cityInput.value = a.city || a.town || a.village || '';
+                                        if (stateInput && !stateInput.value) stateInput.value = a.state || '';
+                                        if (countryInput && !countryInput.value) countryInput.value = a.country || '';
+                                        break;
                                     }
-                                    if (existingState && nomState && !nomState.includes(existingState) && !existingState.includes(nomState)) {
-                                        locationConflict = true;
-                                    }
-                                    
-                                    if (locationConflict) continue; // Try next result
-                                    
-                                    const addressParts = [];
-                                    if (a.house_number && a.road) addressParts.push(a.house_number + ' ' + a.road);
-                                    else if (a.road) addressParts.push(a.road);
-                                    if (a.city || a.town || a.village) addressParts.push(a.city || a.town || a.village);
-                                    if (a.state) addressParts.push(a.state);
-                                    if (a.postcode) addressParts.push(a.postcode);
-                                    if (a.country) addressParts.push(a.country);
-                                    
-                                    if (addressParts.length > 0) {
-                                        addressInput.value = addressParts.join(', ');
-                                        statusEl.innerHTML = '✓ Address found';
-                                        setTimeout(() => statusEl.textContent = '', 3000);
-                                    }
-                                    
-                                    const cityInput = document.getElementById('city');
-                                    const stateInput = document.getElementById('state');
-                                    const countryInput = document.getElementById('country');
-                                    if (cityInput && !cityInput.value) cityInput.value = a.city || a.town || a.village || '';
-                                    if (stateInput && !stateInput.value) stateInput.value = a.state || '';
-                                    if (countryInput && !countryInput.value) countryInput.value = a.country || '';
-                                    addressFound = true;
-                                    break;
+                                } catch (error) {
+                                    // Address lookup failed silently
                                 }
-                                
-                                if (!addressFound) {
-                                    statusEl.textContent = '';
-                                }
-                            } catch (error) {
-                                statusEl.textContent = '';
                             }
-                        } else if (addressInput && addressInput.value) {
-                            // Address was found from website, already shown
+                        })();
+                        
+                        // Wait for both to complete
+                        await Promise.allSettled([websitePromise, addressPromise]);
+                        
+                        // Update status
+                        if (addressInput.value || websiteInput.value) {
+                            statusEl.innerHTML = '✓ Details found';
                         } else {
                             statusEl.textContent = '';
                         }
+                        setTimeout(() => statusEl.textContent = '', 3000);
                         
                         autocompleteDropdown.classList.remove('active');
                     });
@@ -3063,209 +3075,161 @@
         }
 
         // Function to intelligently find course website
-        // Uses location to disambiguate courses with the same name
+        // Runs multiple sources in PARALLEL and takes the first valid result
         async function findCourseWebsite(courseName, courseLocation, websiteInput) {
             const locationStr = courseLocation || '';
             const searchQuery = courseName + (locationStr ? ' ' + locationStr : '');
+            const courseNameClean = courseName.toLowerCase().replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
+            const courseWords = courseNameClean.split(/\s+/).filter(w => w.length > 2);
+            const locationLower = locationStr.toLowerCase();
             
+            // Helper to score a Nominatim result
+            function scoreNomResult(r) {
+                const rName = (r.name || r.display_name.split(',')[0] || '').toLowerCase()
+                    .replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
+                const rWords = rName.split(/\s+/).filter(w => w.length > 2);
+                const rDisplay = (r.display_name || '').toLowerCase();
+                let matchCount = 0;
+                for (const cw of courseWords) {
+                    if (rWords.some(rw => rw.includes(cw) || cw.includes(rw))) matchCount++;
+                }
+                let score = courseWords.length > 0 ? matchCount / courseWords.length : 0;
+                if (locationLower) {
+                    const locParts = locationLower.split(',').map(p => p.trim());
+                    for (const part of locParts) {
+                        if (part && rDisplay.includes(part)) score += 0.3;
+                    }
+                }
+                return score;
+            }
+            
+            // Source 1: Nominatim extratags
+            const nominatimLookup = async () => {
+                const resp = await fetch(
+                    `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery + ' golf')}&limit=5&extratags=1`,
+                    { headers: { 'User-Agent': 'GolfCourseTracker/1.0' }, signal: AbortSignal.timeout(6000) }
+                );
+                const data = await resp.json();
+                let best = null, bestScore = -1;
+                for (const r of data) {
+                    const s = scoreNomResult(r);
+                    if (s > bestScore) { bestScore = s; best = r; }
+                }
+                if (best && bestScore >= 0.5 && best.extratags) {
+                    const website = best.extratags.website || best.extratags.url || best.extratags.contact_website;
+                    if (website) return website.startsWith('http') ? website : 'https://' + website;
+                }
+                return null;
+            };
+            
+            // Source 2: Overpass API
+            const overpassLookup = async () => {
+                const nameWords = courseName.split(/\s+/).filter(w => w.length > 2).map(w => w.toLowerCase());
+                const nameRegex = nameWords.slice(0, 3).join('.*');
+                const query = `[out:json][timeout:8];(nwr["leisure"="golf_course"]["name"~"${nameRegex}",i];nwr["sport"="golf"]["name"~"${nameRegex}",i];nwr["club"="golf"]["name"~"${nameRegex}",i];);out tags;`;
+                const resp = await fetch('https://overpass-api.de/api/interpreter', {
+                    method: 'POST',
+                    body: 'data=' + encodeURIComponent(query),
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    signal: AbortSignal.timeout(10000)
+                });
+                const data = await resp.json();
+                if (!data.elements || !data.elements.length) return null;
+                let bestUrl = null, bestScore = -1;
+                for (const el of data.elements) {
+                    const tags = el.tags || {};
+                    const website = tags.website || tags['contact:website'] || tags.url || '';
+                    if (!website) continue;
+                    const elName = (tags.name || '').toLowerCase();
+                    let score = 0;
+                    for (const w of nameWords) { if (elName.includes(w)) score += 1; }
+                    if (locationLower) {
+                        const addr = [tags['addr:city'], tags['addr:state'], tags['addr:country']].join(' ').toLowerCase();
+                        for (const part of locationLower.split(',').map(p => p.trim())) {
+                            if (part && (addr.includes(part) || elName.includes(part))) score += 0.5;
+                        }
+                    }
+                    if (score > bestScore) { bestScore = score; bestUrl = website; }
+                }
+                if (bestUrl && bestScore >= 1) return bestUrl.startsWith('http') ? bestUrl : 'https://' + bestUrl;
+                return null;
+            };
+            
+            // Source 3: DuckDuckGo Instant Answer
+            const ddgLookup = async () => {
+                const resp = await fetch(
+                    'https://api.duckduckgo.com/?q=' + encodeURIComponent(searchQuery + ' golf club official site') + '&format=json&no_redirect=1',
+                    { signal: AbortSignal.timeout(5000) }
+                );
+                const data = await resp.json();
+                if (data.Results && data.Results.length > 0) {
+                    const url = data.Results[0].FirstURL;
+                    if (url && !url.includes('duckduckgo.com') && !url.includes('wikipedia.org')) return url;
+                }
+                if (data.Infobox && data.Infobox.content) {
+                    for (const item of data.Infobox.content) {
+                        if (item.label && item.label.toLowerCase() === 'website' && item.value) {
+                            return item.value.startsWith('http') ? item.value : 'https://' + item.value;
+                        }
+                    }
+                }
+                if (data.AbstractURL && !data.AbstractURL.includes('wikipedia.org')) return data.AbstractURL;
+                return null;
+            };
+            
+            // Source 4: Wikipedia
+            const wikiLookup = async () => {
+                const resp = await fetch(
+                    'https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=revisions|info&rvprop=content&rvslots=main&titles=' + encodeURIComponent(courseName) + '&inprop=url',
+                    { signal: AbortSignal.timeout(5000) }
+                );
+                const data = await resp.json();
+                if (!data.query || !data.query.pages) return null;
+                const pages = Object.values(data.query.pages);
+                if (!pages.length || !pages[0].pageid) return null;
+                const page = pages[0];
+                if (!page.revisions || !page.revisions[0]?.slots?.main) return null;
+                const content = page.revisions[0].slots.main['*'];
+                const contentLower = content.toLowerCase();
+                const locationMatch = !locationStr || locationStr.split(',').some(p => p.trim() && contentLower.includes(p.trim().toLowerCase()));
+                if (!locationMatch) return null;
+                const patterns = [
+                    /\|\s*website\s*=\s*\{?\s*(?:URL\|)?(?:\[)?(https?:\/\/[^\s\]|}]+)/i,
+                    /\|\s*url\s*=\s*\[?(https?:\/\/[^\s\]|]+)/i,
+                    /\|\s*homepage\s*=\s*\[?(https?:\/\/[^\s\]|]+)/i
+                ];
+                for (const pattern of patterns) {
+                    const match = content.match(pattern);
+                    if (match) {
+                        let url = (match[1] || match[0]).replace(/^\[/, '').replace(/\]$/, '').replace(/\|.*$/, '').trim();
+                        if (url && !url.includes('facebook.com') && !url.includes('twitter.com') && 
+                            !url.includes('instagram.com') && !url.includes('youtube.com')) {
+                            return url;
+                        }
+                    }
+                }
+                return null;
+            };
+
             try {
-                // Step 1: Nominatim with extratags - best for location-specific results
-                try {
-                    const nomResponse = await fetch(
-                        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery + ' golf')}&limit=5&extratags=1`,
-                        { headers: { 'User-Agent': 'GolfCourseTracker/1.0' } }
-                    );
-                    const nomData = await nomResponse.json();
-                    
-                    const courseNameClean = courseName.toLowerCase().replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
-                    const courseWords = courseNameClean.split(/\s+/).filter(w => w.length > 2);
-                    const locationLower = locationStr.toLowerCase();
-                    
-                    let bestResult = null;
-                    let bestScore = -1;
-                    
-                    for (const r of nomData) {
-                        const rName = (r.name || r.display_name.split(',')[0] || '').toLowerCase()
-                            .replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
-                        const rWords = rName.split(/\s+/).filter(w => w.length > 2);
-                        const rDisplay = (r.display_name || '').toLowerCase();
-                        
-                        let matchCount = 0;
-                        for (const cw of courseWords) {
-                            if (rWords.some(rw => rw.includes(cw) || cw.includes(rw))) matchCount++;
-                        }
-                        let score = courseWords.length > 0 ? matchCount / courseWords.length : 0;
-                        
-                        if (locationLower) {
-                            const locParts = locationLower.split(',').map(p => p.trim());
-                            for (const part of locParts) {
-                                if (part && rDisplay.includes(part)) score += 0.3;
-                            }
-                        }
-                        
-                        if (score > bestScore) {
-                            bestScore = score;
-                            bestResult = r;
-                        }
-                    }
-                    
-                    if (bestResult && bestScore >= 0.5 && bestResult.extratags) {
-                        const website = bestResult.extratags.website || bestResult.extratags.url || bestResult.extratags.contact_website;
-                        if (website) {
-                            let url = website;
-                            if (!url.startsWith('http')) url = 'https://' + url;
-                            websiteInput.value = url;
-                            return;
-                        }
-                    }
-                } catch (e) {
-                    console.log('Nominatim extratags lookup failed');
-                }
-
-                // Step 2: Photon API - often has website from OSM data
-                try {
-                    const photonResponse = await fetch(
-                        `https://photon.komoot.io/api/?q=${encodeURIComponent(searchQuery + ' golf')}&limit=5&lang=en`
-                    );
-                    const photonData = await photonResponse.json();
-                    
-                    if (photonData.features) {
-                        const courseNameLower = courseName.toLowerCase();
-                        for (const f of photonData.features) {
-                            const name = (f.properties.name || '').toLowerCase();
-                            // Check name similarity
-                            if (name.includes(courseNameLower.split(/\s+/)[0]) || courseNameLower.includes(name.split(/\s+/)[0])) {
-                                // Photon doesn't return websites directly, but the OSM ID can help
-                                // Move to next step
-                                break;
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.log('Photon lookup failed');
-                }
-
-                // Step 3: DuckDuckGo Instant Answer API
-                try {
-                    const ddgResponse = await fetch(
-                        'https://api.duckduckgo.com/?q=' + encodeURIComponent(searchQuery + ' golf club official site') + '&format=json&no_redirect=1'
-                    );
-                    const ddgData = await ddgResponse.json();
-                    
-                    if (ddgData.Results && ddgData.Results.length > 0) {
-                        const firstUrl = ddgData.Results[0].FirstURL;
-                        if (firstUrl && !firstUrl.includes('duckduckgo.com') && !firstUrl.includes('wikipedia.org')) {
-                            websiteInput.value = firstUrl;
-                            return;
-                        }
-                    }
-                    
-                    if (ddgData.Infobox && ddgData.Infobox.content) {
-                        for (const item of ddgData.Infobox.content) {
-                            if (item.label && item.label.toLowerCase() === 'website' && item.value) {
-                                let url = item.value;
-                                if (!url.startsWith('http')) url = 'https://' + url;
-                                websiteInput.value = url;
-                                return;
-                            }
-                        }
-                    }
-                    
-                    if (ddgData.AbstractURL && !ddgData.AbstractURL.includes('wikipedia.org')) {
-                        websiteInput.value = ddgData.AbstractURL;
+                // Run all sources in parallel, take the first non-null result
+                const results = await Promise.allSettled([
+                    nominatimLookup(),
+                    overpassLookup(),
+                    ddgLookup(),
+                    wikiLookup()
+                ]);
+                
+                // Priority order: Nominatim > Overpass > DDG > Wikipedia
+                for (const result of results) {
+                    if (result.status === 'fulfilled' && result.value) {
+                        websiteInput.value = result.value;
                         return;
                     }
-                } catch (e) {
-                    console.log('DuckDuckGo lookup failed');
                 }
-
-                // Step 4: DuckDuckGo search with CORS proxy - scrape actual search results
-                try {
-                    const ddgSearchUrl = 'https://html.duckduckgo.com/html/?q=' + encodeURIComponent(courseName + ' ' + locationStr + ' golf official website');
-                    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(ddgSearchUrl);
-                    const ddgHtmlResponse = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
-                    const ddgHtml = await ddgHtmlResponse.text();
-                    
-                    // Extract URLs from DuckDuckGo HTML results
-                    const urlMatches = ddgHtml.match(/uddg=(https?[^&"]+)/g);
-                    if (urlMatches) {
-                        const courseNameWords = courseName.toLowerCase().split(/\s+/).filter(w => w.length > 2);
-                        for (const match of urlMatches.slice(0, 5)) {
-                            let url = decodeURIComponent(match.replace('uddg=', ''));
-                            const urlLower = url.toLowerCase();
-                            // Skip social media, directories, and aggregators
-                            if (urlLower.includes('facebook.com') || urlLower.includes('twitter.com') ||
-                                urlLower.includes('instagram.com') || urlLower.includes('youtube.com') ||
-                                urlLower.includes('yelp.com') || urlLower.includes('tripadvisor.com') ||
-                                urlLower.includes('google.com') || urlLower.includes('wikipedia.org') ||
-                                urlLower.includes('golfadvisor.com') || urlLower.includes('18birdies.com') ||
-                                urlLower.includes('golfnow.com') || urlLower.includes('golfpass.com')) continue;
-                            
-                            // Check if URL domain relates to the course name
-                            const domain = urlLower.replace(/^https?:\/\//, '').split('/')[0].replace('www.', '');
-                            const domainWords = domain.replace(/\.(com|org|net|gov|us|co|io)$/g, '').split(/[-._]/);
-                            const nameMatch = courseNameWords.some(w => domainWords.some(dw => dw.includes(w) || w.includes(dw)));
-                            
-                            if (nameMatch) {
-                                // Clean URL to just the domain root
-                                const cleanUrl = url.split('/').slice(0, 3).join('/');
-                                websiteInput.value = cleanUrl;
-                                return;
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.log('DuckDuckGo HTML search failed');
-                }
-
-                // Step 5: Wikipedia lookup
-                try {
-                    const wikiQuery = encodeURIComponent(courseName);
-                    const wikiResponse = await fetch(
-                        'https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&prop=revisions|info&rvprop=content&rvslots=main&titles=' + wikiQuery + '&inprop=url'
-                    );
-                    const wikiData = await wikiResponse.json();
-                    
-                    if (wikiData.query && wikiData.query.pages) {
-                        const pages = Object.values(wikiData.query.pages);
-                        if (pages.length > 0 && pages[0].pageid) {
-                            const page = pages[0];
-                            if (page.revisions && page.revisions[0] && page.revisions[0].slots && page.revisions[0].slots.main) {
-                                const content = page.revisions[0].slots.main['*'];
-                                // Check if Wikipedia content mentions our location
-                                const contentLower = content.toLowerCase();
-                                const locationMatch = !locationStr || locationStr.split(',').some(p => 
-                                    p.trim() && contentLower.includes(p.trim().toLowerCase())
-                                );
-                                
-                                if (locationMatch) {
-                                    const websitePatterns = [
-                                        /\|\s*website\s*=\s*\{?\s*(?:URL\|)?(?:\[)?(https?:\/\/[^\s\]|}]+)/i,
-                                        /\|\s*url\s*=\s*\[?(https?:\/\/[^\s\]|]+)/i,
-                                        /\|\s*homepage\s*=\s*\[?(https?:\/\/[^\s\]|]+)/i
-                                    ];
-                                    for (const pattern of websitePatterns) {
-                                        const match = content.match(pattern);
-                                        if (match) {
-                                            let url = (match[1] || match[0]).replace(/^\[/, '').replace(/\]$/, '').replace(/\|.*$/, '').trim();
-                                            if (url && !url.includes('facebook.com') && !url.includes('twitter.com') && 
-                                                !url.includes('instagram.com') && !url.includes('youtube.com')) {
-                                                websiteInput.value = url;
-                                                return;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                } catch (e) {
-                    console.log('Wikipedia lookup failed');
-                }
-
-                // Step 4: Nothing found, leave blank
-                websiteInput.value = '';
                 
+                // Nothing found
+                websiteInput.value = '';
             } catch (error) {
                 console.error('Website lookup error:', error);
                 websiteInput.value = '';
