@@ -3070,7 +3070,6 @@
             
             try {
                 // Step 1: Nominatim with extratags - best for location-specific results
-                // This is tried first because it uses geo-data to disambiguate same-name courses
                 try {
                     const nomResponse = await fetch(
                         `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery + ' golf')}&limit=5&extratags=1`,
@@ -3078,7 +3077,6 @@
                     );
                     const nomData = await nomResponse.json();
                     
-                    // Score results by name AND location match
                     const courseNameClean = courseName.toLowerCase().replace(/^the\s+/i, '').replace(/[^a-z0-9\s]/g, '');
                     const courseWords = courseNameClean.split(/\s+/).filter(w => w.length > 2);
                     const locationLower = locationStr.toLowerCase();
@@ -3092,14 +3090,12 @@
                         const rWords = rName.split(/\s+/).filter(w => w.length > 2);
                         const rDisplay = (r.display_name || '').toLowerCase();
                         
-                        // Name match score
                         let matchCount = 0;
                         for (const cw of courseWords) {
                             if (rWords.some(rw => rw.includes(cw) || cw.includes(rw))) matchCount++;
                         }
                         let score = courseWords.length > 0 ? matchCount / courseWords.length : 0;
                         
-                        // Location bonus - boost score if location matches
                         if (locationLower) {
                             const locParts = locationLower.split(',').map(p => p.trim());
                             for (const part of locParts) {
@@ -3126,7 +3122,30 @@
                     console.log('Nominatim extratags lookup failed');
                 }
 
-                // Step 2: DuckDuckGo Instant Answer API - include location for disambiguation
+                // Step 2: Photon API - often has website from OSM data
+                try {
+                    const photonResponse = await fetch(
+                        `https://photon.komoot.io/api/?q=${encodeURIComponent(searchQuery + ' golf')}&limit=5&lang=en`
+                    );
+                    const photonData = await photonResponse.json();
+                    
+                    if (photonData.features) {
+                        const courseNameLower = courseName.toLowerCase();
+                        for (const f of photonData.features) {
+                            const name = (f.properties.name || '').toLowerCase();
+                            // Check name similarity
+                            if (name.includes(courseNameLower.split(/\s+/)[0]) || courseNameLower.includes(name.split(/\s+/)[0])) {
+                                // Photon doesn't return websites directly, but the OSM ID can help
+                                // Move to next step
+                                break;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.log('Photon lookup failed');
+                }
+
+                // Step 3: DuckDuckGo Instant Answer API
                 try {
                     const ddgResponse = await fetch(
                         'https://api.duckduckgo.com/?q=' + encodeURIComponent(searchQuery + ' golf club official site') + '&format=json&no_redirect=1'
@@ -3160,7 +3179,46 @@
                     console.log('DuckDuckGo lookup failed');
                 }
 
-                // Step 3: Wikipedia lookup
+                // Step 4: DuckDuckGo search with CORS proxy - scrape actual search results
+                try {
+                    const ddgSearchUrl = 'https://html.duckduckgo.com/html/?q=' + encodeURIComponent(courseName + ' ' + locationStr + ' golf official website');
+                    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(ddgSearchUrl);
+                    const ddgHtmlResponse = await fetch(proxyUrl, { signal: AbortSignal.timeout(8000) });
+                    const ddgHtml = await ddgHtmlResponse.text();
+                    
+                    // Extract URLs from DuckDuckGo HTML results
+                    const urlMatches = ddgHtml.match(/uddg=(https?[^&"]+)/g);
+                    if (urlMatches) {
+                        const courseNameWords = courseName.toLowerCase().split(/\s+/).filter(w => w.length > 2);
+                        for (const match of urlMatches.slice(0, 5)) {
+                            let url = decodeURIComponent(match.replace('uddg=', ''));
+                            const urlLower = url.toLowerCase();
+                            // Skip social media, directories, and aggregators
+                            if (urlLower.includes('facebook.com') || urlLower.includes('twitter.com') ||
+                                urlLower.includes('instagram.com') || urlLower.includes('youtube.com') ||
+                                urlLower.includes('yelp.com') || urlLower.includes('tripadvisor.com') ||
+                                urlLower.includes('google.com') || urlLower.includes('wikipedia.org') ||
+                                urlLower.includes('golfadvisor.com') || urlLower.includes('18birdies.com') ||
+                                urlLower.includes('golfnow.com') || urlLower.includes('golfpass.com')) continue;
+                            
+                            // Check if URL domain relates to the course name
+                            const domain = urlLower.replace(/^https?:\/\//, '').split('/')[0].replace('www.', '');
+                            const domainWords = domain.replace(/\.(com|org|net|gov|us|co|io)$/g, '').split(/[-._]/);
+                            const nameMatch = courseNameWords.some(w => domainWords.some(dw => dw.includes(w) || w.includes(dw)));
+                            
+                            if (nameMatch) {
+                                // Clean URL to just the domain root
+                                const cleanUrl = url.split('/').slice(0, 3).join('/');
+                                websiteInput.value = cleanUrl;
+                                return;
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.log('DuckDuckGo HTML search failed');
+                }
+
+                // Step 5: Wikipedia lookup
                 try {
                     const wikiQuery = encodeURIComponent(courseName);
                     const wikiResponse = await fetch(
