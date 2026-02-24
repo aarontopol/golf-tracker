@@ -2059,6 +2059,10 @@
             { name: 'Doral Golf Resort', location: 'Miami, Florida' },
             { name: 'Walt Disney World Golf', location: 'Orlando, Florida' },
             { name: 'TPC Tampa Bay', location: 'Lutz, Florida' },
+            { name: 'Cypress Head Golf Club', location: 'Port Orange, Florida', website: 'https://cypressheadgolf.com' },
+            { name: 'Daytona Beach Golf Club', location: 'Daytona Beach, Florida', website: 'https://www.daytonabeachgc.com' },
+            { name: 'LPGA International', location: 'Daytona Beach, Florida', website: 'https://www.lpgainternational.com' },
+            { name: 'Pelican Bay Golf Club', location: 'Daytona Beach, Florida', website: 'https://golfatpelicanbay.com' },
             { name: 'Augusta National Golf Club', location: 'Augusta, Georgia' },
             { name: 'East Lake Golf Club', location: 'Atlanta, Georgia' },
             { name: 'Peachtree Golf Club', location: 'Atlanta, Georgia' },
@@ -2068,7 +2072,7 @@
             { name: 'Capital City Club', location: 'Atlanta, Georgia' },
             { name: 'Ansley Golf Club', location: 'Atlanta, Georgia' },
             { name: 'Bobby Jones Golf Course', location: 'Atlanta, Georgia' },
-            { name: 'Candler Park Golf Course', location: 'Atlanta, Georgia' },
+            { name: 'Candler Park Golf Course', location: 'Atlanta, Georgia', website: 'https://www.atlantaga.gov/government/departments/parks-recreation/parks-facilities/candler-park-golf-course' },
             { name: 'North Fulton Golf Course', location: 'Atlanta, Georgia' },
             { name: 'Browns Mill Golf Course', location: 'Atlanta, Georgia' },
             { name: 'Alfred Tup Holmes Golf Course', location: 'Atlanta, Georgia' },
@@ -2077,9 +2081,9 @@
             { name: 'Hawks Ridge Golf Club', location: 'Ball Ground, Georgia' },
             { name: 'Château Élan Golf Club', location: 'Braselton, Georgia' },
             { name: 'The Landings Club', location: 'Savannah, Georgia' },
-            { name: 'McLemore Resort', location: 'Rising Fawn, Georgia' },
-            { name: 'The Keep at McLemore Resort', location: 'Rising Fawn, Georgia' },
-            { name: 'The Highlands at McLemore Resort', location: 'Rising Fawn, Georgia' },
+            { name: 'McLemore Resort', location: 'Rising Fawn, Georgia', website: 'https://www.mclemore.com' },
+            { name: 'The Keep at McLemore Resort', location: 'Rising Fawn, Georgia', website: 'https://www.mclemore.com' },
+            { name: 'The Highlands at McLemore Resort', location: 'Rising Fawn, Georgia', website: 'https://www.mclemore.com' },
             { name: 'Kapalua Golf Club', location: 'Lahaina, Hawaii' },
             { name: 'Mauna Kea Golf Course', location: 'Kohala Coast, Hawaii' },
             { name: 'Mauna Lani Golf Course', location: 'Kohala Coast, Hawaii' },
@@ -2217,7 +2221,7 @@
             { name: 'Owl\'s Nest Golf Club', location: 'Thornton, New Hampshire' },
             { name: 'Pine Valley Golf Club', location: 'Pine Valley, New Jersey' },
             { name: 'Baltusrol Golf Club', location: 'Springfield, New Jersey' },
-            { name: 'Ridgewood Country Club', location: 'Paramus, New Jersey' },
+            { name: 'Ridgewood Country Club', location: 'Paramus, New Jersey', website: 'http://www.rcc1890.com' },
             { name: 'Bayonne Golf Club', location: 'Bayonne, New Jersey' },
             { name: 'Galloway National Golf Club', location: 'Galloway, New Jersey' },
             { name: 'Somerset Hills Country Club', location: 'Bernardsville, New Jersey' },
@@ -2777,6 +2781,12 @@
                         const websiteInput = document.getElementById('website');
                         const addressInput = document.getElementById('address');
                         
+                        // Instant check: local database may have website
+                        const localMatch = localCourseDatabase.find(c => c.name.toLowerCase() === courseName.toLowerCase());
+                        if (localMatch && localMatch.website && websiteInput) {
+                            websiteInput.value = localMatch.website;
+                        }
+                        
                         // Launch all lookups simultaneously
                         const websitePromise = (async () => {
                             if (websiteInput && !websiteInput.value) {
@@ -3106,7 +3116,7 @@
             const nominatimLookup = async () => {
                 const resp = await fetch(
                     `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(searchQuery + ' golf')}&limit=5&extratags=1`,
-                    { headers: { 'User-Agent': 'GolfCourseTracker/1.0' }, signal: AbortSignal.timeout(6000) }
+                    { headers: { 'User-Agent': 'GolfCourseTracker/1.0' }, signal: AbortSignal.timeout(4000) }
                 );
                 const data = await resp.json();
                 let best = null, bestScore = -1;
@@ -3130,7 +3140,7 @@
                     method: 'POST',
                     body: 'data=' + encodeURIComponent(query),
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    signal: AbortSignal.timeout(10000)
+                    signal: AbortSignal.timeout(5000)
                 });
                 const data = await resp.json();
                 if (!data.elements || !data.elements.length) return null;
@@ -3223,50 +3233,93 @@
                 const skipDomains = ['facebook.com','twitter.com','instagram.com','youtube.com',
                     'yelp.com','tripadvisor.com','google.com','wikipedia.org','golfadvisor.com',
                     '18birdies.com','golfnow.com','golfpass.com','linkedin.com','pinterest.com',
-                    'mapquest.com','yellowpages.com','bbb.org','chamberofcommerce.com'];
+                    'mapquest.com','yellowpages.com','bbb.org','chamberofcommerce.com',
+                    'kempersports.com','daytonabeach.com','visitorlando.com'];
                 const nameWords = courseName.toLowerCase().split(/\s+/).filter(w => w.length > 2);
                 
-                for (const match of urlMatches.slice(0, 8)) {
+                // Strategy 1: Match domain against course name
+                for (const match of urlMatches.slice(0, 10)) {
                     let url = decodeURIComponent(match.replace('uddg=', ''));
                     const urlLower = url.toLowerCase();
                     if (skipDomains.some(d => urlLower.includes(d))) continue;
                     
                     const domain = urlLower.replace(/^https?:\/\//, '').split('/')[0].replace('www.', '');
                     const domainClean = domain.replace(/\.(com|org|net|gov|us|co|io|club)$/g, '');
-                    const domainWords = domainClean.split(/[-._]/).filter(w => w.length > 1);
                     
-                    // Check if domain words match course name words
-                    const matchCount = nameWords.filter(w => 
-                        domainWords.some(dw => dw.includes(w) || w.includes(dw))
-                    ).length;
+                    // Match each name word against the full domain string (handles concatenated domains like "cypressheadgolf")
+                    const matchCount = nameWords.filter(w => domainClean.includes(w)).length;
                     
                     if (matchCount >= 2 || (nameWords.length <= 2 && matchCount >= 1)) {
                         return url.split('/').slice(0, 3).join('/');
                     }
                 }
+                
+                // Strategy 2: First non-skip result that ends in golf-related domain
+                for (const match of urlMatches.slice(0, 5)) {
+                    let url = decodeURIComponent(match.replace('uddg=', ''));
+                    const urlLower = url.toLowerCase();
+                    if (skipDomains.some(d => urlLower.includes(d))) continue;
+                    const domain = urlLower.replace(/^https?:\/\//, '').split('/')[0];
+                    if (domain.includes('golf') || domain.includes('club') || domain.includes('course')) {
+                        // Check at least one course name word in domain
+                        if (nameWords.some(w => domain.includes(w))) {
+                            return url.split('/').slice(0, 3).join('/');
+                        }
+                    }
+                }
+                
                 return null;
             };
 
             try {
-                // Run ALL sources in parallel including HTML scrape
-                const results = await Promise.allSettled([
-                    nominatimLookup(),
-                    overpassLookup(),
-                    ddgLookup(),
-                    wikiLookup(),
-                    ddgHtmlLookup()
-                ]);
+                // Race pattern: resolve as soon as ANY source finds a result
+                // Each source resolves with {priority, url} or null
+                const sources = [
+                    nominatimLookup().then(url => url ? { priority: 1, url } : null).catch(() => null),
+                    overpassLookup().then(url => url ? { priority: 2, url } : null).catch(() => null),
+                    ddgLookup().then(url => url ? { priority: 3, url } : null).catch(() => null),
+                    wikiLookup().then(url => url ? { priority: 4, url } : null).catch(() => null),
+                    ddgHtmlLookup().then(url => url ? { priority: 5, url } : null).catch(() => null)
+                ];
                 
-                // Priority order: Nominatim > Overpass > DDG Instant > Wikipedia > DDG HTML
-                for (const result of results) {
-                    if (result.status === 'fulfilled' && result.value) {
-                        websiteInput.value = result.value;
-                        return;
-                    }
+                // Collect results as they arrive
+                let bestResult = null;
+                let resolved = 0;
+                
+                await new Promise((done) => {
+                    // Overall timeout - don't wait more than 6 seconds total
+                    const timeout = setTimeout(() => done(), 6000);
+                    
+                    sources.forEach(p => {
+                        p.then(result => {
+                            resolved++;
+                            if (result && (!bestResult || result.priority < bestResult.priority)) {
+                                bestResult = result;
+                                // If we got a high-priority result (Nominatim/Overpass), resolve immediately
+                                if (result.priority <= 2) {
+                                    clearTimeout(timeout);
+                                    done();
+                                }
+                            }
+                            // If all sources done, resolve
+                            if (resolved >= sources.length) {
+                                clearTimeout(timeout);
+                                done();
+                            }
+                            // If we have any result and 3+ sources are done, don't wait for stragglers
+                            if (bestResult && resolved >= 3) {
+                                clearTimeout(timeout);
+                                done();
+                            }
+                        });
+                    });
+                });
+                
+                if (bestResult) {
+                    websiteInput.value = bestResult.url;
+                } else {
+                    websiteInput.value = '';
                 }
-                
-                // Nothing found
-                websiteInput.value = '';
             } catch (error) {
                 console.error('Website lookup error:', error);
                 websiteInput.value = '';
