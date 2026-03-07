@@ -4087,6 +4087,12 @@
                     const ra = ratingOrder[a.rating || ''];
                     const rb = ratingOrder[b.rating || ''];
                     if (ra !== rb) return ra - rb;
+                    // Within same rating, sort by Golf Digest ranking (ranked courses first)
+                    const gdA = getGolfDigestRanking(a.name);
+                    const gdB = getGolfDigestRanking(b.name);
+                    const rankA = gdA ? gdA.rank : 9999;
+                    const rankB = gdB ? gdB.rank : 9999;
+                    if (rankA !== rankB) return rankA - rankB;
                     return a.name.localeCompare(b.name);
                 });
             }
