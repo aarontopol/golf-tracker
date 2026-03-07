@@ -1202,7 +1202,7 @@
                         } catch(e) {}
                     }
                 }
-            } catch(e) { console.log('Animation positioning skipped'); }
+            } catch(e) {  }
         })();
         </script>
 
@@ -1583,7 +1583,7 @@
          saving data, showing/hiding things, etc.
          ============================================ -->
     <script>
-        console.log('JavaScript is loading...');
+        
         
         // ==========================================
         // FIREBASE CONFIGURATION & INITIALIZATION
@@ -1615,7 +1615,7 @@
         try {
             firebase.initializeApp(firebaseConfig);
             database = firebase.database();
-            console.log('Firebase initialized');
+            
         } catch (error) {
             console.error('Firebase initialization error:', error);
         }
@@ -1636,7 +1636,7 @@
                 // USER IS LOGGED IN
                 currentUserId = user.uid;
                 useCloudSync = true;
-                console.log('User signed in:', user.email, 'UID:', user.uid);
+                
                 
                 document.getElementById('userBarEmail').textContent = 
                     '👤 ' + (user.displayName || user.email);
@@ -1651,7 +1651,7 @@
                 // USER IS NOT LOGGED IN
                 currentUserId = null;
                 useCloudSync = false;
-                console.log('No user signed in');
+                
                 
                 document.getElementById('authScreen').style.display = 'block';
                 document.getElementById('mainApp').style.display = 'none';
@@ -1862,11 +1862,14 @@
             wishlistRef.on('value', function(snapshot) {
                 var data = snapshot.val();
                 wishlistCourses = data ? Object.values(data) : [];
-                // Fix legacy data: if country equals state, set country to USA
+                // Fix legacy data issues
                 wishlistCourses.forEach(function(c) {
+                    // If country equals state, set country to USA
                     if (c.country && c.state && c.country.trim().toLowerCase() === c.state.trim().toLowerCase()) {
                         c.country = 'USA';
                     }
+                    // Sanitize any stored URLs
+                    if (c.website) c.website = sanitizeUrl(c.website);
                 });
                 renderWishList();
             });
@@ -1876,11 +1879,12 @@
             playedRef.on('value', function(snapshot) {
                 var data = snapshot.val();
                 playedCourses = data ? Object.values(data) : [];
-                // Fix legacy data: if country equals state, set country to USA
+                // Fix legacy data issues
                 playedCourses.forEach(function(c) {
                     if (c.country && c.state && c.country.trim().toLowerCase() === c.state.trim().toLowerCase()) {
                         c.country = 'USA';
                     }
+                    if (c.website) c.website = sanitizeUrl(c.website);
                 });
                 renderPlayedList();
             });
@@ -3095,7 +3099,7 @@
                 
                 return null;
             } catch (error) {
-                console.log('Website scrape failed:', error.message);
+                
                 return null;
             }
         }
@@ -3350,6 +3354,17 @@
             return div.innerHTML;
         }
 
+        // Sanitize URLs - only allow http/https, prevent javascript: and data: injection
+        function sanitizeUrl(url) {
+            if (!url) return '';
+            const trimmed = url.trim();
+            if (/^https?:\/\//i.test(trimmed)) return trimmed;
+            if (/^[a-z0-9].*\./i.test(trimmed) && !/^(javascript|data|vbscript):/i.test(trimmed)) {
+                return 'https://' + trimmed;
+            }
+            return '';
+        }
+
         // Build location string, deduplicating state/country
         function buildLocationStr(course) {
             const parts = [];
@@ -3357,7 +3372,6 @@
             if (course.state) parts.push(course.state.trim());
             if (course.country) {
                 const country = course.country.trim();
-                // Don't add country if it's the same as state (data bug) or if it's "USA" with a US state already shown
                 const state = (course.state || '').trim();
                 if (country.toLowerCase() !== state.toLowerCase()) {
                     parts.push(country);
@@ -3375,10 +3389,10 @@
                 clearTimeout(autocompleteTimeout);
             }
             
-            // Wait only 80ms after user stops typing before searching
+            // Wait 200ms after user stops typing before searching (reduces API calls)
             autocompleteTimeout = setTimeout(() => {
                 searchGolfCourses(query);
-            }, 80);
+            }, 200);
         });
 
         // Close dropdown when clicking outside
@@ -3783,20 +3797,33 @@
         // FORM SUBMISSION - ADDING A NEW COURSE
         // When you click "Add Course" button, this saves to the right list
         // ==========================================
-        console.log('Setting up form submit handler...');
+        let isSubmitting = false;
         document.getElementById('courseForm').addEventListener('submit', function(e) {
-            console.log('Form submitted!');
             e.preventDefault();
             
+            // Prevent double-submit
+            if (isSubmitting) return;
+            const submitBtn = document.getElementById('btnSubmitCourse');
+            isSubmitting = true;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Saving...';
+            
             const listType = document.querySelector('input[name="listType"]:checked').value;
-            const courseName = document.getElementById('courseName').value;
+            const courseName = document.getElementById('courseName').value.trim();
+            
+            if (!courseName) {
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                submitBtn.textContent = (editingId ? 'Save Changes' : 'Add Course');
+                return;
+            }
             
             // Get shared location fields
-            const address = document.getElementById('address').value;
-            const city = document.getElementById('city').value;
-            const state = document.getElementById('state').value;
-            const country = document.getElementById('country').value;
-            const website = document.getElementById('website').value;
+            const address = document.getElementById('address').value.trim();
+            const city = document.getElementById('city').value.trim();
+            const state = document.getElementById('state').value.trim();
+            const country = document.getElementById('country').value.trim();
+            const website = sanitizeUrl(document.getElementById('website').value);
             
             if (listType === 'wishlist') {
                 // Add to wish list
@@ -3871,6 +3898,10 @@
             
             saveData();
             this.reset();
+            
+            // Re-enable submit button
+            isSubmitting = false;
+            submitBtn.disabled = false;
             
             // Clear editing state
             editingId = null;
@@ -4399,8 +4430,8 @@
                         <div class="course-header">
                             <div class="course-name-area" style="flex: 1; min-width: 0;">
                                 <div class="course-name">${course.name}</div>
-                                ${locationStr ? `<a class="course-location map-link" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(course.name + ' ' + locationStr)}" target="_blank" onclick="event.stopPropagation();">📍 ${locationStr}</a>` : ''}
-                                ${course.website ? `<a class="course-website-link" href="${course.website}" target="_blank" onclick="event.stopPropagation();">🌐 ${course.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</a>` : ''}
+                                ${locationStr ? `<a class="course-location map-link" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(course.name + ' ' + locationStr)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();">📍 ${locationStr}</a>` : ''}
+                                ${course.website ? `<a class="course-website-link" href="${course.website}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();">🌐 ${course.website.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '')}</a>` : ''}
                                 ${course.heardFrom ? `<div class="course-source">via ${course.heardFrom}</div>` : ''}
                             </div>
                             <div style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
@@ -4540,7 +4571,7 @@
                             }
                             return playedWithStr ? `<div class="course-location">👥 ${playedWithStr}</div>` : '';
                         })()}
-                        ${locationStr ? `<a class="course-source map-link" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(courseName + ' ' + locationStr)}" target="_blank" onclick="event.stopPropagation();">📍 ${locationStr}</a>` : ''}
+                        ${locationStr ? `<a class="course-source map-link" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(courseName + ' ' + locationStr)}" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();">📍 ${locationStr}</a>` : ''}
                         ${(() => {
                             let allPhotos = [];
                             rounds.forEach(function(r) {
@@ -4601,7 +4632,7 @@
                     ${course.website ? `
                         <div class="detail-section">
                             <div class="detail-label">Website</div>
-                            <div class="detail-value"><a href="${course.website}" target="_blank" style="color: #2a5298; text-decoration: underline;">${course.website}</a></div>
+                            <div class="detail-value"><a href="${course.website}" target="_blank" rel="noopener noreferrer" style="color: #2a5298; text-decoration: underline;">${course.website}</a></div>
                         </div>
                     ` : ''}
                     
@@ -4693,7 +4724,7 @@
                         ${round.website ? `
                             <div style="margin-bottom: 8px;">
                                 <span style="font-weight: 600; color: #666; font-size: 13px;">WEBSITE: </span>
-                                <a href="${round.website}" target="_blank" style="color: #2a5298; text-decoration: underline;">${round.website}</a>
+                                <a href="${round.website}" target="_blank" rel="noopener noreferrer" style="color: #2a5298; text-decoration: underline;">${round.website}</a>
                             </div>
                         ` : ''}
                         
