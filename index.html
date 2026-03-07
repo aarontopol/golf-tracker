@@ -1862,6 +1862,12 @@
             wishlistRef.on('value', function(snapshot) {
                 var data = snapshot.val();
                 wishlistCourses = data ? Object.values(data) : [];
+                // Fix legacy data: if country equals state, set country to USA
+                wishlistCourses.forEach(function(c) {
+                    if (c.country && c.state && c.country.trim().toLowerCase() === c.state.trim().toLowerCase()) {
+                        c.country = 'USA';
+                    }
+                });
                 renderWishList();
             });
             firebaseListeners.push(wishlistRef);
@@ -1870,6 +1876,12 @@
             playedRef.on('value', function(snapshot) {
                 var data = snapshot.val();
                 playedCourses = data ? Object.values(data) : [];
+                // Fix legacy data: if country equals state, set country to USA
+                playedCourses.forEach(function(c) {
+                    if (c.country && c.state && c.country.trim().toLowerCase() === c.state.trim().toLowerCase()) {
+                        c.country = 'USA';
+                    }
+                });
                 renderPlayedList();
             });
             firebaseListeners.push(playedRef);
@@ -3338,6 +3350,22 @@
             return div.innerHTML;
         }
 
+        // Build location string, deduplicating state/country
+        function buildLocationStr(course) {
+            const parts = [];
+            if (course.city) parts.push(course.city.trim());
+            if (course.state) parts.push(course.state.trim());
+            if (course.country) {
+                const country = course.country.trim();
+                // Don't add country if it's the same as state (data bug) or if it's "USA" with a US state already shown
+                const state = (course.state || '').trim();
+                if (country.toLowerCase() !== state.toLowerCase()) {
+                    parts.push(country);
+                }
+            }
+            return parts.join(', ');
+        }
+
         // Listen for typing in course name field
         courseNameInput.addEventListener('input', function(e) {
             const query = e.target.value.trim();
@@ -4362,14 +4390,7 @@
                     }
                 }
                 
-                let locationStr = '';
-                if (course.city || course.state || course.country) {
-                    const parts = [];
-                    if (course.city) parts.push(course.city);
-                    if (course.state) parts.push(course.state);
-                    if (course.country) parts.push(course.country);
-                    locationStr = parts.join(', ');
-                }
+                const locationStr = buildLocationStr(course);
                 
                 const gdRank = getGolfDigestRanking(course.name);
 
@@ -4499,14 +4520,7 @@
                     // Don't group by individual scores — just sort
                 }
                 
-                let locationStr = '';
-                if (mostRecent.city || mostRecent.state || mostRecent.country) {
-                    const parts = [];
-                    if (mostRecent.city) parts.push(mostRecent.city);
-                    if (mostRecent.state) parts.push(mostRecent.state);
-                    if (mostRecent.country) parts.push(mostRecent.country);
-                    locationStr = parts.join(', ');
-                }
+                const locationStr = buildLocationStr(mostRecent);
                 
                 html += `
                     <div class="course-item" data-id="${mostRecent.id}" data-type="played" data-course-name="${escapeHtml(courseName)}">
@@ -4670,14 +4684,7 @@
             
             const roundsHtml = rounds.map((round, index) => {
                 // Build location string
-                let locationStr = '';
-                if (round.city || round.state || round.country) {
-                    const parts = [];
-                    if (round.city) parts.push(round.city);
-                    if (round.state) parts.push(round.state);
-                    if (round.country) parts.push(round.country);
-                    locationStr = parts.join(', ');
-                }
+                const locationStr = buildLocationStr(round);
                 
                 return `
                     <div class="detail-section" style="border-bottom: ${index < rounds.length - 1 ? '1px solid #e0e0e0' : 'none'}; padding-bottom: ${index < rounds.length - 1 ? '20px' : '0'}; margin-bottom: ${index < rounds.length - 1 ? '20px' : '0'};">
