@@ -2763,13 +2763,18 @@
                             
                             // Fill country - default to USA if it looks like a US state
                             const countryInput = document.getElementById('country');
+                            const usStates = ['Alabama','Alaska','Arizona','Arkansas','California','Colorado','Connecticut','Delaware','Florida','Georgia','Hawaii','Idaho','Illinois','Indiana','Iowa','Kansas','Kentucky','Louisiana','Maine','Maryland','Massachusetts','Michigan','Minnesota','Mississippi','Missouri','Montana','Nebraska','Nevada','New Hampshire','New Jersey','New Mexico','New York','North Carolina','North Dakota','Ohio','Oklahoma','Oregon','Pennsylvania','Rhode Island','South Carolina','South Dakota','Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia','Wisconsin','Wyoming'];
                             if (countryInput) {
-                                if (parts.length > 1) {
-                                    // Check if second part is a US state (2 letters)
-                                    if (parts[1].length === 2) {
+                                if (parts.length > 2) {
+                                    // 3-part location: City, State, Country
+                                    countryInput.value = parts[2];
+                                } else if (parts.length > 1) {
+                                    const statePart = parts[1].trim();
+                                    if (statePart.length === 2 || usStates.some(s => s.toLowerCase() === statePart.toLowerCase())) {
                                         countryInput.value = 'USA';
                                     } else {
-                                        countryInput.value = parts[1];
+                                        // Assume it's a country name
+                                        countryInput.value = statePart;
                                     }
                                 }
                             }
@@ -3997,6 +4002,7 @@
         function getGolfDigestRanking(courseName) {
             if (!courseName) return null;
             const search = courseName.toLowerCase().replace(/[^a-z0-9\s]/g, '').trim();
+            const genericWords = new Set(['golf', 'club', 'course', 'country', 'links', 'national', 'resort', 'the', 'at', 'of']);
             
             let bestMatch = null;
             let bestScore = 0;
@@ -4022,16 +4028,20 @@
                     }
                 }
                 
-                // Check if key words match (for courses with alternate names)
+                // Check if key words match — must have at least one distinctive (non-generic) word match
                 const searchWords = search.split(/\s+/);
                 const entryWords = entryName.split(/\s+/);
                 const matchingWords = searchWords.filter(function(w) {
                     return w.length > 2 && entryWords.some(function(ew) { return ew.includes(w) || w.includes(ew); });
                 });
-                const wordScore = matchingWords.length / Math.max(searchWords.length, entryWords.length) * 80;
-                if (wordScore > bestScore && wordScore > 50) {
-                    bestMatch = entry;
-                    bestScore = wordScore;
+                const distinctiveMatches = matchingWords.filter(function(w) { return !genericWords.has(w); });
+                
+                if (distinctiveMatches.length >= 1) {
+                    const wordScore = matchingWords.length / Math.max(searchWords.length, entryWords.length) * 80;
+                    if (wordScore > bestScore && wordScore > 50) {
+                        bestMatch = entry;
+                        bestScore = wordScore;
+                    }
                 }
             });
             
