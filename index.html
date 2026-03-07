@@ -3836,16 +3836,16 @@
                 wishSortMode = sort;
                 wishMapLevel = 'country';
                 wishMapSelection = { country: '', state: '' };
-                document.getElementById('wishMapView').style.display = sort === 'map' ? 'block' : 'none';
+                
                 renderWishList();
-                if (sort === 'map') renderMapView('wish');
+                
             } else {
                 playedSortMode = sort;
                 playedMapLevel = 'country';
                 playedMapSelection = { country: '', state: '' };
-                document.getElementById('playedMapView').style.display = sort === 'map' ? 'block' : 'none';
+                
                 renderPlayedList();
-                if (sort === 'map') renderMapView('played');
+                
             }
         });
 
@@ -4038,7 +4038,7 @@
             
             if (wishlistCourses.length === 0) {
                 sortControls.style.display = 'none';
-                document.getElementById('wishMapView').style.display = 'none';
+                
                 listEl.innerHTML = `
                     <div class="card empty-state">
                         <div class="empty-state-icon">⛳</div>
@@ -4159,7 +4159,7 @@
             
             if (playedCourses.length === 0) {
                 sortControls.style.display = 'none';
-                document.getElementById('playedMapView').style.display = 'none';
+                
                 listEl.innerHTML = `
                     <div class="card empty-state">
                         <div class="empty-state-icon">✅</div>
