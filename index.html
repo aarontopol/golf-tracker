@@ -29,1025 +29,669 @@
          CSS STYLES SECTION
          This controls how everything looks (colors, sizes, spacing, etc.)
          ============================================ -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
     <style>
-        /* ==========================================
-           RESET STYLES
-           Removes default browser spacing so we start clean
-           ========================================== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --green-deep: #1a472a;
+            --green-mid: #2d6a4f;
+            --green-light: #40916c;
+            --green-pale: #f0f7f2;
+            --gold: #c9a84c;
+            --gold-light: #f5e6b8;
+            --cream: #faf9f6;
+            --white: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #5a5a5a;
+            --text-muted: #8a8a8a;
+            --border: #e8e8e8;
+            --border-light: #f0f0f0;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 16px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
+            --radius: 8px;
         }
 
-        /* ==========================================
-           MAIN PAGE BACKGROUND & LAYOUT
-           Sets the blue gradient background and basic page structure
-           ========================================== */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            font-family: 'Source Sans 3', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--cream);
             min-height: 100vh;
-            padding: 20px;
-            padding-bottom: 80px;
+            color: var(--text-primary);
+            -webkit-font-smoothing: antialiased;
         }
 
-        /* ==========================================
-           CONTAINER
-           Centers content and sets max width for readability
-           ========================================== */
         .container {
-            max-width: 600px;
+            max-width: 680px;
             margin: 0 auto;
+            padding: 0 20px 80px;
         }
 
         /* ==========================================
-           PAGE TITLE (⛳ Golf Course Tracker)
-           Styles the main heading at the top
-           ========================================== */
-        /* ==========================================
-           TOP HEADER BAR
-           Title on the left, user info on the right
+           TOP HEADER - Clean minimal bar
            ========================================== */
         .top-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 0;
         }
-
-        .title-animation-area {
-            flex: 1;
-            min-width: 0;
-        }
-
-        .putt-animation {
-            width: 100%;
-            max-width: 380px;
-            height: 62px;
-        }
-
-        /* Putter swing - gentle pendulum like a real putt */
-        .putter-swing {
-            animation: putterStroke 1.0s ease-in-out forwards;
-        }
-        @keyframes putterStroke {
-            0%   { transform: rotate(6deg); }
-            30%  { transform: rotate(6deg); }
-            55%  { transform: rotate(-3deg); }
-            75%  { transform: rotate(-5deg); }
-            100% { transform: rotate(-3deg); }
-        }
-
-        /* Ball rolls smoothly under text, gradually decelerating, then curves up to period */
-        .rolling-ball {
-            animation: ballRollPath 3s linear 0.55s forwards;
-        }
-        @keyframes ballRollPath {
-            0%   { transform: translate(0px, 0px); opacity: 1; }
-            5%   { transform: translate(22px, 0px); opacity: 1; }
-            10%  { transform: translate(44px, 0px); opacity: 1; }
-            15%  { transform: translate(65px, 0px); opacity: 1; }
-            20%  { transform: translate(85px, 0px); opacity: 1; }
-            25%  { transform: translate(104px, 0px); opacity: 1; }
-            30%  { transform: translate(122px, 0px); opacity: 1; }
-            35%  { transform: translate(139px, 0px); opacity: 1; }
-            40%  { transform: translate(155px, 0px); opacity: 1; }
-            45%  { transform: translate(170px, 0px); opacity: 1; }
-            50%  { transform: translate(184px, 0px); opacity: 1; }
-            55%  { transform: translate(197px, 0px); opacity: 1; }
-            60%  { transform: translate(209px, 0px); opacity: 1; }
-            65%  { transform: translate(220px, 0px); opacity: 1; }
-            70%  { transform: translate(230px, 0px); opacity: 1; }
-            75%  { transform: translate(239px, 0px); opacity: 1; }
-            80%  { transform: translate(247px, 0px); opacity: 1; }
-            85%  { transform: translate(254px, 0px); opacity: 1; }
-            90%  { transform: translate(260px, 0px); opacity: 1; }
-            93%  { transform: translate(265px, 0px); opacity: 1; }
-            96%  { transform: translate(268px, -3px); opacity: 1; }
-            100% { transform: translate(269px, -8px); opacity: 0; }
-        }
-
-        /* The period dot fades in exactly where the ball ends */
-        .end-dot {
-            animation: dotAppear 0.2s ease-in 3.45s forwards;
-        }
-        @keyframes dotAppear {
-            0%   { opacity: 0; }
-            100% { opacity: 1; }
-        }
-
-        h1 {
-            color: white;
+        .site-title {
+            font-family: 'Playfair Display', Georgia, serif;
             font-size: 22px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            margin: 0;
-            white-space: nowrap;
+            font-weight: 700;
+            color: var(--green-deep);
+            letter-spacing: -0.3px;
         }
-
+        .site-title span {
+            color: var(--gold);
+        }
         .user-bar-right {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+        }
+        .user-bar-email {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+        .btn-logout {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .btn-logout:hover {
+            border-color: var(--text-secondary);
+            color: var(--text-primary);
         }
 
         /* ==========================================
-           VIEW TOGGLE BUTTONS (My Courses / Add Course)
-           The two buttons that switch between list view and add form
+           HERO PHOTO SECTION
+           ========================================== */
+        .hero-section {
+            position: relative;
+            width: calc(100% + 40px);
+            margin-left: -20px;
+            height: 280px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        .hero-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .hero-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 32px 24px 20px;
+            background: linear-gradient(transparent, rgba(0,0,0,0.65));
+        }
+        .hero-quote {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 18px;
+            font-style: italic;
+            color: white;
+            line-height: 1.4;
+            text-shadow: 0 1px 4px rgba(0,0,0,0.3);
+        }
+        .hero-quote-author {
+            font-family: 'Source Sans 3', sans-serif;
+            font-size: 13px;
+            color: rgba(255,255,255,0.8);
+            margin-top: 6px;
+            font-style: normal;
+        }
+
+        /* ==========================================
+           VIEW TOGGLE - Refined pill tabs
            ========================================== */
         .view-toggle {
             display: flex;
-            gap: 10px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 4px;
             margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
         }
-
         .view-toggle button {
             flex: 1;
-            padding: 12px;
+            padding: 10px 16px;
             border: none;
-            background: rgba(255,255,255,0.2);
-            color: white;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        /* Active button style (the one currently selected) */
-        .view-toggle button.active {
-            background: white;
-            color: #1e3c72;
-            font-weight: 600;
-        }
-
-        /* ==========================================
-           CARD COMPONENT
-           White rounded boxes that contain forms and content
-           ========================================== */
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-        }
-
-        /* ==========================================
-           FORM INPUT STYLES
-           All text inputs, dropdowns, and text areas
-           ========================================== */
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 8px;
-            color: #333;
-            font-weight: 600;
+            background: transparent;
+            border-radius: 7px;
             font-size: 14px;
-        }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="password"],
-        textarea,
-        select,
-        input[type="date"] {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 16px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            cursor: pointer;
             font-family: inherit;
-            transition: border-color 0.3s;
-        }
-
-        /* ==========================================
-           AUTOCOMPLETE DROPDOWN STYLES
-           Dropdown that appears when typing course names
-           ========================================== */
-        .autocomplete-container {
-            position: relative;
-            width: 100%;
-        }
-
-        .autocomplete-dropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border: 2px solid #2a5298;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            max-height: 300px;
-            overflow-y: auto;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            display: none;
-        }
-
-        .autocomplete-dropdown.active {
-            display: block;
-        }
-
-        .autocomplete-item {
-            padding: 12px;
-            cursor: pointer;
-            border-bottom: 1px solid #f0f0f0;
-            transition: background 0.2s;
-        }
-
-        .autocomplete-item:last-child {
-            border-bottom: none;
-        }
-
-        .autocomplete-item:hover {
-            background: #f5f9ff;
-        }
-
-        .autocomplete-item-name {
-            font-weight: 600;
-            color: #1e3c72;
-            margin-bottom: 4px;
-        }
-
-        .autocomplete-item-location {
-            font-size: 13px;
-            color: #666;
-        }
-
-        .autocomplete-loading {
-            padding: 12px;
-            text-align: center;
-            color: #666;
-            font-size: 14px;
-        }
-
-        .autocomplete-no-results {
-            padding: 12px;
-            text-align: center;
-            color: #999;
-            font-size: 14px;
-        }
-
-        /* When user clicks into an input field, highlight it with blue border */
-        input[type="text"]:focus,
-        input[type="email"]:focus,
-        input[type="password"]:focus,
-        textarea:focus,
-        select:focus,
-        input[type="date"]:focus {
-            outline: none;
-            border-color: #2a5298;
-        }
-
-        textarea {
-            resize: vertical;
-            min-height: 80px;
-        }
-
-        /* ==========================================
-           RATING SYSTEM STYLES
-           The three clickable rating options (Must Play, Would Like, If Nearby)
-           ========================================== */
-        .rating-options {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .rating-option {
-            display: flex;
-            align-items: center;
-            padding: 12px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        /* Hover effect when mouse moves over a rating option */
-        .rating-option:hover {
-            border-color: #2a5298;
-            background: #f5f9ff;
-        }
-
-        .rating-option input[type="radio"] {
-            margin-right: 12px;
-            width: 20px;
-            height: 20px;
-            cursor: pointer;
-        }
-
-        /* When a rating is selected, highlight it */
-        .rating-option.selected {
-            border-color: #2a5298;
-            background: #f5f9ff;
-        }
-
-        .rating-label {
-            flex: 1;
-        }
-
-        .rating-title {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 2px;
-        }
-
-        .rating-desc {
-            font-size: 13px;
-            color: #666;
-        }
-
-        /* ==========================================
-           BUTTON STYLES
-           Primary buttons (blue) and secondary buttons (gray)
-           ========================================== */
-        .btn {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .btn-primary {
-            background: #2a5298;
-            color: white;
-        }
-
-        /* Hover effect - button lifts up slightly and changes color */
-        .btn-primary:hover {
-            background: #1e3c72;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(42, 82, 152, 0.3);
-        }
-
-        .btn-secondary {
-            background: #6c757d;
-            color: white;
-            margin-top: 10px;
-        }
-
-        .btn-secondary:hover {
-            background: #5a6268;
-        }
-
-        /* ==========================================
-           COURSE LIST STYLES
-           The list of all golf courses you've added
-           ========================================== */
-        .course-list {
-            display: none;
-        }
-
-        /* Only show when "active" class is added */
-        .course-list.active {
-            display: block;
-        }
-
-        /* Sort controls */
-        .sort-controls {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 8px 4px;
-            margin-bottom: 8px;
-        }
-        .sort-label {
-            font-size: 12px;
-            color: rgba(255,255,255,0.7);
-            white-space: nowrap;
-        }
-        .sort-buttons {
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
-        .sort-btn {
-            padding: 5px 12px;
-            border: 1px solid rgba(255,255,255,0.3);
-            border-radius: 16px;
-            background: rgba(255,255,255,0.1);
-            color: rgba(255,255,255,0.8);
-            font-size: 12px;
-            cursor: pointer;
             transition: all 0.2s;
         }
-        .sort-btn:hover {
-            background: rgba(255,255,255,0.2);
+        .view-toggle button:hover {
+            color: var(--text-primary);
+            background: var(--green-pale);
         }
-        .sort-btn.active {
-            background: rgba(255,255,255,0.9);
-            color: #1e3c72;
+        .view-toggle button.active {
+            background: var(--green-deep);
+            color: white;
             font-weight: 600;
-            border-color: white;
+            box-shadow: 0 2px 8px rgba(26,71,42,0.25);
         }
-        .state-group-header {
-            font-size: 14px;
-            font-weight: 700;
-            color: rgba(255,255,255,0.9);
-            padding: 10px 4px 4px;
-            border-bottom: 1px solid rgba(255,255,255,0.2);
-            margin-bottom: 6px;
-            margin-top: 8px;
-        }
-        .state-group-header:first-child {
-            margin-top: 0;
-        }
-        .map-filter-container {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-        }
-        .map-filter-row {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-            align-items: center;
-        }
-        .map-filter-select {
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 14px;
-            flex: 1;
-            min-width: 120px;
-        }
-        .map-filter-clear {
-            padding: 8px 12px;
-            border: none;
-            border-radius: 8px;
-            background: #e8e8e8;
-            color: #333;
-            font-size: 13px;
-            cursor: pointer;
-        }
-        .map-view-container {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-        }
-        .map-breadcrumb {
-            display: flex;
+        /* Content area - hidden until a nav button is clicked */
+        .content-area { display: none; }
+        .content-area.active { display: block; }
+        /* Back to home link */
+        .back-to-home {
+            display: inline-flex;
             align-items: center;
             gap: 6px;
-            margin-bottom: 12px;
             font-size: 13px;
-            flex-wrap: wrap;
-        }
-        .map-breadcrumb-item {
-            color: #2c5f2d;
+            color: var(--text-muted);
             cursor: pointer;
-            text-decoration: underline;
+            margin-bottom: 16px;
+            padding: 6px 0;
+            text-decoration: none;
+            transition: color 0.2s;
         }
-        .map-breadcrumb-item:hover {
-            color: #1a3d1a;
+        .back-to-home:hover { color: var(--green-mid); }
+
+        /* ==========================================
+           CARDS & FORMS - Clean white panels
+           ========================================== */
+        .card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 24px;
+            border: 1px solid var(--border);
+            margin-bottom: 16px;
+            box-shadow: var(--shadow-sm);
         }
-        .map-breadcrumb-separator {
-            color: #999;
+        .card h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            color: var(--green-deep);
+            font-size: 20px;
+            margin-bottom: 20px;
         }
-        .map-breadcrumb-current {
-            color: #333;
-            font-weight: 600;
-        }
-        .map-globe-container {
-            text-align: center;
-            margin-bottom: 12px;
-        }
-        .map-globe-container svg {
-            max-width: 100%;
-            height: auto;
-        }
-        .map-region-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 8px;
-        }
-        .map-region-card {
-            background: #f5f9f5;
-            border: 1px solid #e0e8e0;
-            border-radius: 10px;
-            padding: 12px;
+
+        /* ==========================================
+           COURSE LIST ITEMS - Editorial card style
+           ========================================== */
+        .course-list { display: none; }
+        .course-list.active { display: block; }
+
+        .course-item {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            margin-bottom: 10px;
             cursor: pointer;
             transition: all 0.2s;
-            text-align: center;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-sm);
         }
-        .map-region-card:hover {
-            background: #e8f5e8;
-            border-color: #2c5f2d;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .map-region-name {
-            font-weight: 600;
-            font-size: 14px;
-            color: #1e3c72;
-        }
-        .map-region-count {
-            font-size: 12px;
-            color: #666;
-            margin-top: 2px;
-        }
-        .map-region-flag {
-            font-size: 24px;
-            margin-bottom: 4px;
-        }
-
-        /* Individual course item in the list */
-        .course-item {
-            background: white;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        /* When hovering over a course, lift it up */
         .course-item:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            box-shadow: var(--shadow-md);
+            border-color: var(--green-light);
+            transform: translateY(-1px);
         }
-
         .course-header {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            margin-bottom: 8px;
+            gap: 12px;
         }
-
         .course-name {
+            font-family: 'Playfair Display', Georgia, serif;
             font-size: 18px;
-            font-weight: 700;
-            color: #1e3c72;
-            flex: 1;
+            font-weight: 600;
+            color: var(--green-deep);
+            line-height: 1.3;
         }
+        .course-location {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            text-decoration: none;
+            display: block;
+        }
+        .course-location:hover {
+            color: var(--green-mid);
+        }
+        a.course-location { text-decoration: none; }
+        .map-link { text-decoration: none; }
+        .course-website-link {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-decoration: none;
+            display: block;
+            margin-top: 3px;
+        }
+        .course-website-link:hover { color: var(--green-mid); }
+        .course-source {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 3px;
+            text-decoration: none;
+            display: block;
+        }
+        a.course-source:hover { color: var(--green-mid); }
 
         /* ==========================================
-           RATING BADGES
-           Colored badges showing course rating (Must Play, Would Like, If Nearby)
+           RATINGS & BADGES
            ========================================== */
         .course-rating {
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            white-space: nowrap;
-            margin-left: 10px;
-        }
-
-        /* Red badge for "Must Play" courses */
-        .rating-must {
-            background: #dc3545;
-            color: white;
-        }
-
-        /* Yellow badge for "Would Like" courses */
-        .rating-would {
-            background: #ffc107;
-            color: #333;
-        }
-
-        /* Green badge for "If Nearby" courses */
-        .rating-nearby {
-            background: #28a745;
-            color: white;
-        }
-
-        /* Badge showing how many times you've played a course */
-        .times-played-badge {
-            background: #6c757d;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 20px;
             font-size: 11px;
             font-weight: 600;
-            margin-left: 6px;
-        }
-
-        /* ==========================================
-           COURSE DETAILS (location, source info)
-           Text shown under course name in the list
-           ========================================== */
-        .course-location {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 4px;
-        }
-
-        .course-source {
-            color: #999;
-            font-size: 13px;
-            font-style: italic;
-        }
-
-        /* Clickable map pin links */
-        .map-link {
-            text-decoration: none;
-            display: block;
-            cursor: pointer;
-            transition: color 0.2s;
-        }
-        .map-link:hover {
-            color: #2a5298 !important;
-            text-decoration: underline;
-        }
-
-        /* Website link in wishlist card */
-        .course-website-link {
-            display: block;
-            color: #2a5298;
-            font-size: 12px;
-            text-decoration: none;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            padding: 4px 12px;
+            border-radius: 20px;
             white-space: nowrap;
-            max-width: 200px;
-            transition: color 0.2s;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
         }
-        .course-website-link:hover {
-            color: #1e3c72;
-            text-decoration: underline;
+        .rating-must { background: #dc3545; color: white; }
+        .rating-would { background: var(--gold); color: #1a1a1a; }
+        .rating-nearby { background: #6c757d; color: white; }
+
+        .times-played-badge {
+            font-size: 11px;
+            background: var(--green-pale);
+            color: var(--green-deep);
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+            white-space: nowrap;
         }
 
-        /* Golf Digest Ranking Badge */
+        /* Golf Digest ranking badge - refined */
         .gd-ranking {
-            text-align: center;
-            background: linear-gradient(135deg, #0b5e1f, #1a8a3a);
+            background: var(--green-deep);
             color: white;
             border-radius: 8px;
-            padding: 6px 10px;
+            padding: 6px 12px;
+            text-align: center;
             min-width: 70px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            flex-shrink: 0;
         }
         .gd-ranking-label {
-            font-size: 9px;
+            font-size: 8px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            opacity: 0.85;
+            letter-spacing: 1px;
+            opacity: 0.8;
             font-weight: 600;
         }
         .gd-ranking-number {
+            font-family: 'Playfair Display', Georgia, serif;
             font-size: 22px;
-            font-weight: 800;
+            font-weight: 700;
             line-height: 1.1;
         }
         .gd-ranking-list {
             font-size: 8px;
             text-transform: uppercase;
-            opacity: 0.75;
-            letter-spacing: 0.3px;
-            margin-top: 1px;
+            letter-spacing: 0.5px;
+            opacity: 0.7;
         }
 
         /* ==========================================
-           EMPTY STATE
-           What shows when you haven't added any courses yet
+           SORT CONTROLS
            ========================================== */
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #666;
+        .sort-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 0;
+            margin-bottom: 12px;
         }
+        .sort-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .sort-buttons { display: flex; gap: 4px; flex-wrap: wrap; }
+        .sort-btn {
+            padding: 5px 14px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            background: var(--white);
+            color: var(--text-secondary);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .sort-btn:hover { border-color: var(--green-light); color: var(--green-mid); }
+        .sort-btn.active {
+            background: var(--green-deep);
+            color: white;
+            border-color: var(--green-deep);
+            font-weight: 600;
+        }
+        .state-group-header {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--green-deep);
+            padding: 14px 0 6px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 8px;
+            margin-top: 12px;
+        }
+        .state-group-header:first-child { margin-top: 0; }
 
-        .empty-state-icon {
-            font-size: 48px;
+        /* ==========================================
+           FORM ELEMENTS
+           ========================================== */
+        .form-group {
             margin-bottom: 16px;
         }
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="date"],
+        .form-group input[type="email"],
+        .form-group input[type="password"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 15px;
+            font-family: inherit;
+            background: var(--white);
+            color: var(--text-primary);
+            transition: border-color 0.2s;
+        }
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--green-light);
+            box-shadow: 0 0 0 3px rgba(45,106,79,0.1);
+        }
+        .form-group textarea { resize: vertical; min-height: 60px; }
 
         /* ==========================================
-           COURSE DETAIL MODAL (Popup)
-           The popup window that shows when you click a course
+           BUTTONS
+           ========================================== */
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+            transition: all 0.2s;
+            width: 100%;
+            text-align: center;
+        }
+        .btn-primary {
+            background: var(--green-deep);
+            color: white;
+        }
+        .btn-primary:hover { background: var(--green-mid); }
+        .btn-primary:disabled { background: #ccc; cursor: not-allowed; }
+        .btn-secondary {
+            background: var(--white);
+            color: var(--text-secondary);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { border-color: var(--text-secondary); }
+        .btn-delete {
+            background: #fff;
+            color: #dc3545;
+            border: 1px solid #dc3545;
+        }
+        .btn-delete:hover { background: #dc3545; color: white; }
+
+        /* ==========================================
+           RADIO/OPTION BUTTONS
+           ========================================== */
+        .rating-options, .list-type-options {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .rating-option, .list-type-option {
+            flex: 1;
+            min-width: 100px;
+            cursor: pointer;
+        }
+        .rating-option input, .list-type-option input {
+            display: none;
+        }
+        .rating-label, .list-type-label {
+            display: block;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            text-align: center;
+            transition: all 0.2s;
+            background: var(--white);
+        }
+        .rating-label:hover, .list-type-label:hover {
+            border-color: var(--green-light);
+        }
+        .rating-option input:checked + .rating-label,
+        .list-type-option input:checked + .list-type-label,
+        .rating-option.selected .rating-label,
+        .list-type-option.selected .list-type-label {
+            border-color: var(--green-deep);
+            background: var(--green-pale);
+            color: var(--green-deep);
+            font-weight: 600;
+        }
+        .rating-title {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .rating-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        /* ==========================================
+           MODALS
            ========================================== */
         .course-detail-modal {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
+            top: 0; left: 0; right: 0; bottom: 0;
             background: rgba(0,0,0,0.5);
             z-index: 1000;
             padding: 20px;
             overflow-y: auto;
+            backdrop-filter: blur(4px);
         }
-
-        /* Show modal when "active" class is added */
-        .course-detail-modal.active {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
+        .course-detail-modal.active { display: flex; justify-content: center; align-items: flex-start; padding-top: 40px; }
         .modal-content {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            max-width: 500px;
+            background: var(--white);
+            border-radius: 12px;
+            max-width: 560px;
             width: 100%;
-            max-height: 90vh;
+            padding: 28px;
+            box-shadow: var(--shadow-lg);
+            max-height: 85vh;
             overflow-y: auto;
         }
-
         .modal-header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
             margin-bottom: 20px;
         }
-
-        /* X button to close the modal */
+        .modal-header h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            color: var(--green-deep);
+            font-size: 22px;
+            flex: 1;
+        }
         .modal-close {
             background: none;
             border: none;
             font-size: 28px;
             cursor: pointer;
-            color: #999;
-            padding: 0;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            color: var(--text-muted);
+            padding: 4px;
+            line-height: 1;
         }
+        .modal-close:hover { color: var(--text-primary); }
+        .detail-section { margin-bottom: 16px; }
+        .detail-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .detail-value {
+            font-size: 15px;
+            color: var(--text-primary);
+        }
+        .detail-value a { color: var(--green-mid); }
 
-        .detail-section {
+        /* ==========================================
+           AUTH SCREENS
+           ========================================== */
+        #authScreen { display: none; padding-top: 40px; }
+        #authScreen.active { display: block; }
+        .auth-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 32px;
+            border: 1px solid var(--border);
+            box-shadow: var(--shadow-md);
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .auth-card h2 {
+            font-family: 'Playfair Display', Georgia, serif;
+            color: var(--green-deep);
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        .auth-subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
             margin-bottom: 20px;
         }
-
-        .detail-label {
+        .auth-error { color: #dc3545; font-size: 13px; margin-bottom: 12px; }
+        .auth-success { color: var(--green-mid); font-size: 13px; margin-bottom: 12px; }
+        .auth-divider {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 13px;
+            margin: 16px 0;
+        }
+        .auth-link {
+            text-align: center;
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+        .auth-link a {
+            color: var(--green-mid);
+            cursor: pointer;
             font-weight: 600;
-            color: #666;
-            font-size: 13px;
-            text-transform: uppercase;
-            margin-bottom: 6px;
+            text-decoration: none;
         }
-
-        .detail-value {
-            color: #333;
-            font-size: 16px;
-        }
-
-        /* Red delete button */
-        .btn-delete {
-            background: #dc3545;
-            color: white;
-        }
-
-        .btn-delete:hover {
-            background: #c82333;
-        }
+        .auth-link a:hover { text-decoration: underline; }
 
         /* ==========================================
-           UTILITY STYLES
-           Small helper styles used in various places
-           ========================================== */
-        .loading {
-            display: inline-block;
-            margin-left: 8px;
-            opacity: 0.6;
-        }
-
-        #addForm {
-            display: none;
-        }
-
-        #addForm.active {
-            display: block;
-        }
-
-        .address-lookup {
-            font-size: 13px;
-            color: #666;
-            margin-top: 4px;
-        }
-
-        /* ==========================================
-           LOADING SCREEN
-           Shown briefly while Firebase checks auth state
+           LOADING & MISC
            ========================================== */
         #loadingScreen {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 60vh;
-            color: white;
+            gap: 12px;
+            padding: 80px 0;
+            color: var(--text-muted);
         }
         .loading-spinner {
-            width: 40px;
-            height: 40px;
-            border: 4px solid rgba(255,255,255,0.3);
-            border-top: 4px solid white;
+            width: 36px; height: 36px;
+            border: 3px solid var(--border);
+            border-top-color: var(--green-mid);
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
-            margin-bottom: 16px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ==========================================
-           AUTH SCREEN (Login / Sign Up / Reset)
-           ========================================== */
-        #authScreen { display: none; }
-        .auth-card {
-            background: white;
-            border-radius: 16px;
-            padding: 32px 28px;
-            max-width: 440px;
-            margin: 0 auto;
-            box-shadow: 0 12px 40px rgba(0,0,0,0.25);
-        }
-        .auth-card h2 { color: #1e3c72; text-align: center; margin-bottom: 8px; font-size: 22px; }
-        .auth-subtitle { text-align: center; color: #666; font-size: 14px; margin-bottom: 24px; }
-        .auth-error {
-            background: #fff3f3; border: 1px solid #ffcccc; color: #cc0000;
-            padding: 10px 14px; border-radius: 8px; font-size: 14px;
-            margin-bottom: 16px; display: none;
-        }
-        .auth-success {
-            background: #f0fff4; border: 1px solid #c6f6d5; color: #276749;
-            padding: 10px 14px; border-radius: 8px; font-size: 14px;
-            margin-bottom: 16px; display: none;
-        }
-        .auth-link { text-align: center; margin-top: 16px; font-size: 14px; color: #666; }
-        .auth-link a { color: #2a5298; text-decoration: none; font-weight: 600; cursor: pointer; }
-        .auth-link a:hover { text-decoration: underline; }
-        .auth-divider { display: flex; align-items: center; margin: 20px 0; color: #999; font-size: 13px; }
-        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; border-bottom: 1px solid #e0e0e0; }
-        .auth-divider::before { margin-right: 12px; }
-        .auth-divider::after { margin-left: 12px; }
+        .loading { color: var(--green-mid); font-size: 13px; }
+        .address-lookup { font-size: 13px; margin-top: 6px; min-height: 18px; }
 
-        /* ==========================================
-           USER BAR (shows who's logged in)
-           ========================================== */
-        .user-bar-email {
-            color: rgba(255,255,255,0.85); font-size: 12px;
-            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-            max-width: 120px;
-        }
-        .btn-logout {
-            background: rgba(255,255,255,0.2); color: white;
-            border: 1px solid rgba(255,255,255,0.3);
-            padding: 5px 10px; border-radius: 6px; font-size: 12px;
-            cursor: pointer; transition: all 0.3s; font-weight: 500;
-        }
-        .btn-logout:hover { background: rgba(255,255,255,0.35); }
-
-        /* Main app hidden by default until login */
         #mainApp { display: none; }
+        #mainApp.active { display: block; }
 
-        /* Golf Quote Banner */
-        .golf-quote {
-            color: rgba(255,255,255,0.85);
-            font-style: italic;
-            font-size: 14px;
+        .empty-state {
             text-align: center;
-            padding: 0px 16px;
-            margin-bottom: 8px;
-            margin-top: -10px;
-            line-height: 1.5;
+            padding: 40px 20px;
+            color: var(--text-muted);
         }
-        .golf-quote-author {
-            font-style: normal;
-            font-weight: 600;
-            font-size: 12px;
-            color: rgba(255,255,255,0.6);
+        .empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+
+        /* ==========================================
+           AUTOCOMPLETE
+           ========================================== */
+        .autocomplete-container { position: relative; flex: 1; }
+        .autocomplete-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0; right: 0;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            z-index: 100;
+            max-height: 300px;
+            overflow-y: auto;
             margin-top: 4px;
         }
-
-        /* Disabled button style */
-        .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
-
-        /* ==========================================
-           PLAYER CHIPS
-           Individual person badges in the "Played With" section
-           ========================================== */
-        .player-chip {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #f0f4ff;
-            border: 1px solid #c8d6f0;
-            border-radius: 8px;
-            padding: 10px 12px;
-            margin-bottom: 8px;
-        }
-        .player-chip-info {
-            flex: 1;
-        }
-        .player-chip-name {
-            font-weight: 600;
-            color: #1e3c72;
-            font-size: 15px;
-        }
-        .player-chip-detail {
-            font-size: 12px;
-            color: #666;
-            margin-top: 2px;
-        }
-        .player-chip-remove {
-            background: none;
-            border: none;
-            color: #cc0000;
-            font-size: 20px;
+        .autocomplete-dropdown.active { display: block; }
+        .autocomplete-item {
+            padding: 10px 14px;
             cursor: pointer;
-            padding: 0 0 0 12px;
-            line-height: 1;
+            border-bottom: 1px solid var(--border-light);
+            transition: background 0.15s;
         }
-        .player-chip-remove:hover {
-            color: #ff0000;
-        }
+        .autocomplete-item:hover { background: var(--green-pale); }
+        .autocomplete-item:last-child { border-bottom: none; }
+        .autocomplete-item-name { font-weight: 600; font-size: 14px; color: var(--text-primary); }
+        .autocomplete-item-location { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        .autocomplete-no-results { padding: 12px 14px; font-size: 13px; color: var(--text-muted); }
+        .autocomplete-loading { padding: 12px 14px; font-size: 13px; color: var(--text-muted); }
+        .autocomplete-use-custom { font-style: italic; color: var(--green-mid) !important; }
 
         /* ==========================================
-           PHOTO THUMBNAILS
-           Preview images in the form and detail modal
+           PHOTO ELEMENTS
            ========================================== */
-        .photo-thumb-container {
-            position: relative;
-            display: inline-block;
-        }
-        .photo-thumb {
-            width: 80px;
-            height: 80px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 2px solid #e0e0e0;
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
-        .photo-thumb:hover {
-            border-color: #2a5298;
-        }
-        .photo-thumb-remove {
-            position: absolute;
-            top: -6px;
-            right: -6px;
-            background: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 22px;
-            height: 22px;
-            font-size: 14px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-        }
-        .photo-thumb-remove:hover {
-            background: #c82333;
-        }
-        /* Full-size photo viewer overlay */
-        .photo-viewer {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.9);
-            z-index: 2000;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-        .photo-viewer.active {
-            display: flex;
-        }
-        .photo-viewer img {
-            max-width: 95%;
-            max-height: 95%;
-            border-radius: 8px;
-        }
-        /* Detail modal photo grid */
-        .detail-photos {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .detail-photo {
-            width: 100px;
-            height: 100px;
-            object-fit: cover;
-            border-radius: 8px;
-            border: 2px solid #e0e0e0;
-            cursor: pointer;
-            transition: border-color 0.2s;
-        }
-        .detail-photo:hover {
-            border-color: #2a5298;
-        }
-
-        /* Photo thumbnails in the played list cards */
         .list-photo-strip {
             display: flex;
             gap: 6px;
@@ -1056,171 +700,168 @@
         }
         .list-photo-thumb {
             width: 56px;
-            height: 56px;
+            height: 42px;
             object-fit: cover;
-            border-radius: 6px;
-            border: 2px solid #e0e0e0;
+            border-radius: 4px;
         }
         .list-photo-more {
-            width: 56px;
-            height: 56px;
-            border-radius: 6px;
-            background: #f0f0f0;
-            border: 2px solid #e0e0e0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 13px;
+            font-size: 12px;
+            color: var(--text-muted);
             font-weight: 600;
-            color: #666;
+        }
+        .photo-preview-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+        .photo-preview-item { position: relative; }
+        .photo-preview-item img { width: 80px; height: 60px; object-fit: cover; border-radius: 6px; }
+        .photo-remove-btn {
+            position: absolute; top: -6px; right: -6px;
+            background: #dc3545; color: white;
+            border: none; border-radius: 50%;
+            width: 20px; height: 20px;
+            font-size: 12px; cursor: pointer; line-height: 20px; text-align: center;
+        }
+
+        /* Full-size photo viewer overlay */
+        .photo-viewer {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            cursor: pointer;
+            justify-content: center;
+            align-items: center;
+        }
+        .photo-viewer.active {
+            display: flex;
+        }
+        .photo-viewer img {
+            max-width: 90%;
+            max-height: 90%;
+            object-fit: contain;
+            border-radius: 4px;
+        }
+
+        /* ==========================================
+           GOLF QUOTE (moved to hero overlay)
+           ========================================== */
+        .golf-quote { display: none; }
+
+        /* ==========================================
+           PLAYER LIST IN FORM
+           ========================================== */
+        .player-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--green-pale);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 4px 10px 4px 12px;
+            margin: 0 4px 6px 0;
+            font-size: 13px;
+        }
+        .player-chip-remove {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 14px;
+            cursor: pointer;
+            padding: 0 2px;
+        }
+        .player-chip-remove:hover { color: #dc3545; }
+
+        /* ==========================================
+           MAP FILTER ELEMENTS
+           ========================================== */
+        .map-filter-container {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid var(--border);
+        }
+        .map-filter-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        .map-filter-select {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 14px;
+            flex: 1;
+            min-width: 120px;
+            font-family: inherit;
+        }
+        .map-filter-clear {
+            padding: 8px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            background: var(--white);
+            color: var(--text-secondary);
+            font-size: 13px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+
+        /* Map view elements */
+        .map-view-container { background: var(--white); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; border: 1px solid var(--border); }
+        .map-breadcrumb { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; font-size: 13px; flex-wrap: wrap; }
+        .map-breadcrumb-item { color: var(--green-mid); cursor: pointer; text-decoration: underline; }
+        .map-breadcrumb-item:hover { color: var(--green-deep); }
+        .map-breadcrumb-separator { color: var(--text-muted); }
+        .map-breadcrumb-current { color: var(--text-primary); font-weight: 600; }
+        .map-globe-container { text-align: center; margin-bottom: 12px; }
+        .map-region-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+        .map-region-card {
+            background: var(--green-pale);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .map-region-card:hover { border-color: var(--green-mid); transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+        .map-region-name { font-weight: 600; font-size: 14px; color: var(--green-deep); }
+        .map-region-count { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        .map-region-flag { font-size: 24px; margin-bottom: 4px; }
+
+        /* ==========================================
+           COURSE NAME AREA (flex layout)
+           ========================================== */
+        .course-name-area {
+            flex: 1;
+            min-width: 0;
         }
     </style>
+
 </head>
 <body>
-    <!-- ============================================
-         MAIN CONTAINER
-         Everything inside here is centered on the page
-         ============================================ -->
     <div class="container">
-        <!-- Top header bar: title on left, user info on right -->
+        <!-- Top header bar -->
         <div class="top-header">
-            <div class="title-animation-area">
-                <svg class="putt-animation" id="puttSvg" viewBox="0 0 400 62" xmlns="http://www.w3.org/2000/svg">
-                    <!-- Golfer in putting stance — proper bent-over posture -->
-                    <g class="golfer-group" transform="translate(18, -12)">
-                        <!-- Back foot (planted, slightly angled) -->
-                        <polygon points="-6,56 -3,56 -1,58 -7,58" fill="#2c2c2c"/>
-                        <!-- Front foot -->
-                        <polygon points="6,56 9,56 11,58 5,58" fill="#2c2c2c"/>
-                        
-                        <!-- Back leg (pants - khaki) -->
-                        <line x1="0" y1="38" x2="-3" y2="56" stroke="#c4a96a" stroke-width="3.5" stroke-linecap="round"/>
-                        <!-- Front leg -->
-                        <line x1="2" y1="38" x2="7" y2="56" stroke="#c4a96a" stroke-width="3.5" stroke-linecap="round"/>
-                        
-                        <!-- Torso (polo shirt - dark blue) — bent well forward -->
-                        <line x1="1" y1="38" x2="6" y2="22" stroke="#1a3a6b" stroke-width="4.5" stroke-linecap="round"/>
-                        
-                        <!-- Head (skin tone) -->
-                        <circle cx="9" cy="14" r="4" fill="#f0c8a0"/>
-                        
-                        <!-- Hat (red cap) -->
-                        <ellipse cx="10" cy="11.5" rx="5.5" ry="2.5" fill="#cc2222"/>
-                        <!-- Hat brim -->
-                        <line x1="6" y1="12.5" x2="16" y2="11" stroke="#cc2222" stroke-width="1.5" stroke-linecap="round"/>
-                        
-                        <!-- Back arm (upper) -->
-                        <line x1="5" y1="24" x2="9" y2="30" stroke="#1a3a6b" stroke-width="2.5" stroke-linecap="round"/>
-                        <!-- Back arm (forearm - skin) -->
-                        <line x1="9" y1="30" x2="13" y2="36" stroke="#f0c8a0" stroke-width="2.2" stroke-linecap="round"/>
-                        
-                        <!-- Front arm (upper) -->
-                        <line x1="6" y1="23" x2="10" y2="29" stroke="#1a3a6b" stroke-width="2.5" stroke-linecap="round"/>
-                        <!-- Front arm (forearm - skin) -->
-                        <line x1="10" y1="29" x2="13" y2="36" stroke="#f0c8a0" stroke-width="2.2" stroke-linecap="round"/>
-                        
-                        <!-- Hands (gloves) -->
-                        <circle cx="13" cy="36" r="1.8" fill="#eee"/>
-                        
-                        <!-- Putter (swings from hands) -->
-                        <g class="putter-swing" transform-origin="13 36">
-                            <!-- Putter shaft (silver) -->
-                            <line x1="13" y1="36" x2="15" y2="54" stroke="#ccc" stroke-width="1.3" stroke-linecap="round"/>
-                            <!-- Putter head (darker) -->
-                            <rect x="13" y="53" width="6" height="2" rx="0.8" fill="#999"/>
-                        </g>
-                    </g>
-
-                    <!-- Title text -->
-                    <text id="titleText" x="46" y="36" fill="white" font-family="inherit" font-weight="bold" font-size="22">Golf Course Tracker</text>
-
-                    <!-- Golf ball — rolls below text then curves up to become period -->
-                    <circle class="rolling-ball" cx="36" cy="42" r="2.2" fill="white"/>
-
-                    <!-- The period dot — positioned by JS right after text ends -->
-                    <circle class="end-dot" id="endDot" cx="280" cy="34" r="2.2" fill="white" opacity="0"/>
-                </svg>
-            </div>
+            <div class="site-title">Course Wish List<span>.</span></div>
             <div id="userBarArea" class="user-bar-right" style="display: none;">
                 <div class="user-bar-email" id="userBarEmail"></div>
                 <button class="btn-logout" id="btnLogout">Sign Out</button>
             </div>
         </div>
 
-        <!-- Position the end dot precisely after the text -->
-        <script>
-        (function() {
-            try {
-                var txt = document.getElementById('titleText');
-                var dot = document.getElementById('endDot');
-                if (txt && dot) {
-                    var bbox = txt.getBBox();
-                    var dotX = bbox.x + bbox.width + 4;
-                    var dotY = bbox.y + bbox.height - 4;
-                    dot.setAttribute('cx', dotX);
-                    dot.setAttribute('cy', dotY);
-                    // Calculate ball travel distance (ball starts at cx=36, cy=42)
-                    var totalX = dotX - 36;
-                    var totalY = -(42 - dotY);
-                    // Update the keyframes dynamically using transform
-                    var sheets = document.styleSheets;
-                    for (var i = 0; i < sheets.length; i++) {
-                        try {
-                            var rules = sheets[i].cssRules;
-                            for (var j = 0; j < rules.length; j++) {
-                                if (rules[j].name === 'ballRollPath') {
-                                    sheets[i].deleteRule(j);
-                                    sheets[i].insertRule(
-                                        '@keyframes ballRollPath {' +
-                                        '0%   { transform: translate(0px, 0px); opacity: 1; }' +
-                                        '5%   { transform: translate(' + (totalX * 0.08) + 'px, 0px); opacity: 1; }' +
-                                        '10%  { transform: translate(' + (totalX * 0.16) + 'px, 0px); opacity: 1; }' +
-                                        '15%  { transform: translate(' + (totalX * 0.24) + 'px, 0px); opacity: 1; }' +
-                                        '20%  { transform: translate(' + (totalX * 0.32) + 'px, 0px); opacity: 1; }' +
-                                        '25%  { transform: translate(' + (totalX * 0.39) + 'px, 0px); opacity: 1; }' +
-                                        '30%  { transform: translate(' + (totalX * 0.46) + 'px, 0px); opacity: 1; }' +
-                                        '35%  { transform: translate(' + (totalX * 0.52) + 'px, 0px); opacity: 1; }' +
-                                        '40%  { transform: translate(' + (totalX * 0.58) + 'px, 0px); opacity: 1; }' +
-                                        '45%  { transform: translate(' + (totalX * 0.63) + 'px, 0px); opacity: 1; }' +
-                                        '50%  { transform: translate(' + (totalX * 0.68) + 'px, 0px); opacity: 1; }' +
-                                        '55%  { transform: translate(' + (totalX * 0.73) + 'px, 0px); opacity: 1; }' +
-                                        '60%  { transform: translate(' + (totalX * 0.77) + 'px, 0px); opacity: 1; }' +
-                                        '65%  { transform: translate(' + (totalX * 0.81) + 'px, 0px); opacity: 1; }' +
-                                        '70%  { transform: translate(' + (totalX * 0.85) + 'px, 0px); opacity: 1; }' +
-                                        '75%  { transform: translate(' + (totalX * 0.89) + 'px, 0px); opacity: 1; }' +
-                                        '80%  { transform: translate(' + (totalX * 0.92) + 'px, 0px); opacity: 1; }' +
-                                        '85%  { transform: translate(' + (totalX * 0.94) + 'px, 0px); opacity: 1; }' +
-                                        '90%  { transform: translate(' + (totalX * 0.96) + 'px, 0px); opacity: 1; }' +
-                                        '93%  { transform: translate(' + (totalX * 0.98) + 'px, 0px); opacity: 1; }' +
-                                        '96%  { transform: translate(' + (totalX * 0.99) + 'px, ' + (totalY * 0.4) + 'px); opacity: 1; }' +
-                                        '100% { transform: translate(' + totalX + 'px, ' + totalY + 'px); opacity: 0; }' +
-                                        '}', j
-                                    );
-                                    break;
-                                }
-                            }
-                        } catch(e) {}
-                    }
-                }
-            } catch(e) {  }
-        })();
-        </script>
+        <!-- Hero Section with golf course photo -->
+        <div class="hero-section" id="heroSection">
+            <img class="hero-image" id="heroImage" src="" alt="Golf course" crossorigin="anonymous">
+            <div class="hero-overlay">
+                <div class="hero-quote" id="heroQuoteText"></div>
+                <div class="hero-quote-author" id="heroQuoteAuthor"></div>
+            </div>
+        </div>
 
-        <!-- ============================================
-             LOADING SCREEN
-             Shown while Firebase checks if you're already logged in
-             ============================================ -->
+        <!-- Loading Screen -->
         <div id="loadingScreen">
             <div class="loading-spinner"></div>
             <div>Loading...</div>
         </div>
 
-        <!-- ============================================
-             AUTH SCREEN (Login / Sign Up / Reset Password)
-             Only shows when NOT logged in
-             ============================================ -->
+        <!-- Auth Screen -->
         <div id="authScreen">
-            <!-- LOGIN FORM -->
             <div id="loginView" class="auth-card">
                 <h2>Welcome Back</h2>
                 <p class="auth-subtitle">Sign in to access your courses</p>
@@ -1239,7 +880,6 @@
                 <div class="auth-link">Don't have an account? <a id="linkShowSignup">Sign Up</a></div>
             </div>
 
-            <!-- SIGN UP FORM -->
             <div id="signupView" class="auth-card" style="display: none;">
                 <h2>Create Account</h2>
                 <p class="auth-subtitle">Start tracking your golf courses</p>
@@ -1265,7 +905,6 @@
                 <div class="auth-link">Already have an account? <a id="linkShowLogin">Sign In</a></div>
             </div>
 
-            <!-- FORGOT PASSWORD FORM -->
             <div id="resetView" class="auth-card" style="display: none;">
                 <h2>Reset Password</h2>
                 <p class="auth-subtitle">We'll send you a link to reset your password</p>
@@ -1280,31 +919,33 @@
             </div>
         </div>
 
-        <!-- ============================================
-             MAIN APP (only visible after login)
-             ============================================ -->
+        <!-- Main App -->
         <div id="mainApp">
 
-            <!-- Golf Quote Banner -->
             <div id="golfQuote" class="golf-quote"></div>
+
 
         <!-- ============================================
              VIEW TOGGLE BUTTONS
              Three buttons to switch between Wish List, Played List, and Add Course
              ============================================ -->
         <div class="view-toggle">
-            <button id="btnShowWishList" class="active">Wish List</button>
+            <button id="btnShowWishList">Wish List</button>
             <button id="btnShowPlayedList">Played</button>
             <button id="btnShowAdd">Add</button>
         </div>
+
+        <!-- Content area - hidden until a nav button is clicked -->
+        <div class="content-area" id="contentArea">
+            <a class="back-to-home" id="btnBackToHome">← Back</a>
 
         <!-- ============================================
              ADD COURSE FORM
              This form is hidden by default. Shows when you click "Add"
              Has different fields depending on Wish List vs Played
              ============================================ -->
-        <div id="addForm" class="card">
-            <h2 style="margin-bottom: 20px; color: #1e3c72;">Add Course</h2>
+        <div id="addForm" class="card" style="display:none;">
+            <h2 style="margin-bottom: 20px; color: var(--green-deep, #1a472a);">Add Course</h2>
             
             <form id="courseForm">
                 <!-- Choose between Wish List or Played -->
@@ -1509,7 +1150,7 @@
              WISH LIST VIEW
              Shows all courses you want to play
              ============================================ -->
-        <div id="wishListContainer" class="course-list active">
+        <div id="wishListContainer" class="course-list">
             <div class="sort-controls" id="wishListSortControls" style="display:none;">
                 <div class="sort-label">View:</div>
                 <div class="sort-buttons">
@@ -1548,7 +1189,7 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <!-- Course name will be inserted here by JavaScript -->
-                    <h2 id="modalCourseName" style="color: #1e3c72; flex: 1;"></h2>
+                    <h2 id="modalCourseName" style="color: var(--green-deep, #1a472a); flex: 1;"></h2>
                     <!-- X button to close the popup -->
                     <button class="modal-close" id="btnCloseModal">&times;</button>
                 </div>
@@ -1569,6 +1210,7 @@
                 </div>
             </div>
         </div>
+        </div><!-- end content-area -->
         </div><!-- end mainApp -->
 
         <!-- Full-size photo viewer (click a thumbnail to see it big) -->
@@ -1718,10 +1360,34 @@
 
         function displayRandomGolfQuote() {
             const quote = golfQuotes[Math.floor(Math.random() * golfQuotes.length)];
+            // Populate hero overlay
+            const quoteEl = document.getElementById('heroQuoteText');
+            const authorEl = document.getElementById('heroQuoteAuthor');
+            if (quoteEl) quoteEl.textContent = '"' + quote.text + '"';
+            if (authorEl) authorEl.textContent = '— ' + quote.author;
+            // Legacy element (hidden via CSS)
             document.getElementById('golfQuote').innerHTML = 
                 '"' + quote.text + '"' +
                 '<div class="golf-quote-author">— ' + quote.author + '</div>';
         }
+
+        // Hero photo - loads from /images/ folder in the repo
+        // To add photos: save .jpg files as images/hero1.jpg through hero6.jpg in your GitHub repo
+        (function() {
+            var totalPhotos = 6;
+            var pick = Math.floor(Math.random() * totalPhotos) + 1;
+            var img = document.getElementById('heroImage');
+            if (!img) return;
+            
+            // Try self-hosted image first
+            img.src = 'images/hero' + pick + '.jpg';
+            
+            img.onerror = function() {
+                // If self-hosted fails, try a green gradient background
+                this.style.display = 'none';
+                document.getElementById('heroSection').style.background = 'linear-gradient(135deg, #1a472a 0%, #2d6a4f 50%, #40916c 100%)';
+            };
+        })();
 
         // ==========================================
         // AUTH SCREEN NAVIGATION
@@ -3418,10 +3084,32 @@
         // ==========================================
         
         // When "Wish List" button is clicked
+        function showContent() {
+            document.getElementById('heroSection').style.display = 'none';
+            document.getElementById('contentArea').classList.add('active');
+        }
+        function showLanding() {
+            document.getElementById('heroSection').style.display = 'block';
+            document.getElementById('contentArea').classList.remove('active');
+            // Remove active from all nav buttons
+            document.getElementById('btnShowWishList').classList.remove('active');
+            document.getElementById('btnShowPlayedList').classList.remove('active');
+            document.getElementById('btnShowAdd').classList.remove('active');
+            // Hide all content panels
+            document.getElementById('wishListContainer').classList.remove('active');
+            document.getElementById('playedListContainer').classList.remove('active');
+            document.getElementById('addForm').style.display = 'none';
+            document.getElementById('wishListSortControls').style.display = 'none';
+            document.getElementById('playedListSortControls').style.display = 'none';
+        }
+
+        document.getElementById('btnBackToHome').addEventListener('click', showLanding);
+
         document.getElementById('btnShowWishList').addEventListener('click', function() {
+            showContent();
             document.getElementById('wishListContainer').classList.add('active');
             document.getElementById('playedListContainer').classList.remove('active');
-            document.getElementById('addForm').classList.remove('active');
+            document.getElementById('addForm').style.display = 'none';
             if (wishlistCourses.length > 0) document.getElementById('wishListSortControls').style.display = 'flex';
             document.getElementById('playedListSortControls').style.display = 'none';
             
@@ -3432,9 +3120,10 @@
 
         // When "Played" button is clicked
         document.getElementById('btnShowPlayedList').addEventListener('click', function() {
+            showContent();
             document.getElementById('playedListContainer').classList.add('active');
             document.getElementById('wishListContainer').classList.remove('active');
-            document.getElementById('addForm').classList.remove('active');
+            document.getElementById('addForm').style.display = 'none';
             if (playedCourses.length > 0) document.getElementById('playedListSortControls').style.display = 'flex';
             document.getElementById('wishListSortControls').style.display = 'none';
             
@@ -3445,7 +3134,8 @@
 
         // When "Add" button is clicked
         document.getElementById('btnShowAdd').addEventListener('click', function() {
-            document.getElementById('addForm').classList.add('active');
+            showContent();
+            document.getElementById('addForm').style.display = 'block';
             document.getElementById('wishListContainer').classList.remove('active');
             document.getElementById('playedListContainer').classList.remove('active');
             document.getElementById('wishListSortControls').style.display = 'none';
@@ -3464,7 +3154,7 @@
             document.getElementById('btnSubmitCourse').textContent = 'Add Course';
             document.getElementById('btnDeleteFromForm').style.display = 'none';
             
-            document.getElementById('btnShowWishList').click();
+            showLanding();
             document.getElementById('courseForm').reset();
             playersArray = [];
             renderPlayersList();
@@ -3922,8 +3612,8 @@
                 opt.classList.remove('selected');
             });
             
-            // Reset to wishlist view
-            document.getElementById('btnShowWishList').click();
+            // Reset to landing view
+            showLanding();
             showWishlistFields();
         });
 
@@ -4632,7 +4322,7 @@
                     ${course.website ? `
                         <div class="detail-section">
                             <div class="detail-label">Website</div>
-                            <div class="detail-value"><a href="${course.website}" target="_blank" rel="noopener noreferrer" style="color: #2a5298; text-decoration: underline;">${course.website}</a></div>
+                            <div class="detail-value"><a href="${course.website}" target="_blank" rel="noopener noreferrer" style="color: var(--green-mid, #2d6a4f); text-decoration: underline;">${course.website}</a></div>
                         </div>
                     ` : ''}
                     
@@ -4719,12 +4409,12 @@
                 
                 return `
                     <div class="detail-section" style="border-bottom: ${index < rounds.length - 1 ? '1px solid #e0e0e0' : 'none'}; padding-bottom: ${index < rounds.length - 1 ? '20px' : '0'}; margin-bottom: ${index < rounds.length - 1 ? '20px' : '0'};">
-                        <div style="font-weight: 700; color: #1e3c72; margin-bottom: 12px;">Round ${index + 1} - ${new Date(round.datePlayed).toLocaleDateString()}</div>
+                        <div style="font-weight: 700; color: var(--green-deep, #1a472a); margin-bottom: 12px;">Round ${index + 1} - ${new Date(round.datePlayed).toLocaleDateString()}</div>
                         
                         ${round.website ? `
                             <div style="margin-bottom: 8px;">
                                 <span style="font-weight: 600; color: #666; font-size: 13px;">WEBSITE: </span>
-                                <a href="${round.website}" target="_blank" rel="noopener noreferrer" style="color: #2a5298; text-decoration: underline;">${round.website}</a>
+                                <a href="${round.website}" target="_blank" rel="noopener noreferrer" style="color: var(--green-mid, #2d6a4f); text-decoration: underline;">${round.website}</a>
                             </div>
                         ` : ''}
                         
