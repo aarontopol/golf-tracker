@@ -1237,15 +1237,18 @@
         // Already done: Realtime Database + security rules
         // Still needed: Enable Email/Password auth (see instructions below)
         // ==========================================
+        // Shared account with Cellar & Cask and The Daily — one email/password
+        // sign-in across all apps (SSO consolidation). Golf data lives in this
+        // project's Realtime Database; the old golf-tracker-abbf1 project is
+        // frozen as a backup.
         const firebaseConfig = {
-            apiKey: "AIzaSyDifFA4lfZyuq83mZLisCPQLO2iISzrb8I",
-            authDomain: "golf-tracker-abbf1.firebaseapp.com",
-            databaseURL: "https://golf-tracker-abbf1-default-rtdb.firebaseio.com",
-            projectId: "golf-tracker-abbf1",
-            storageBucket: "golf-tracker-abbf1.firebasestorage.app",
-            messagingSenderId: "347480815517",
-            appId: "1:347480815517:web:821e0055e59fe8f6cb6174",
-            measurementId: "G-M1Q2HGQWG2"
+            apiKey: "AIzaSyAhFHolBpyMkcIXhak2H6nAEA-5CtGt2Xw",
+            authDomain: "cellar-and-cask.firebaseapp.com",
+            databaseURL: "https://cellar-and-cask-default-rtdb.firebaseio.com",
+            projectId: "cellar-and-cask",
+            storageBucket: "cellar-and-cask.firebasestorage.app",
+            messagingSenderId: "62677452587",
+            appId: "1:62677452587:web:23026f32a8877002af276e"
         };
         
         // Initialize Firebase
