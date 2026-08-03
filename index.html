@@ -210,6 +210,149 @@
         .back-to-home:hover { color: var(--green-mid); }
 
         /* ==========================================
+           SCORES VIEW - GHIN card, stats, score history
+           ========================================== */
+        .ghin-card {
+            background: var(--green-deep);
+            color: white;
+            border-radius: var(--radius);
+            padding: 20px 22px;
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+            box-shadow: var(--shadow-md);
+        }
+        .ghin-card-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .ghin-card-sub {
+            font-size: 13px;
+            color: rgba(255,255,255,0.75);
+        }
+        .ghin-card-num {
+            color: var(--gold-light);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+        .ghin-card-actions { display: flex; gap: 8px; align-items: center; }
+        .ghin-open-btn {
+            display: inline-block;
+            background: var(--gold);
+            color: #1a1a1a;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 9px 18px;
+            border-radius: 20px;
+            text-decoration: none;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .ghin-open-btn:hover { background: var(--gold-light); }
+        .ghin-edit-btn {
+            background: none;
+            border: 1px solid rgba(255,255,255,0.35);
+            color: rgba(255,255,255,0.85);
+            font-size: 12px;
+            padding: 6px 12px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: inherit;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .ghin-edit-btn:hover { border-color: white; color: white; }
+        .ghin-num-input {
+            border: 1px solid rgba(255,255,255,0.35);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border-radius: 6px;
+            padding: 7px 10px;
+            font-size: 14px;
+            font-family: inherit;
+            width: 130px;
+        }
+        .ghin-num-input::placeholder { color: rgba(255,255,255,0.5); }
+        .ghin-num-input:focus { outline: none; border-color: var(--gold); }
+        .scores-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .scores-stat {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 14px 10px;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+        }
+        .scores-stat-value {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--green-deep);
+        }
+        .scores-stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .score-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 13px 18px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+        .score-row:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--green-light);
+            transform: translateY(-1px);
+        }
+        .score-row-course {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--green-deep);
+            line-height: 1.3;
+        }
+        .score-row-meta {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+        .score-row-score {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--green-deep);
+            min-width: 44px;
+            text-align: right;
+        }
+        .score-row-score.no-score {
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--text-muted);
+            font-family: 'Source Sans 3', sans-serif;
+        }
+
+        /* ==========================================
            CARDS & FORMS - Clean white panels
            ========================================== */
         .card {
@@ -932,6 +1075,7 @@
         <div class="view-toggle">
             <button id="btnShowWishList">Wish List</button>
             <button id="btnShowPlayedList">Played</button>
+            <button id="btnShowScores">Scores</button>
             <button id="btnShowAdd">Add</button>
         </div>
 
@@ -1181,6 +1325,44 @@
         </div>
 
         <!-- ============================================
+             SCORES VIEW
+             GHIN link card + score history across all rounds
+             ============================================ -->
+        <div id="scoresContainer" class="course-list">
+            <!-- GHIN card: saved GHIN number + link out to ghin.com -->
+            <div class="ghin-card">
+                <div>
+                    <div class="ghin-card-title">GHIN Handicap</div>
+                    <div class="ghin-card-sub" id="ghinCardSub">Link your GHIN number to keep it handy</div>
+                </div>
+                <div class="ghin-card-actions" id="ghinCardActions">
+                    <button class="ghin-edit-btn" id="btnEditGhin">Add GHIN #</button>
+                    <a class="ghin-open-btn" href="https://www.ghin.com/login" target="_blank" rel="noopener noreferrer">Open GHIN ↗</a>
+                </div>
+            </div>
+
+            <!-- Quick stats across all logged rounds -->
+            <div class="scores-stats" id="scoresStats" style="display:none;">
+                <div class="scores-stat">
+                    <div class="scores-stat-value" id="statRounds">0</div>
+                    <div class="scores-stat-label">Rounds</div>
+                </div>
+                <div class="scores-stat">
+                    <div class="scores-stat-value" id="statBest">–</div>
+                    <div class="scores-stat-label">Best 18</div>
+                </div>
+                <div class="scores-stat">
+                    <div class="scores-stat-value" id="statAvg">–</div>
+                    <div class="scores-stat-label">Avg (last 5)</div>
+                </div>
+            </div>
+
+            <!-- Every round, newest first -->
+            <div id="scoresList">
+            </div>
+        </div>
+
+        <!-- ============================================
              COURSE DETAIL MODAL (POPUP)
              Hidden popup that shows when you click on a course
              Displays all details and has a delete button
@@ -1305,8 +1487,11 @@
                 wishlistCourses = [];
                 playedCourses = [];
                 savedPlayers = [];
+                ghinNumber = '';
                 renderWishList();
                 renderPlayedList();
+                renderScores();
+                renderGhinCard();
                 
                 // Detach Firebase listeners
                 firebaseListeners.forEach(function(ref) { ref.off(); });
@@ -1510,6 +1695,7 @@
         // ==========================================
         let wishlistCourses = [];  // Courses you want to play
         let playedCourses = [];    // Courses you've played (can have duplicates)
+        let ghinNumber = '';       // The user's GHIN number (synced to Firebase settings)
         let savedPlayers = [];     // Directory of people you've played with (synced to cloud)
         let currentCourseId = null;  // Keeps track of which course popup is open
         let currentListType = null;  // Tracks whether we're viewing 'wishlist' or 'played'
@@ -1556,8 +1742,17 @@
                     if (c.website) c.website = sanitizeUrl(c.website);
                 });
                 renderPlayedList();
+                renderScores();
             });
             firebaseListeners.push(playedRef);
+
+            // Load saved GHIN number
+            var ghinRef = userRef.child('settings/ghinNumber');
+            ghinRef.on('value', function(snapshot) {
+                ghinNumber = snapshot.val() || '';
+                renderGhinCard();
+            });
+            firebaseListeners.push(ghinRef);
             
             // Load saved players directory
             var playersRef = userRef.child('savedPlayers');
@@ -3097,10 +3292,12 @@
             // Remove active from all nav buttons
             document.getElementById('btnShowWishList').classList.remove('active');
             document.getElementById('btnShowPlayedList').classList.remove('active');
+            document.getElementById('btnShowScores').classList.remove('active');
             document.getElementById('btnShowAdd').classList.remove('active');
             // Hide all content panels
             document.getElementById('wishListContainer').classList.remove('active');
             document.getElementById('playedListContainer').classList.remove('active');
+            document.getElementById('scoresContainer').classList.remove('active');
             document.getElementById('addForm').style.display = 'none';
             document.getElementById('wishListSortControls').style.display = 'none';
             document.getElementById('playedListSortControls').style.display = 'none';
@@ -3112,12 +3309,14 @@
             showContent();
             document.getElementById('wishListContainer').classList.add('active');
             document.getElementById('playedListContainer').classList.remove('active');
+            document.getElementById('scoresContainer').classList.remove('active');
             document.getElementById('addForm').style.display = 'none';
             if (wishlistCourses.length > 0) document.getElementById('wishListSortControls').style.display = 'flex';
             document.getElementById('playedListSortControls').style.display = 'none';
-            
+
             this.classList.add('active');
             document.getElementById('btnShowPlayedList').classList.remove('active');
+            document.getElementById('btnShowScores').classList.remove('active');
             document.getElementById('btnShowAdd').classList.remove('active');
         });
 
@@ -3126,12 +3325,31 @@
             showContent();
             document.getElementById('playedListContainer').classList.add('active');
             document.getElementById('wishListContainer').classList.remove('active');
+            document.getElementById('scoresContainer').classList.remove('active');
             document.getElementById('addForm').style.display = 'none';
             if (playedCourses.length > 0) document.getElementById('playedListSortControls').style.display = 'flex';
             document.getElementById('wishListSortControls').style.display = 'none';
-            
+
             this.classList.add('active');
             document.getElementById('btnShowWishList').classList.remove('active');
+            document.getElementById('btnShowScores').classList.remove('active');
+            document.getElementById('btnShowAdd').classList.remove('active');
+        });
+
+        // When "Scores" button is clicked
+        document.getElementById('btnShowScores').addEventListener('click', function() {
+            showContent();
+            renderScores();
+            document.getElementById('scoresContainer').classList.add('active');
+            document.getElementById('wishListContainer').classList.remove('active');
+            document.getElementById('playedListContainer').classList.remove('active');
+            document.getElementById('addForm').style.display = 'none';
+            document.getElementById('wishListSortControls').style.display = 'none';
+            document.getElementById('playedListSortControls').style.display = 'none';
+
+            this.classList.add('active');
+            document.getElementById('btnShowWishList').classList.remove('active');
+            document.getElementById('btnShowPlayedList').classList.remove('active');
             document.getElementById('btnShowAdd').classList.remove('active');
         });
 
@@ -3141,12 +3359,14 @@
             document.getElementById('addForm').style.display = 'block';
             document.getElementById('wishListContainer').classList.remove('active');
             document.getElementById('playedListContainer').classList.remove('active');
+            document.getElementById('scoresContainer').classList.remove('active');
             document.getElementById('wishListSortControls').style.display = 'none';
             document.getElementById('playedListSortControls').style.display = 'none';
-            
+
             this.classList.add('active');
             document.getElementById('btnShowWishList').classList.remove('active');
             document.getElementById('btnShowPlayedList').classList.remove('active');
+            document.getElementById('btnShowScores').classList.remove('active');
         });
 
         // When "Cancel" button is clicked on the form
@@ -3576,7 +3796,8 @@
                     playedCourses.push(newRound);
                 }
                 renderPlayedList();
-                
+                renderScores();
+
                 // Check if this was moved from wishlist
                 const wishlistId = sessionStorage.getItem('moveFromWishlist');
                 if (wishlistId) {
@@ -4394,6 +4615,104 @@
                 document.getElementById('btnMarkAsPlayed').style.display = 'block';
                 document.getElementById('courseModal').classList.add('active');
             }
+        }
+
+        // ==========================================
+        // SCORES VIEW
+        // GHIN card + every round's score, newest first
+        // ==========================================
+
+        // Format "2026-05-14" without the timezone shifting it back a day
+        function formatRoundDate(dateStr) {
+            if (!dateStr) return '';
+            const d = /^\d{4}-\d{2}-\d{2}$/.test(dateStr) ? new Date(dateStr + 'T12:00:00') : new Date(dateStr);
+            if (isNaN(d)) return dateStr;
+            return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+        }
+
+        // Pull a usable number out of the free-text score field ("85", "92 (windy)")
+        function parseScore(score) {
+            const n = parseInt(String(score || '').replace(/[^0-9]/g, ''), 10);
+            return (n >= 18 && n <= 200) ? n : null;
+        }
+
+        function renderGhinCard() {
+            const sub = document.getElementById('ghinCardSub');
+            const btn = document.getElementById('btnEditGhin');
+            if (ghinNumber) {
+                sub.innerHTML = 'GHIN # <span class="ghin-card-num">' + escapeHtml(ghinNumber) + '</span> — scores &amp; handicap on ghin.com';
+                btn.textContent = 'Edit';
+            } else {
+                sub.textContent = 'Add your GHIN number, then open GHIN for your official scores';
+                btn.textContent = 'Add GHIN #';
+            }
+        }
+
+        document.getElementById('btnEditGhin').addEventListener('click', function() {
+            const entered = prompt('Enter your GHIN number:', ghinNumber || '');
+            if (entered === null) return; // cancelled
+            ghinNumber = entered.trim();
+            renderGhinCard();
+            if (useCloudSync && currentUserId && database) {
+                database.ref('users/' + currentUserId + '/settings/ghinNumber').set(ghinNumber)
+                    .catch(error => console.error('Error saving GHIN number to cloud:', error));
+            }
+        });
+
+        function renderScores() {
+            const listEl = document.getElementById('scoresList');
+            const statsEl = document.getElementById('scoresStats');
+
+            if (playedCourses.length === 0) {
+                statsEl.style.display = 'none';
+                listEl.innerHTML = `
+                    <div class="card empty-state">
+                        <div class="empty-state-icon">🏌️</div>
+                        <p>No scores yet!</p>
+                        <p style="margin-top: 8px; font-size: 14px;">Log a round from the "Add" tab and your scores will show up here.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Newest round first
+            const rounds = playedCourses.slice().sort((a, b) => new Date(b.datePlayed || 0) - new Date(a.datePlayed || 0));
+
+            // Stats use numeric 18-hole scores only
+            const scored18 = rounds.filter(r => parseScore(r.score) !== null && (r.holes || '18') === '18');
+            document.getElementById('statRounds').textContent = rounds.length;
+            document.getElementById('statBest').textContent = scored18.length
+                ? Math.min.apply(null, scored18.map(r => parseScore(r.score)))
+                : '–';
+            const last5 = scored18.slice(0, 5).map(r => parseScore(r.score));
+            document.getElementById('statAvg').textContent = last5.length
+                ? Math.round(last5.reduce((s, n) => s + n, 0) / last5.length)
+                : '–';
+            statsEl.style.display = 'grid';
+
+            listEl.innerHTML = rounds.map(round => {
+                const meta = [formatRoundDate(round.datePlayed), (round.holes || '18') + ' holes']
+                    .filter(Boolean).join(' · ');
+                const scoreHtml = round.score
+                    ? `<div class="score-row-score">${escapeHtml(String(round.score))}</div>`
+                    : '<div class="score-row-score no-score">no score</div>';
+                return `
+                    <div class="score-row" data-course-name="${escapeHtml(round.name)}">
+                        <div style="min-width: 0;">
+                            <div class="score-row-course">${escapeHtml(round.name)}</div>
+                            <div class="score-row-meta">${meta}</div>
+                        </div>
+                        ${scoreHtml}
+                    </div>
+                `;
+            }).join('');
+
+            // Clicking a score opens that course's round history
+            document.querySelectorAll('#scoresList .score-row').forEach(row => {
+                row.addEventListener('click', function() {
+                    showPlayedCourseRounds(this.dataset.courseName);
+                });
+            });
         }
 
         // ==========================================
