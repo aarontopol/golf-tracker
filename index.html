@@ -353,6 +353,53 @@
         }
 
         /* ==========================================
+           SCORES - hole-by-hole GHIN scorecard ("By the Hole").
+           Same data and layout as The Daily's My Rounds, in this
+           app's light palette.
+           ========================================== */
+        .ghin-sc-title {
+            font-family: 'Playfair Display', Georgia, serif;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--green-deep);
+            margin: 22px 0 10px;
+        }
+        .ghin-sc-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+        .ghin-sc-head select {
+            flex: 1; min-width: 200px; max-width: 100%;
+            padding: 10px 12px; font-size: 15px; color: var(--green-deep);
+            background: var(--white); border: 1px solid var(--border); border-radius: var(--radius);
+        }
+        .ghin-sc-status { font-size: 12px; color: var(--text-muted); }
+        .ghin-sc-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 10px; margin-bottom: 14px; }
+        .ghin-sc-wrap { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); overflow-x: auto; }
+        .ghin-sc { border-collapse: collapse; width: 100%; font-size: 13px; font-variant-numeric: tabular-nums; }
+        .ghin-sc th {
+            font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+            color: var(--text-muted); font-weight: 600; padding: 7px 4px; text-align: center; white-space: nowrap;
+        }
+        .ghin-sc td { padding: 5px 4px; text-align: center; border-top: 1px solid var(--border); white-space: nowrap; }
+        .ghin-sc .rowhead { position: sticky; left: 0; background: var(--white); text-align: left; padding: 5px 10px; color: var(--text-muted); font-size: 12px; z-index: 1; }
+        .ghin-sc .parrow th { padding: 2px 4px; opacity: 0.7; }
+        .ghin-sc .subcol { background: var(--green-pale); }
+        /* Scorecard shapes: circles under par, squares over (shape + color) */
+        .gm { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; }
+        .gm-eagle { color: #8a6d1f; box-shadow: 0 0 0 1px var(--gold), 0 0 0 3px var(--white), 0 0 0 4px var(--gold); }
+        .gm-birdie { color: var(--green-mid); box-shadow: 0 0 0 1px var(--green-mid); }
+        .gm-bogey { border-radius: 4px; color: #a2622d; box-shadow: 0 0 0 1px #c98a3d; }
+        .gm-double { border-radius: 4px; color: #a33d3d; box-shadow: 0 0 0 1px #a33d3d, 0 0 0 3px var(--white), 0 0 0 4px #a33d3d; }
+        .ghin-sc .avgrow td { border-top: 2px solid var(--border); font-weight: 600; }
+        .ghin-sc .avgrow .under { color: var(--green-mid); }
+        .ghin-sc .avgrow .over { color: #a2622d; }
+        .ghin-sc .avgrow .way-over { color: #a33d3d; }
+        .ghin-hcp { color: var(--text-muted); font-size: 10px; }
+        .ghin-wxc { color: var(--text-muted); font-size: 11px; }
+        .ghin-sc-legend { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-top: 10px; font-size: 11px; color: var(--text-muted); }
+        .ghin-sc-legend .gm { width: 18px; height: 18px; }
+        .ghin-sc-legend .spacer { margin-left: auto; }
+        .ghin-sc-legend button { background: none; border: none; color: var(--green-mid); cursor: pointer; font-size: 11px; text-decoration: underline; padding: 0; }
+
+        /* ==========================================
            CARDS & FORMS - Clean white panels
            ========================================== */
         .card {
@@ -1355,6 +1402,39 @@
                     <div class="scores-stat-value" id="statAvg">–</div>
                     <div class="scores-stat-label">Avg (last 5)</div>
                 </div>
+            </div>
+
+            <!-- ============================================
+                 BY THE HOLE - every round posted to GHIN, hole by hole,
+                 with per-hole averages, handicap and weather. Rounds come
+                 through The Daily's GHIN proxy (this site is static);
+                 credentials sync via the shared account, so this usually
+                 connects with no typing.
+                 ============================================ -->
+            <h3 class="ghin-sc-title" id="ghinScTitle" style="display:none;">By the Hole</h3>
+            <div id="ghinScSection" style="display:none;">
+                <div class="ghin-sc-head">
+                    <select id="ghinScCourse"></select>
+                    <span class="ghin-sc-status" id="ghinScStatus"></span>
+                </div>
+                <div class="ghin-sc-tiles" id="ghinScTiles"></div>
+                <div class="ghin-sc-wrap"><table class="ghin-sc" id="ghinScTable"></table></div>
+                <div class="ghin-sc-legend" id="ghinScLegend"></div>
+            </div>
+            <div id="ghinScConnect" class="card" style="display:none;">
+                <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 12px;">
+                    Connect your GHIN account to see every posted round hole by hole, with
+                    averages, handicap and the weather you played in. Your password goes
+                    straight to GHIN and is stored only encrypted on your account.
+                </p>
+                <div class="form-group">
+                    <input type="text" id="ghinScUser" placeholder="GHIN number or email" autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="ghinScPass" placeholder="GHIN password" autocomplete="current-password">
+                </div>
+                <button class="btn btn-primary" id="ghinScConnectBtn">Pull my rounds</button>
+                <div id="ghinScError" style="color: #a33d3d; font-size: 13px; margin-top: 8px;"></div>
             </div>
 
             <!-- Every round, newest first -->
@@ -4660,6 +4740,7 @@
         });
 
         function renderScores() {
+            ghinScOpen();   // "By the Hole" GHIN scorecard rides the Scores view
             const listEl = document.getElementById('scoresList');
             const statsEl = document.getElementById('scoresStats');
 
@@ -4714,6 +4795,401 @@
                 });
             });
         }
+
+        // ==========================================
+        // BY THE HOLE - GHIN scorecard (same data as The Daily's My Rounds).
+        // This site is static (GitHub Pages), so rounds come through The
+        // Daily's GHIN proxy, and GHIN credentials sync via the shared
+        // account's encrypted store — normally no typing needed here.
+        // ==========================================
+        const GHIN_PROXY_URL = 'https://the-daily-topol.vercel.app/api/ghin-rounds';
+        const GHIN_CRED_URL = 'https://cellar-and-cask.vercel.app/api/ghin-credentials';
+        const GT_GHIN_DATA = 'gt_ghin_data';
+        const GT_GHIN_WX = 'gt_ghin_wx';
+        let gtGhin = { data: null, course: '', wx: {}, tried: false };
+
+        function ghinReadLS(key) {
+            try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch (e) { return null; }
+        }
+        function ghinWriteLS(key, val) {
+            try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+        }
+
+        // WHS estimated index: best-N-of-last-20 differentials (no PCC or
+        // exceptional-score adjustments — hence "estimated")
+        const GHIN_WHS = [[20,8,0],[19,7,0],[17,6,0],[15,5,0],[12,4,0],[9,3,0],[7,2,0],[6,2,-1],[5,1,0],[4,1,-1],[3,1,-2]];
+        function ghinEstIndex(diffs) {
+            const recent = diffs.slice(0, 20);
+            const row = GHIN_WHS.find(r => recent.length >= r[0]);
+            if (!row) return null;
+            const best = recent.slice().sort((a, b) => a - b).slice(0, row[1]);
+            const avg = best.reduce((s, v) => s + v, 0) / best.length;
+            return Math.trunc((avg + row[2]) * 10) / 10;   // WHS truncates
+        }
+        function ghinCourseHcpCalc(index, slope, rating, par) {
+            return Math.round(index * (slope / 113) + (rating - par));
+        }
+
+        function ghinWxEmoji(code) {
+            if (code === 0) return '☀️';
+            if (code <= 2) return '🌤️';
+            if (code === 3) return '☁️';
+            if (code <= 48) return '🌫️';
+            if (code <= 67) return '🌧️';
+            if (code <= 77) return '🌨️';
+            if (code <= 82) return '🌧️';
+            if (code <= 86) return '🌨️';
+            return '⛈️';
+        }
+        // Open-Meteo history, one request per calendar year, cached forever
+        async function ghinLoadWx(loc, dates) {
+            const cache = ghinReadLS(GT_GHIN_WX) || {};
+            const prefix = loc.latitude.toFixed(3) + ',' + loc.longitude.toFixed(3);
+            const out = {};
+            const missing = {};
+            [...new Set(dates)].forEach(d => {
+                const hit = cache[prefix + ':' + d];
+                if (hit) out[d] = hit;
+                else (missing[d.slice(0, 4)] = missing[d.slice(0, 4)] || []).push(d);
+            });
+            await Promise.all(Object.values(missing).map(async yearDates => {
+                const sorted = yearDates.slice().sort();
+                const qs = new URLSearchParams({
+                    latitude: loc.latitude, longitude: loc.longitude,
+                    start_date: sorted[0], end_date: sorted[sorted.length - 1],
+                    daily: 'weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max',
+                    temperature_unit: 'fahrenheit', wind_speed_unit: 'mph', precipitation_unit: 'inch', timezone: 'auto',
+                });
+                try {
+                    const res = await fetch('https://archive-api.open-meteo.com/v1/archive?' + qs);
+                    if (!res.ok) return;
+                    const d = (await res.json()).daily;
+                    if (!d || !Array.isArray(d.time)) return;
+                    const wanted = new Set(yearDates);
+                    d.time.forEach((date, i) => {
+                        if (!wanted.has(date) || typeof d.temperature_2m_max[i] !== 'number') return;
+                        const wx = { code: d.weather_code[i], tmax: d.temperature_2m_max[i], tmin: d.temperature_2m_min[i], precip: d.precipitation_sum[i], wind: d.wind_speed_10m_max[i] };
+                        out[date] = wx;
+                        cache[prefix + ':' + date] = wx;
+                    });
+                } catch (e) {}
+            }));
+            ghinWriteLS(GT_GHIN_WX, cache);
+            return out;
+        }
+
+        function ghinFmtDate(iso) {
+            const parts = iso.split('-').map(Number);
+            const M = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+            return M[(parts[1] || 1) - 1] + ' ' + (parts[2] || 1) + " '" + String(parts[0]).slice(2);
+        }
+        function ghinMarkClass(score, par) {
+            const diff = score - par;
+            if (diff <= -2) return 'gm gm-eagle';
+            if (diff === -1) return 'gm gm-birdie';
+            if (diff === 0) return 'gm';
+            if (diff === 1) return 'gm gm-bogey';
+            return 'gm gm-double';
+        }
+        function ghinMarkTitle(score, par, putts) {
+            const diff = score - par;
+            const what = diff <= -2 ? 'Eagle or better' : diff === -1 ? 'Birdie' : diff === 0 ? 'Par' : diff === 1 ? 'Bogey' : '+' + diff;
+            return what + ' — par ' + par + (putts != null ? ', ' + putts + ' putts' : '');
+        }
+
+        function ghinScSetVisible(section, connect) {
+            document.getElementById('ghinScTitle').style.display = (section || connect) ? '' : 'none';
+            document.getElementById('ghinScSection').style.display = section ? '' : 'none';
+            document.getElementById('ghinScConnect').style.display = connect ? '' : 'none';
+        }
+
+        // Entry point — runs whenever the Scores view renders. Idempotent:
+        // shows cache instantly, then one silent account-synced refresh per visit.
+        function ghinScOpen() {
+            const user = firebase.auth().currentUser;
+            if (!user) { gtGhin = { data: null, course: '', wx: {}, tried: false }; ghinScSetVisible(false, false); return; }
+            if (!gtGhin.data) gtGhin.data = ghinReadLS(GT_GHIN_DATA);
+            if (gtGhin.data) { ghinScSetVisible(true, false); ghinScRender(); }
+            if (!gtGhin.tried) {
+                gtGhin.tried = true;
+                ghinScAutoFetch(user);
+            } else if (!gtGhin.data) {
+                ghinScSetVisible(false, true);
+            }
+        }
+
+        async function ghinScAutoFetch(user) {
+            const status = document.getElementById('ghinScStatus');
+            status.textContent = 'Syncing…';
+            try {
+                const token = await user.getIdToken();
+                const res = await fetch(GHIN_CRED_URL, { headers: { Authorization: 'Bearer ' + token } });
+                const d = await res.json().catch(() => null);
+                if (res.ok && d && d.connected && d.email_or_ghin && d.password) {
+                    await ghinScFetchRounds({ e: d.email_or_ghin, p: d.password }, true);
+                    return;
+                }
+            } catch (e) {}
+            status.textContent = '';
+            if (!gtGhin.data) ghinScSetVisible(false, true);
+        }
+
+        async function ghinScFetchRounds(creds, silent) {
+            const status = document.getElementById('ghinScStatus');
+            const err = document.getElementById('ghinScError');
+            const btn = document.getElementById('ghinScConnectBtn');
+            if (err) err.textContent = '';
+            if (!silent && btn) { btn.disabled = true; btn.textContent = 'Pulling your rounds…'; }
+            status.textContent = silent ? 'Refreshing…' : '';
+            try {
+                const res = await fetch(GHIN_PROXY_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email_or_ghin: creds.e, password: creds.p }),
+                });
+                const result = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    if (err) err.textContent = result.error || 'Could not load rounds from GHIN.';
+                    if (!gtGhin.data || res.status === 401) ghinScSetVisible(!!gtGhin.data, true);
+                    return null;
+                }
+                gtGhin.data = { golfer_id: result.golfer_id, rounds: result.rounds || [], courses: result.courses || [], fetched_at: new Date().toISOString() };
+                ghinWriteLS(GT_GHIN_DATA, gtGhin.data);
+                ghinScSetVisible(true, false);
+                ghinScRender();
+                return gtGhin.data;
+            } catch (e) {
+                if (err) err.textContent = 'Could not reach the server — check your connection.';
+                return null;
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = 'Pull my rounds'; }
+                status.textContent = '';
+            }
+        }
+
+        async function ghinScConnect() {
+            const e = (document.getElementById('ghinScUser').value || '').trim();
+            const p = document.getElementById('ghinScPass').value || '';
+            const err = document.getElementById('ghinScError');
+            if (!e || !p) { err.textContent = 'Enter your GHIN number (or email) and password.'; return; }
+            const ok = await ghinScFetchRounds({ e: e, p: p }, false);
+            if (ok) {
+                document.getElementById('ghinScPass').value = '';
+                // Save to the shared account so every app auto-connects
+                const user = firebase.auth().currentUser;
+                if (user) {
+                    try {
+                        const token = await user.getIdToken();
+                        await fetch(GHIN_CRED_URL, {
+                            method: 'POST',
+                            headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email_or_ghin: e, password: p }),
+                        });
+                    } catch (er) {}
+                }
+            }
+        }
+
+        async function ghinScDisconnect() {
+            localStorage.removeItem(GT_GHIN_DATA);
+            gtGhin = { data: null, course: '', wx: {}, tried: true };
+            ghinScSetVisible(false, true);
+            const user = firebase.auth().currentUser;
+            if (user) {
+                try {
+                    const token = await user.getIdToken();
+                    await fetch(GHIN_CRED_URL, { method: 'DELETE', headers: { Authorization: 'Bearer ' + token } });
+                } catch (e) {}
+            }
+        }
+
+        function ghinScRender() {
+            if (!gtGhin.data) return;
+            const rounds = gtGhin.data.rounds || [];
+
+            // Group by course, most-played first, newest round first within each
+            const byCourse = {};
+            rounds.forEach(r => { (byCourse[r.course_name] = byCourse[r.course_name] || []).push(r); });
+            Object.values(byCourse).forEach(list => list.sort((a, b) => b.played_at.localeCompare(a.played_at)));
+            const courseNames = Object.keys(byCourse).sort((a, b) => byCourse[b].length - byCourse[a].length);
+            if (!courseNames.includes(gtGhin.course)) gtGhin.course = courseNames[0] || '';
+
+            const sel = document.getElementById('ghinScCourse');
+            sel.innerHTML = courseNames.map(n =>
+                `<option value="${escapeHtml(n)}"${n === gtGhin.course ? ' selected' : ''}>${escapeHtml(n)} (${byCourse[n].length})</option>`).join('');
+
+            const courseRounds = byCourse[gtGhin.course] || [];
+
+            const holeSet = new Set();
+            courseRounds.forEach(r => (r.holes || []).forEach(h => holeSet.add(h.hole)));
+            const holeNums = [...holeSet].sort((a, b) => a - b);
+            const frontNums = holeNums.filter(n => n <= 9);
+            const backNums = holeNums.filter(n => n >= 10);
+            const showOutIn = frontNums.length > 0 && backNums.length > 0;
+
+            const pars = {};
+            courseRounds.forEach(r => (r.holes || []).forEach(h => { if (!(h.hole in pars)) pars[h.hole] = h.par; }));
+            const coursePar = holeNums.reduce((s, n) => s + (pars[n] || 0), 0);
+            const frontPar = frontNums.reduce((s, n) => s + (pars[n] || 0), 0);
+            const backPar = backNums.reduce((s, n) => s + (pars[n] || 0), 0);
+
+            const avgs = {};
+            holeNums.forEach(n => {
+                const scores = [];
+                courseRounds.forEach(r => (r.holes || []).forEach(h => { if (h.hole === n) scores.push(h.score); }));
+                if (scores.length) avgs[n] = scores.reduce((s, v) => s + v, 0) / scores.length;
+            });
+
+            const roundTotal = r => (r.holes && r.holes.length) ? r.holes.reduce((s, h) => s + h.score, 0) : r.adjusted_gross_score;
+            const sideSum = (r, side) => {
+                const hs = (r.holes || []).filter(h => side === 'out' ? h.hole <= 9 : h.hole >= 10);
+                return hs.length ? hs.reduce((s, h) => s + h.score, 0) : null;
+            };
+
+            // Tiles: course stats + estimated index / course handicap / target
+            const statHoles = courseRounds.some(r => r.number_of_holes === 18) ? 18 : 9;
+            const totals = courseRounds.filter(r => r.number_of_holes === statHoles).map(roundTotal).filter(t => t != null);
+            const index = ghinEstIndex(rounds.filter(r => r.number_of_holes === 18 && r.differential != null).map(r => r.differential));
+            const ratingRound = courseRounds.find(r => r.number_of_holes === statHoles && r.course_rating != null && r.slope_rating != null);
+            const courseHcp = (index != null && ratingRound && coursePar > 0)
+                ? ghinCourseHcpCalc(statHoles === 9 ? index / 2 : index, ratingRound.slope_rating, ratingRound.course_rating, coursePar) : null;
+            const fmtHcp = h => h < 0 ? '+' + (-h) : String(h);
+
+            // Per-round course handicap for the Out/In/Tot "(n)" notes, from
+            // that round's tees; strokes split by hole stroke index when known
+            const roundHcp = r => {
+                if (index == null || r.course_rating == null || r.slope_rating == null) return null;
+                const rpar = (r.holes && r.holes.length)
+                    ? r.holes.reduce((s, h) => s + h.par, 0)
+                    : (r.number_of_holes === 18 ? coursePar : 0);
+                if (!rpar) return null;
+                const eff = r.number_of_holes === 9 ? index / 2 : index;
+                const H = ghinCourseHcpCalc(eff, r.slope_rating, r.course_rating, rpar);
+                const holes = r.holes || [];
+                let front;
+                if (r.number_of_holes === 9) {
+                    front = holes.some(h => h.hole <= 9) ? H : 0;
+                } else if (H >= 0 && holes.length === 18 && holes.every(h => h.si != null)) {
+                    const base = Math.floor(H / 18), extra = H % 18;
+                    front = holes.filter(h => h.hole <= 9).reduce((s, h) => s + base + (h.si <= extra ? 1 : 0), 0);
+                } else {
+                    front = Math.round(H / 2);
+                }
+                return { H: H, front: front, back: H - front };
+            };
+            const hasNet = index != null;
+
+            const tiles = [
+                ['Rounds', courseRounds.length, ''],
+                ['Par', coursePar || '–', ''],
+                ['Best', totals.length ? Math.min.apply(null, totals) : '–', ''],
+                ['Average', totals.length ? (totals.reduce((s, v) => s + v, 0) / totals.length).toFixed(1) : '–', ''],
+                ['Est. Index', index != null ? (index < 0 ? '+' + (-index) : index.toFixed(1)) : '–', 'Best 8 of last 20 18-hole differentials (WHS), without PCC or exceptional-score adjustments'],
+                ['Course Hcp', courseHcp != null ? fmtHcp(courseHcp) : '–', ratingRound ? `Index × (${ratingRound.slope_rating} slope ÷ 113) + (${ratingRound.course_rating} rating − ${coursePar} par)` : ''],
+                ['Target', courseHcp != null ? coursePar + courseHcp : '–', 'Your personal par here: course par plus your course handicap'],
+            ];
+            document.getElementById('ghinScTiles').innerHTML = tiles.map(t =>
+                `<div class="scores-stat"${t[2] ? ` title="${escapeHtml(t[2])}"` : ''}><div class="scores-stat-value">${escapeHtml(String(t[1]))}</div><div class="scores-stat-label">${escapeHtml(t[0])}</div></div>`).join('');
+
+            // Weather for this course's round dates
+            const withId = courseRounds.find(r => r.course_id != null);
+            const loc = (gtGhin.data.courses || []).find(c => withId && c.course_id === withId.course_id);
+            const hasWx = courseRounds.some(r => gtGhin.wx[r.played_at] != null);
+
+            // Scorecard, paper-card order: holes 1-9 · OUT · 10-18 · IN · TOT
+            let html = '<thead><tr><th class="rowhead">Date</th>';
+            if (hasWx) html += '<th>Wx</th>';
+            frontNums.forEach(n => { html += `<th>${n}</th>`; });
+            if (showOutIn) html += '<th class="subcol">Out</th>';
+            backNums.forEach(n => { html += `<th>${n}</th>`; });
+            if (showOutIn) html += '<th class="subcol">In</th>';
+            html += '<th class="subcol">Tot</th></tr><tr class="parrow"><th class="rowhead">Par</th>';
+            if (hasWx) html += '<th></th>';
+            frontNums.forEach(n => { html += `<th>${pars[n] || '·'}</th>`; });
+            if (showOutIn) html += `<th class="subcol">${frontPar || '·'}</th>`;
+            backNums.forEach(n => { html += `<th>${pars[n] || '·'}</th>`; });
+            if (showOutIn) html += `<th class="subcol">${backPar || '·'}</th>`;
+            html += `<th class="subcol">${coursePar || '·'}</th></tr></thead><tbody>`;
+
+            courseRounds.forEach(r => {
+                const byHole = {};
+                (r.holes || []).forEach(h => { byHole[h.hole] = h; });
+                const total = roundTotal(r);
+                const rowTitle = [r.tee_name, r.score_type, r.number_of_holes === 9 ? '9-hole round' : null,
+                    r.differential != null ? r.differential.toFixed(1) + ' differential' : null].filter(Boolean).join(' · ');
+                html += `<tr><td class="rowhead" title="${escapeHtml(rowTitle)}">${ghinFmtDate(r.played_at)}${r.number_of_holes === 9 ? '<sup>9</sup>' : ''}</td>`;
+                if (hasWx) {
+                    const wx = gtGhin.wx[r.played_at];
+                    html += wx
+                        ? `<td class="ghin-wxc" title="${escapeHtml('High ' + Math.round(wx.tmax) + '° / low ' + Math.round(wx.tmin) + '° · wind up to ' + Math.round(wx.wind) + ' mph · ' + (wx.precip > 0 ? wx.precip.toFixed(2) + '&quot; precip' : 'no precip'))}">${ghinWxEmoji(wx.code)} ${Math.round(wx.tmax)}°</td>`
+                        : '<td class="ghin-wxc">·</td>';
+                }
+                const nh = hasNet ? roundHcp(r) : null;
+                const hcpNote = (strokes, what) => nh != null
+                    ? ` <span class="ghin-hcp" title="${escapeHtml(what + ' course handicap: ' + strokes + ' stroke' + (Math.abs(strokes) === 1 ? '' : 's'))}">(${strokes})</span>`
+                    : '';
+                const holeCell = n => {
+                    const h = byHole[n];
+                    return h
+                        ? `<td title="${escapeHtml(ghinMarkTitle(h.score, h.par, h.putts))}"><span class="${ghinMarkClass(h.score, h.par)}">${h.score}</span></td>`
+                        : '<td>·</td>';
+                };
+                frontNums.forEach(n => { html += holeCell(n); });
+                if (showOutIn) {
+                    const o = sideSum(r, 'out');
+                    html += `<td class="subcol">${o != null ? o + hcpNote(nh ? nh.front : 0, 'Front-nine') : '·'}</td>`;
+                }
+                backNums.forEach(n => { html += holeCell(n); });
+                if (showOutIn) {
+                    const b = sideSum(r, 'in');
+                    html += `<td class="subcol">${b != null ? b + hcpNote(nh ? nh.back : 0, 'Back-nine') : '·'}</td>`;
+                }
+                html += `<td class="subcol"${(!r.holes || !r.holes.length) && total != null ? ' title="Posted total-only (adjusted gross score)"' : ''}><strong>${total != null ? total : '·'}${(!r.holes || !r.holes.length) && total != null ? '*' : ''}</strong>${total != null ? hcpNote(nh ? nh.H : 0, 'Round') : ''}</td></tr>`;
+            });
+
+            // Per-hole averages
+            html += '<tr class="avgrow"><td class="rowhead">Avg</td>';
+            if (hasWx) html += '<td></td>';
+            const avgCell = n => {
+                const a = avgs[n], p = pars[n];
+                const over = (a != null && p != null) ? a - p : null;
+                const cls = over == null ? '' : over <= 0 ? 'under' : over <= 1 ? 'over' : 'way-over';
+                return `<td class="${cls}"${over != null ? ` title="${escapeHtml((over >= 0 ? '+' : '') + over.toFixed(2) + ' vs par')}"` : ''}>${a != null ? a.toFixed(1) : '·'}</td>`;
+            };
+            const avgSum = nums => nums.reduce((s, n) => s + (avgs[n] || 0), 0);
+            frontNums.forEach(n => { html += avgCell(n); });
+            if (showOutIn) html += `<td class="subcol">${avgSum(frontNums) ? avgSum(frontNums).toFixed(1) : '·'}</td>`;
+            backNums.forEach(n => { html += avgCell(n); });
+            if (showOutIn) html += `<td class="subcol">${avgSum(backNums) ? avgSum(backNums).toFixed(1) : '·'}</td>`;
+            html += `<td class="subcol"><strong>${holeNums.length ? avgSum(holeNums).toFixed(1) : '·'}</strong></td></tr></tbody>`;
+            document.getElementById('ghinScTable').innerHTML = html;
+
+            const legendMarks = [['gm-eagle','Eagle+'],['gm-birdie','Birdie'],['','Par'],['gm-bogey','Bogey'],['gm-double','Double+']];
+            document.getElementById('ghinScLegend').innerHTML =
+                legendMarks.map(m => `<span><span class="gm ${m[0]}">·</span> ${m[1]}</span>`).join('') +
+                `<span class="spacer">* total-only post · GHIN #${escapeHtml(String(gtGhin.data.golfer_id))} · ${rounds.length} rounds · <button id="ghinScDisconnectBtn">disconnect</button></span>`;
+            document.getElementById('ghinScDisconnectBtn').addEventListener('click', ghinScDisconnect);
+
+            // Weather loads async, then one re-render
+            if (loc && loc.latitude != null && loc.longitude != null && !hasWx) {
+                const forCourse = gtGhin.course;
+                ghinLoadWx(loc, courseRounds.map(r => r.played_at)).then(map => {
+                    if (gtGhin.course !== forCourse || !Object.keys(map).length) return;
+                    gtGhin.wx = map;
+                    ghinScRender();
+                });
+            }
+        }
+
+        document.getElementById('ghinScCourse').addEventListener('change', function() {
+            gtGhin.course = this.value;
+            gtGhin.wx = {};
+            ghinScRender();
+        });
+        document.getElementById('ghinScConnectBtn').addEventListener('click', ghinScConnect);
+        document.getElementById('ghinScPass').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') ghinScConnect();
+        });
 
         // ==========================================
         // SHOW ALL ROUNDS FOR A PLAYED COURSE
