@@ -4753,6 +4753,7 @@
                         <p style="margin-top: 8px; font-size: 14px;">Log a round from the "Add" tab and your scores will show up here.</p>
                     </div>
                 `;
+                ghinScTopStats();   // GHIN history can still fill the stat tiles
                 return;
             }
 
@@ -4794,6 +4795,10 @@
                     showPlayedCourseRounds(this.dataset.courseName);
                 });
             });
+
+            // With GHIN connected, the tiles show the full posted record
+            // instead of the manual count computed above
+            ghinScTopStats();
         }
 
         // ==========================================
@@ -4895,6 +4900,21 @@
             const diff = score - par;
             const what = diff <= -2 ? 'Eagle or better' : diff === -1 ? 'Birdie' : diff === 0 ? 'Par' : diff === 1 ? 'Bogey' : '+' + diff;
             return what + ' — par ' + par + (putts != null ? ', ' + putts + ' putts' : '');
+        }
+
+        // Top Scores stats (Rounds / Best 18 / Avg last 5) prefer the full
+        // GHIN record once it's connected — the manually-logged Played list
+        // undercounts badly (it only knows rounds typed into this app).
+        function ghinScTopStats() {
+            if (!gtGhin.data || !(gtGhin.data.rounds || []).length) return;
+            const rounds = gtGhin.data.rounds;   // newest first
+            const total = r => (r.holes && r.holes.length) ? r.holes.reduce((s, h) => s + h.score, 0) : r.adjusted_gross_score;
+            const scored = rounds.filter(r => r.number_of_holes === 18 && total(r) != null);
+            document.getElementById('statRounds').textContent = rounds.length;
+            document.getElementById('statBest').textContent = scored.length ? Math.min.apply(null, scored.map(total)) : '–';
+            const last5 = scored.slice(0, 5).map(total);
+            document.getElementById('statAvg').textContent = last5.length ? Math.round(last5.reduce((s, n) => s + n, 0) / last5.length) : '–';
+            document.getElementById('scoresStats').style.display = 'grid';
         }
 
         function ghinScSetVisible(section, connect) {
@@ -5179,6 +5199,8 @@
                     ghinScRender();
                 });
             }
+
+            ghinScTopStats();
         }
 
         document.getElementById('ghinScCourse').addEventListener('change', function() {
