@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Crossword Corner</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ============ HOME SCREEN ============ -->
+<div id="screen-home" class="screen">
+  <header class="home-header">
+    <h1>🧩 Crossword Corner</h1>
+    <p class="tagline">200 puzzles on a grab bag of fun topics</p>
+  </header>
+  <div class="difficulty-cards">
+    <button class="diff-card easy" data-diff="easy">
+      <span class="diff-emoji">🌤️</span>
+      <span class="diff-name">Easy</span>
+      <span class="diff-desc">Smaller grids, friendly clues</span>
+      <span class="diff-stats" id="stats-easy"></span>
+    </button>
+    <button class="diff-card medium" data-diff="medium">
+      <span class="diff-emoji">🔥</span>
+      <span class="diff-name">Medium</span>
+      <span class="diff-desc">Bigger grids, trickier clues</span>
+      <span class="diff-stats" id="stats-medium"></span>
+    </button>
+  </div>
+</div>
+
+<!-- ============ PUZZLE PICKER ============ -->
+<div id="screen-list" class="screen" hidden>
+  <header class="bar">
+    <button class="btn ghost" id="list-back">← Home</button>
+    <h2 id="list-title">Easy Puzzles</h2>
+    <span class="bar-spacer"></span>
+  </header>
+  <div class="legend">
+    <span><i class="dot done"></i> Completed</span>
+    <span><i class="dot progress"></i> In progress</span>
+    <span><i class="dot fresh"></i> Not started</span>
+  </div>
+  <div id="puzzle-grid-list" class="puzzle-list"></div>
+</div>
+
+<!-- ============ PUZZLE SCREEN ============ -->
+<div id="screen-puzzle" class="screen" hidden>
+  <header class="bar">
+    <button class="btn ghost" id="puzzle-back">← Puzzles</button>
+    <h2 id="puzzle-title"></h2>
+    <span class="timer" id="timer">0:00</span>
+  </header>
+
+  <div class="puzzle-layout">
+    <div class="board-col">
+      <div id="board" class="board"></div>
+      <div class="active-clue" id="active-clue"></div>
+      <div class="controls">
+        <button class="btn" id="btn-check-clue">Check Clue</button>
+        <button class="btn" id="btn-check-puzzle">Check Puzzle</button>
+        <button class="btn" id="btn-reveal-clue">Reveal Clue</button>
+        <button class="btn danger" id="btn-clear">Clear</button>
+      </div>
+    </div>
+    <div class="clues-col">
+      <div class="clue-group">
+        <h3>Across</h3>
+        <ol id="clues-across" class="clue-list"></ol>
+      </div>
+      <div class="clue-group">
+        <h3>Down</h3>
+        <ol id="clues-down" class="clue-list"></ol>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- hidden input to summon the mobile keyboard -->
+<input id="ghost-input" type="text" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" aria-hidden="true">
+
+<!-- ============ CELEBRATION ============ -->
+<canvas id="fireworks" hidden></canvas>
+<div id="win-modal" class="modal" hidden>
+  <div class="modal-card">
+    <div class="win-emoji">🎉</div>
+    <h2>Puzzle Complete!</h2>
+    <p id="win-time"></p>
+    <div class="modal-actions">
+      <button class="btn primary" id="win-next">Next Puzzle →</button>
+      <button class="btn" id="win-list">Back to Puzzles</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<script src="puzzles.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
